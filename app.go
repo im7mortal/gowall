@@ -41,13 +41,14 @@ func main() {
 
 	router.Use(sessions.Sessions("session", store))
 
-
+	router.LoadHTMLGlob("layouts/default.html")
 
 	//router.LoadHTMLFiles(CONF.PATH + "/t_web/layouts/module1/module1.html")
-	//router.Static("/static", CONF.PATH+"/t_web/static")
 	//router.Use(static.Serve("/", static.LocalFile(CONF.PATH+"/t_knoxville", true)))
 
 	BindRoutes(router) // --> cmd/go-getting-started/routers.go
+
+	router.Static("/public", "public")
 
 
 	router.Run(":" + config.Port)
@@ -71,11 +72,14 @@ func redirectToHTTPS(w http.ResponseWriter, req *http.Request) {
 	//http.Redirect(w, req, "https://" + CONF.ORIGIN + req.RequestURI, http.StatusMovedPermanently)
 }
 
-
+func Logined() bool {
+	return true
+}
 
 func Smock(c *gin.Context) {
 
-	c.JSON(200, gin.H{
-		"message": "Hi!!",
+	c.HTML(http.StatusOK, "default.html", gin.H{
+		"title": "Main website",
+		"pipeline": true,
 	})
 }
