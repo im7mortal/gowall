@@ -9,9 +9,9 @@ func BindRoutes(router *gin.Engine) {
 
 	//front end
 	router.GET("/", handlers.Index)
-	router.GET("/about/", handlers.Index)
-	router.GET("/contact/", handlers.Index)
-	router.POST("/contact/", handlers.Index)
+	router.GET("/about/", handlers.About)
+	router.GET("/contact/", handlers.ContactRender)
+	router.POST("/contact/", handlers.ContactSend)
 
 	//sign up
 	router.GET("/signup/", handlers.Index)

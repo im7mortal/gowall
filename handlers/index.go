@@ -6,8 +6,5 @@ import (
 )
 
 func Index(c *gin.Context) {
-	c.HTML(http.StatusOK, "default.html", gin.H{
-		"title": "Main website",
-		"pipeline": true,
-	})
+	c.HTML(http.StatusOK, "default.html", gin.H{})
 }

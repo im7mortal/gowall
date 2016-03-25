@@ -6,6 +6,7 @@ import (
 )
 
 func About(c *gin.Context) {
+	//todo
 	c.HTML(http.StatusOK, "default.html", gin.H{
 		"title": "Main website",
 		"pipeline": true,
