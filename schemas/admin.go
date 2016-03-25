@@ -6,33 +6,6 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-/*
-{
-    user: {
-      id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-      name: { type: String, default: '' }
-    },
-    name: {
-      full: { type: String, default: '' },
-      first: { type: String, default: '' },
-      middle: { type: String, default: '' },
-      last: { type: String, default: '' },
-    },
-    groups: [{ type: String, ref: 'AdminGroup' }],
-    permissions: [{
-      name: String,
-      permit: Boolean
-    }],
-    timeCreated: { type: Date, default: Date.now },
-    search: [String]
-  }
-*/
-
-type Permission struct {
-	Name string `bson:"name"`
-	Permit bool `bson:"permit"`
-}
-
 type Admin struct {
 	ID bson.ObjectId `bson:"_id,omitempty"`
 	User struct{
@@ -45,8 +18,7 @@ type Admin struct {
 		   Last string `bson:"last"`
 		   Full string `bson:"full"`
 	   } `bson:"name"`
-	Groups []mgo.DBRef `bson:"groups"`
-
+	Groups []AdminGroup `bson:"groups"`
 	Permissions []Permission `bson:"permissions"`
 	TimeCreated time.Time `bson:"timeCreated"`
 	Search []string `bson:"search"`
@@ -56,7 +28,43 @@ func (u *Admin) Flow()  {
 
 }
 
-var UserIndex mgo.Index = mgo.Index{
+func (admin *Admin) HasPermissionTo(requiredPermission string) (hasPermission bool) {
+	hasPermission = false
+	//check group permissions
+	for _, adminGroup := range admin.Groups{
+		for _, permission := range adminGroup.Permissions{
+			if permission.Name == requiredPermission {
+				hasPermission = true
+				break
+			}
+		}
+		if hasPermission {
+			break
+		}
+	}
+
+	//check admin permissions
+	for _, permission := range admin.Permissions{
+		if permission.Name == requiredPermission {
+			if permission.Permit {
+				return true
+			}
+			return false
+		}
+	}
+	return
+}
+
+func (u *Admin) IsMemberOf(groupName string) bool {
+	for _, group := range u.Groups{
+		if group.Name == groupName {
+			return true
+		}
+	}
+	return false
+}
+
+var AdminIndex mgo.Index = mgo.Index{
 	Key:        []string{"username", "email"},
 	Unique:     true,
 	DropDups:   true,
