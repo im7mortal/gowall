@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func Smoc1k(c *gin.Context) {
+func About(c *gin.Context) {
 
 	trigger = !trigger
 
