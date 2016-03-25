@@ -6,86 +6,29 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-type Schema interface{
-	Flow()
-}
+/*
+{
+    user: {
+      id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      name: { type: String, default: '' }
+    },
+    name: {
+      full: { type: String, default: '' },
+      first: { type: String, default: '' },
+      middle: { type: String, default: '' },
+      last: { type: String, default: '' },
+    },
+    groups: [{ type: String, ref: 'AdminGroup' }],
+    permissions: [{
+      name: String,
+      permit: Boolean
+    }],
+    timeCreated: { type: Date, default: Date.now },
+    search: [String]
+  }
+*/
 
-type Account struct {
-	ID bson.ObjectId `bson:"_id,omitempty"`
-	User struct{
-			ID mgo.DBRef `bson:"id"`
-			Name string `bson:"name"`
-		} `bson:"user"`
-	IsVerified string `bson:"isVerified"`
-	VerificationToken string `bson:"verificationToken"`
-	Name struct {
-			First string  `bson:"first"`
-			Middle string `bson:"middle"`
-			Last string `bson:"last"`
-			Full string `bson:"full"`
-		} `bson:"name"`
-	Company string `bson:"company"`
-	Phone string `bson:"phone"`
-	Zip string `bson:"zip"`
-	Status struct {
-		ID mgo.DBRef `bson:"id"`
-		Name string `bson:"name"`
-		UserCreated struct {
-			ID mgo.DBRef `bson:"id"`
-			Name string `bson:"name"`
-			Time time.Time `bson:"time"`
-		} `bson:"userCreated"`
-	} `bson:"status"`
-	StatusLog []StatusLog `bson:"statusLog"`
-	Notes []Note `bson:"notes"`
-	UserCreated struct{
-			ID mgo.DBRef `bson:"id"`
-			Name string `bson:"name"`
-			Time time.Time `bson:"time"`
-		} `bson:"userCreated"`
-	Search []string `bson:"search"`
-}
-
-type StatusLog struct {
-	ID bson.ObjectId `bson:"_id,omitempty"`
-	ID_ mgo.DBRef `bson:"id"`
-	Name string `bson:"name"`
-	UserCreated struct{
-		ID mgo.DBRef `bson:"id"`
-		Name string `bson:"name"`
-		Time string `bson:"time"`
-	} `bson:"userCreated"`
-}
-
-type Note struct {
-	ID bson.ObjectId `bson:"_id,omitempty"`
-	Data string `bson:"data"`
-	UserCreated struct{
-		ID mgo.DBRef `bson:"id"`
-		Name string `bson:"name"`
-		Time string `bson:"time"`
-	} `bson:"userCreated"`
-}
-
-type Status struct {
-	ID    bson.ObjectId `bson:"_id"`
-	Pivot string `bson:"pivot"`
-	Name  string `bson:"name"`
-}
-
-type Status1 struct {
-	ID    bson.ObjectId `bson:"_id"`
-	Pivot string `bson:"pivot"`
-	Name  string `bson:"name"`
-}
-
-
-
-type vendorOauth struct {
-
-}
-
-type User struct {// todo uniq
+type Admin struct {// todo uniq
 	ID                   bson.ObjectId `bson:"_id"`
 	Username             string `bson:"username"`
 	Password             string `bson:"password"`
@@ -108,11 +51,9 @@ type User struct {// todo uniq
 	Search               []string `bson:"search"`
 }
 
-func (u *User) Flow()  {
+func (u *Admin) Flow()  {
 
 }
-
-
 
 var UserIndex mgo.Index = mgo.Index{
 	Key:        []string{"username", "email"},
