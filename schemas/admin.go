@@ -28,27 +28,28 @@ import (
   }
 */
 
-type Admin struct {// todo uniq
-	ID                   bson.ObjectId `bson:"_id"`
-	Username             string `bson:"username"`
-	Password             string `bson:"password"`
-	Email                string `bson:"email"`
-	Roles                struct {
-						 Admin   mgo.DBRef `bson:"name,omitempty"`
-						 Account mgo.DBRef `bson:"time,omitempty"`
-					 } `bson:"roles"`
+type Permission struct {
+	Name string `bson:"name"`
+	Permit bool `bson:"permit"`
+}
 
-	IsActive             string `bson:"isActive,omitempty"`
-	TimeCreated          time.Time `bson:"timeCreated"`
-	ResetPasswordToken   string `bson:"resetPasswordToken,omitempty"`
-	ResetPasswordExpires time.Time `bson:"resetPasswordExpires,omitempty"`
+type Admin struct {
+	ID bson.ObjectId `bson:"_id,omitempty"`
+	User struct{
+		   ID mgo.DBRef `bson:"id"`
+		   Name string `bson:"name"`
+	   } `bson:"user"`
+	Name struct {
+		   First string  `bson:"first"`
+		   Middle string `bson:"middle"`
+		   Last string `bson:"last"`
+		   Full string `bson:"full"`
+	   } `bson:"name"`
+	Groups []mgo.DBRef `bson:"groups"`
 
-	Twitter              vendorOauth `bson:"twitter"`
-	Github               vendorOauth `bson:"github"`
-	Facebook             vendorOauth `bson:"facebook"`
-	Google               vendorOauth `bson:"google"`
-	Tumblr               vendorOauth `bson:"tumblr"`
-	Search               []string `bson:"search"`
+	Permissions []Permission `bson:"permissions"`
+	TimeCreated time.Time `bson:"timeCreated"`
+	Search []string `bson:"search"`
 }
 
 func (u *Admin) Flow()  {
