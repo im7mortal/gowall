@@ -10,9 +10,16 @@ import (
 	//"time"
 	//"log"
 	"net/http"
+	"html/template"
 )
 
+const VERSION  = "0.1"
+
 var store sessions.CookieStore
+
+var Router *gin.Engine
+
+
 
 func init () {
 	config.Init()
@@ -26,8 +33,24 @@ func init () {
 }
 
 func main() {
-	router := gin.Default()
-	router.Use(gzip.Gzip(gzip.DefaultCompression))
+	Router = gin.Default()
+	Router.Use(gzip.Gzip(gzip.DefaultCompression))
+
+
+
+
+
+	indexTemplate := template.Must(template.ParseFiles("layouts/default.html"))
+	tm1 = template.Must(template.Must(indexTemplate.Clone()).ParseFiles("body.html"))
+	tm2 = template.Must(template.Must(indexTemplate.Clone()).ParseFiles("body2.html"))
+
+	ty, _ := template.ParseFiles("layouts/default.html", "body.html", "body2.html")
+
+
+	Router.SetHTMLTemplate(ty)
+
+
+
 
 /*	router.Use(cors.Middleware(cors.Config{
 		Origins:         "*",
@@ -39,19 +62,20 @@ func main() {
 		ValidateHeaders: false,
 	}))*/
 
-	router.Use(sessions.Sessions("session", store))
+	Router.Use(sessions.Sessions("session", store))
 
-	router.LoadHTMLGlob("layouts/default.html")
+	Router.LoadHTMLFiles("layouts/default.html", "body.html", "body2.html")
 
 	//router.LoadHTMLFiles(CONF.PATH + "/t_web/layouts/module1/module1.html")
 	//router.Use(static.Serve("/", static.LocalFile(CONF.PATH+"/t_knoxville", true)))
 
-	BindRoutes(router) // --> cmd/go-getting-started/routers.go
-
-	router.Static("/public", "public")
 
 
-	router.Run(":" + config.Port)
+	Router.Static("/public", "public")
+
+	BindRoutes(Router) // --> cmd/go-getting-started/routers.go
+
+	Router.Run(":" + config.Port)
 
 	/*
 	if CONF.DEVELOP {
@@ -76,10 +100,8 @@ func Logined() bool {
 	return true
 }
 
-func Smock(c *gin.Context) {
+var trigger bool
+var tm1 *template.Template
+var tm2 *template.Template
 
-	c.HTML(http.StatusOK, "default.html", gin.H{
-		"title": "Main website",
-		"pipeline": true,
-	})
-}
+

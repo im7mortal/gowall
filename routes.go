@@ -5,7 +5,7 @@ import "github.com/gin-gonic/gin"
 func BindRoutes(router *gin.Engine) {
 
 	//front end
-	router.GET("/", Smock)
+	//router.GET("/", Smock)
 	router.GET("/about/", Smock)
 	router.GET("/contact/", Smock)
 	router.POST("/contact/", Smock)
