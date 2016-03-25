@@ -48,6 +48,7 @@
 </div>
 <div class="page">
 	<div class="container">
+		{{block "body" .}} {{end}}
 	</div>
 </div>
 <div class="footer">
@@ -60,7 +61,9 @@
 		<div class="clearfix"></div>
 	</div>
 </div>
-<div class="ajax-spinner"><img src="/public/media/ajax-pulse.gif" alt="Loading"></div>
+<div class="ajax-spinner">
+	<img src="/public/media/ajax-pulse.gif" alt="Loading">
+</div>
 <!--if lte IE 9script(src='/layouts/ie-sucks.min.js?{{.CacheBreaker}}')-->
 <script src="/public/layouts/core.min.js?{{.CacheBreaker}}"></script>
 </body>
