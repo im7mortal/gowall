@@ -6,5 +6,7 @@ import (
 )
 
 func About(c *gin.Context) {
-	c.Render(http.StatusOK, TemplateStorage[c.Request.URL.Path])
+	render, _ := TemplateStorage[c.Request.URL.Path]
+	render.Data = c.Keys
+	c.Render(http.StatusOK, render)
 }

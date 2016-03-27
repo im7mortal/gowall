@@ -10,7 +10,6 @@ import (
 	//"time"
 	//"log"
 	"net/http"
-	"html/template"
 )
 
 const VERSION  = "0.1"
@@ -40,17 +39,6 @@ func main() {
 
 	LoadTemplates()
 
-	indexTemplate := template.Must(template.ParseFiles("layouts/default.html"))
-	tm1 = template.Must(template.Must(indexTemplate.Clone()).ParseFiles("body.html"))
-	tm2 = template.Must(template.Must(indexTemplate.Clone()).ParseFiles("body2.html"))
-
-	ty, _ := template.ParseFiles("layouts/default.html", "body.html", "body2.html")
-
-
-	Router.SetHTMLTemplate(ty)
-
-
-
 
 /*	router.Use(cors.Middleware(cors.Config{
 		Origins:         "*",
@@ -64,13 +52,13 @@ func main() {
 
 	Router.Use(sessions.Sessions("session", store))
 	Router.Use(IsAuthenticated)
-
-	Router.LoadHTMLFiles("layouts/default.html", "body.html", "body2.html")
-
-	//router.LoadHTMLFiles(CONF.PATH + "/t_web/layouts/module1/module1.html")
-	//router.Use(static.Serve("/", static.LocalFile(CONF.PATH+"/t_knoxville", true)))
-
-
+	Router.Use(func(c *gin.Context) {
+		c.Set("ProjectName", config.ProjectName)
+		c.Set("CopyrightYear", "2016") // todo
+		c.Set("CopyrightName", config.CompanyName)
+		c.Set("CacheBreaker", "br34k-01")
+		c.Next()
+	})
 
 	Router.Static("/public", "public")
 
@@ -101,9 +89,6 @@ func Logined() bool {
 	return true
 }
 
-var trigger bool
-var tm1 *template.Template
-var tm2 *template.Template
 
 func IsAuthenticated(c *gin.Context) {
 	/*path := c.Request.URL.Path

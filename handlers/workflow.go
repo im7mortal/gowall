@@ -15,7 +15,6 @@ func InitTemplate(base, name string, paths... string) {
 	TemplateStorage[name] = &render.HTML{
 		Template: template.Must(template.New(name).ParseFiles(paths...)),
 		Name:     base,
-		Data:     gin.H{},
 	}
 }
 

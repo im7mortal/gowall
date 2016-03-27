@@ -2,8 +2,10 @@
 <html>
 <head>
 	<title>{{.Title}}</title>
+	{{block "head" .}} {{end}}
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="/public/layouts/core.min.css?{{.CacheBreaker}}">
+	{{block "neck" .}} {{end}}
 </head>
 <body>
 <div class="navbar navbar-default navbar-fixed-top">
@@ -11,7 +13,7 @@
 		<div class="navbar-header">
 			<a href="/" class="navbar-brand">
 				<img src="/public/media/logo-symbol-64x64.png" alt="Logo" class="navbar-logo">
-				<span class="navbar-brand-label">{{.projectName}}</span>
+				<span class="navbar-brand-label">{{.ProjectName}}</span>
 			</a>
 			<button data-toggle="collapse" data-target=".my-navbar-collapse" class="navbar-toggle collapsed">
 				<span class="icon-bar"></span>
@@ -53,7 +55,7 @@
 </div>
 <div class="footer">
 	<div class="container">
-		<span class="copyright pull-right">&#169;{{.copyrightYear}} {{.copyrightName}}</span>
+		<span class="copyright pull-right">&#169;{{.CopyrightYear}} {{.CopyrightName}}</span>
 		<ul class="links">
 			<li><a href="/">Home</a></li>
 			<li><a href="/contact/">Contact</a></li>
@@ -66,5 +68,6 @@
 </div>
 <!--if lte IE 9script(src='/layouts/ie-sucks.min.js?{{.CacheBreaker}}')-->
 <script src="/public/layouts/core.min.js?{{.CacheBreaker}}"></script>
+{{block "feet" .}} {{end}}
 </body>
 </html>
