@@ -10,6 +10,8 @@ import (
 var TemplateStorage map[string]*render.HTML = make(map[string]*render.HTML)
 
 func InitTemplate(base, name string, paths... string) {
+	// append base tmpl
+	paths = append(paths, "layouts/" + base)
 	TemplateStorage[name] = &render.HTML{
 		Template: template.Must(template.New(name).ParseFiles(paths...)),
 		Name:     base,
