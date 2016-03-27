@@ -14,8 +14,8 @@ func BindRoutes(router *gin.Engine) {
 	router.POST("/contact/", handlers.ContactSend)
 
 	//sign up
-	router.GET("/signup/", handlers.Index)
-	router.POST("/signup/", handlers.Index)
+	router.GET("/signup/", handlers.SignupRender)
+	router.POST("/signup/", handlers.Signup)
 
 	//social sign up
 	router.POST("/signup/social/", handlers.Index)

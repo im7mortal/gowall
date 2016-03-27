@@ -38,7 +38,7 @@ func main() {
 
 
 
-
+	LoadTemplates()
 
 	indexTemplate := template.Must(template.ParseFiles("layouts/default.html"))
 	tm1 = template.Must(template.Must(indexTemplate.Clone()).ParseFiles("body.html"))
@@ -63,6 +63,7 @@ func main() {
 	}))*/
 
 	Router.Use(sessions.Sessions("session", store))
+	Router.Use(IsAuthenticated)
 
 	Router.LoadHTMLFiles("layouts/default.html", "body.html", "body2.html")
 
@@ -104,4 +105,21 @@ var trigger bool
 var tm1 *template.Template
 var tm2 *template.Template
 
+func IsAuthenticated(c *gin.Context) {
+	/*path := c.Request.URL.Path
+	if (len(path) > 5 && path[:6] == "/auth/") {
+		c.Next()
+		return
+	}
+	session := getSession(c)
+	// reset cookies for mowing expiration time
+	// TODO  don't sure it's good
+	datr, err := c.Request.Cookie("datr")
+	if err == nil {
+		setCookieForJS("datr", datr.Value, c)
+		session.Set("session", session.Get("session"))
+		session.Save()
+	}*/
+	c.Next()
+}
 

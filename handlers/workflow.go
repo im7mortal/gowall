@@ -3,7 +3,19 @@ package handlers
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"github.com/gin-gonic/gin/render"
+	"html/template"
 )
+
+var TemplateStorage map[string]*render.HTML = make(map[string]*render.HTML)
+
+func InitTemplate(base, name string, paths... string) {
+	TemplateStorage[name] = &render.HTML{
+		Template: template.Must(template.New(name).ParseFiles(paths...)),
+		Name:     base,
+		Data:     gin.H{},
+	}
+}
 
 type Response struct {
 	Success bool `json:"success"`

@@ -39,7 +39,7 @@ type OAuth struct{
 }
 
 // I think it's ok. I use it only for "get". No modifying
-var CONF = make(map[string]OAuth)
+var Socials = make(map[string]OAuth)
 
 func getEnvOrSetDef(envName, defValue string) (val string) {
 	val, ok := os.LookupEnv(envName)
@@ -67,22 +67,22 @@ func Init() {
 
 	ins.Key = getEnvOrSetDef("TWITTER_OAUTH_KEY", "")
 	ins.Secret = getEnvOrSetDef("TWITTER_OAUTH_SECRET", "")
-	CONF["twitter"] = ins
+	Socials["twitter"] = ins
 
 	ins.Key = getEnvOrSetDef("FACEBOOK_OAUTH_KEY", "")
 	ins.Secret = getEnvOrSetDef("FACEBOOK_OAUTH_SECRET", "")
-	CONF["github"] = ins
+	Socials["github"] = ins
 
 	ins.Key = getEnvOrSetDef("GITHUB_OAUTH_KEY", "")
 	ins.Secret = getEnvOrSetDef("GITHUB_OAUTH_SECRET", "")
-	CONF["github"] = ins
+	Socials["github"] = ins
 
 	ins.Key = getEnvOrSetDef("GOOGLE_OAUTH_KEY", "")
 	ins.Secret = getEnvOrSetDef("GOOGLE_OAUTH_SECRET", "")
-	CONF["google"] = ins
+	Socials["google"] = ins
 
 	ins.Key = getEnvOrSetDef("TUMBLR_OAUTH_KEY", "")
 	ins.Secret = getEnvOrSetDef("TUMBLR_OAUTH_SECRET", "")
-	CONF["tumblr"] = ins
+	Socials["tumblr"] = ins
 
 }
