@@ -8,7 +8,7 @@ var Port = getEnvOrSetDef("PORT", "3000")
 
 const (
 	CompanyName string = "Acme, Inc."
-	ProjectName string = "Drywall"
+	ProjectName string = "Gowall"
 	SystemEmail string = "your@email.addy"
 	CryptoKey string = "k3yb0ardc4t"
 	RequireAccountVerification bool = true

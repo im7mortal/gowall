@@ -61,6 +61,8 @@ func main() {
 	})
 
 	Router.Static("/public", "public")
+	Router.Static("/vendor", "vendor")
+	Router.Static("/views", "views") // todo not good
 
 	BindRoutes(Router) // --> cmd/go-getting-started/routers.go
 
