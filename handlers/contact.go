@@ -8,8 +8,9 @@ import (
 )
 
 func ContactRender(c *gin.Context) {
-	//todo
-	c.HTML(http.StatusOK, "default.html", gin.H{})
+	render, _ := TemplateStorage[c.Request.URL.Path]
+	render.Data = c.Keys
+	c.Render(http.StatusOK, render)
 }
 
 func ContactSend(c *gin.Context) {
