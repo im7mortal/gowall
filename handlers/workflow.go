@@ -32,3 +32,9 @@ func (r *Response)Fail(c *gin.Context) {
 	r.Success = false
 	c.JSON(http.StatusOK, r)
 }
+
+func (r *Response) Recover(c *gin.Context) {
+	if rec := recover(); rec != nil {
+		r.Fail(c)
+	}
+}

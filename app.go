@@ -32,9 +32,9 @@ func init () {
 }
 
 func main() {
+	gin.SetMode(gin.ReleaseMode)
 	Router = gin.Default()
 	Router.Use(gzip.Gzip(gzip.DefaultCompression))
-
 
 
 	LoadTemplates()

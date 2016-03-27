@@ -5,6 +5,9 @@ import (
 	"net/http"
 	"github.com/im7mortal/gowall/config"
 	"gopkg.in/gomail.v2"
+	"io"
+	"html/template"
+	"encoding/json"
 )
 
 func ContactRender(c *gin.Context) {
@@ -15,19 +18,29 @@ func ContactRender(c *gin.Context) {
 
 func ContactSend(c *gin.Context) {
 	response := Response{} // todo sync.Pool
+	response.Errors = []string{}
+	response.ErrFor = make(map[string]string)
 
-	defer response.Fail(c)
+	//defer response.Recover(c)
 
-	name := c.Request.FormValue("name")
-	if len(name) == 0 {
+	var body struct {
+		Name    string  `json:"name"`
+		Email   string  `json:"email"`
+		Message string  `json:"message"`
+	}
+	decoder := json.NewDecoder(c.Request.Body)
+	err := decoder.Decode(&body)
+
+	if err != nil {
+		panic(err.Error())
+	}
+	if len(body.Name) == 0 {
 		response.ErrFor["name"] = "required"
 	}
-	email := c.Request.FormValue("email")
-	if len(email) == 0 {
+	if len(body.Email) == 0 {
 		response.ErrFor["email"] = "required"
 	}
-	message := c.Request.FormValue("message")
-	if len(message) == 0 {
+	if len(body.Message) == 0 {
 		response.ErrFor["message"] = "required"
 	}
 	if response.HasErrors() {
@@ -35,31 +48,29 @@ func ContactSend(c *gin.Context) {
 		return
 	}
 
-
-
 	m := gomail.NewMessage()
 
 	m.SetHeader("From", config.SMTP.From.Name + " <" + config.SMTP.From.Address + ">")
 	m.SetHeader("To", config.SystemEmail)
 	m.SetHeader("Subject", config.CompanyName + " contact form")
-	m.SetHeader("ReplyTo", email)
+	m.SetHeader("ReplyTo", body.Email)
 
-	/*
-		m.AddAlternativeWriter("text/html", func(w io.Writer) error {
-		return emailTmpl.Execute(w, data)
+	//put in the c.Keys
+	c.Set("Name", body.Name)
+	c.Set("Email", body.Email)
+	c.Set("Message", body.Message)
+
+	m.AddAlternativeWriter("text/html", func(w io.Writer) error {
+		return template.Must(template.ParseFiles("views/contact/email-html.html")).Execute(w, c.Keys)
 	})
 
-	*/
-
-
-	/*d := gomail.NewDialer(config.SMTP.From.Name, 587, CONF.MAIL.USERNAME, CONF.MAIL.PASSWORD)
+	d := gomail.NewDialer(config.SMTP.Credentials.Host, 587, config.SMTP.Credentials.User, config.SMTP.Credentials.Password)
 
 	if err := d.DialAndSend(m); err != nil {
 		response.Errors = append(response.Errors, "Error Sending: " + err.Error())
 		response.Fail(c)
 		return
-	}*/
-
+	}
 
 	response.Success = true
 	c.JSON(http.StatusOK, response)
