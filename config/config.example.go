@@ -67,22 +67,32 @@ func Init() {
 
 	ins.Key = getEnvOrSetDef("TWITTER_OAUTH_KEY", "")
 	ins.Secret = getEnvOrSetDef("TWITTER_OAUTH_SECRET", "")
-	Socials["twitter"] = ins
+	if len(ins.Key) != 0 {
+		Socials["twitter"] = ins
+	}
 
 	ins.Key = getEnvOrSetDef("FACEBOOK_OAUTH_KEY", "")
 	ins.Secret = getEnvOrSetDef("FACEBOOK_OAUTH_SECRET", "")
-	Socials["github"] = ins
+	if len(ins.Key) != 0 {
+		Socials["facebook"] = ins
+	}
 
 	ins.Key = getEnvOrSetDef("GITHUB_OAUTH_KEY", "")
 	ins.Secret = getEnvOrSetDef("GITHUB_OAUTH_SECRET", "")
-	Socials["github"] = ins
+	if len(ins.Key) != 0 {
+		Socials["github"] = ins
+	}
 
 	ins.Key = getEnvOrSetDef("GOOGLE_OAUTH_KEY", "")
 	ins.Secret = getEnvOrSetDef("GOOGLE_OAUTH_SECRET", "")
-	Socials["google"] = ins
+	if len(ins.Key) != 0 {
+		Socials["google"] = ins
+	}
 
 	ins.Key = getEnvOrSetDef("TUMBLR_OAUTH_KEY", "")
 	ins.Secret = getEnvOrSetDef("TUMBLR_OAUTH_SECRET", "")
-	Socials["tumblr"] = ins
+	if len(ins.Key) != 0 {
+		Socials["tumblr"] = ins
+	}
 
 }
