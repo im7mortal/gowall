@@ -22,13 +22,13 @@ var Router *gin.Engine
 
 func init () {
 	config.Init()
-/*	store = sessions.NewCookieStore([]byte("MFDQmJQ4TFHVad3dEddQV8QkSUFBUkFi1CQkCRHVad3dEdUFB03HVad3dEddEdi1C"))
+	store = sessions.NewCookieStore([]byte("MFDQmJQ4TFHVad3dEddQV8QkSUFBUkFi1CQkCRHVad3dEdUFB03HVad3dEddEdi1C"))
 	store.Options(sessions.Options{
 		Path: "/",
 		MaxAge: 60 * 60 * 6,
-		Secure: !CONF.DEVELOP,  // TODO https sudo run hack for test without https on local machine
+		//Secure: !CONF.DEVELOP,  // TODO https sudo run hack for test without https on local machine
 		HttpOnly: true,
-	})*/
+	})
 }
 
 func main() {

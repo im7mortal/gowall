@@ -65,19 +65,19 @@ func Init() {
 
 	ins := OAuth{} // todo i hope it's not like JS link
 
-	ins.Key = getEnvOrSetDef("TWITTER_OAUTH_KEY", "")
+	ins.Key = getEnvOrSetDef("TWITTER_OAUTH_KEY", "11")
 	ins.Secret = getEnvOrSetDef("TWITTER_OAUTH_SECRET", "")
 	if len(ins.Key) != 0 {
 		Socials["twitter"] = ins
 	}
 
-	ins.Key = getEnvOrSetDef("FACEBOOK_OAUTH_KEY", "")
+	ins.Key = getEnvOrSetDef("FACEBOOK_OAUTH_KEY", "11")
 	ins.Secret = getEnvOrSetDef("FACEBOOK_OAUTH_SECRET", "")
 	if len(ins.Key) != 0 {
 		Socials["facebook"] = ins
 	}
 
-	ins.Key = getEnvOrSetDef("GITHUB_OAUTH_KEY", "")
+	ins.Key = getEnvOrSetDef("GITHUB_OAUTH_KEY", "11")
 	ins.Secret = getEnvOrSetDef("GITHUB_OAUTH_SECRET", "")
 	if len(ins.Key) != 0 {
 		Socials["github"] = ins

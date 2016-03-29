@@ -9,7 +9,7 @@ import (
 type Account struct {
 	ID bson.ObjectId `bson:"_id,omitempty"`
 	User struct{
-		   ID mgo.DBRef `bson:"id"`
+		   ID bson.ObjectId `bson:"id"`
 		   Name string `bson:"name"`
 	   } `bson:"user"`
 	IsVerified string `bson:"isVerified"`

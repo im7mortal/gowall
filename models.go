@@ -45,11 +45,13 @@ func init() {
 	println(us.ID.Hex())
 
 	acc := schemas.Account{ID: bson.NewObjectId()}
+	/*
 	acc.User.ID = mgo.DBRef{
 		Id: us.ID,
 		Collection: c.Name,
 		Database: d.Name,
 	}
+	*/
 	err = c.Insert(acc)
 	if err != nil {
 		println(err.Error())
