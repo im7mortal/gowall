@@ -32,7 +32,7 @@ func BindRoutes(router *gin.Engine) {
 
 	//login/out
 	router.GET("/login/", handlers.LoginRender)
-	router.POST("/login/", handlers.Index)
+	router.POST("/login/", handlers.Login)
 	router.GET("/login/forgot/", handlers.ForgotRender)
 	router.POST("/login/forgot/", handlers.Index)
 	router.GET("/login/reset/", handlers.Index)
