@@ -15,41 +15,30 @@ import (
 )
 
 func SignupRender(c *gin.Context) {
-/*	if (c.Get("isAuthenticated")) {
-		c.Redirect(http.StatusFound, c.Get("defaultReturnUrl"))
+	_, isAuthenticated := c.Get("isAuthenticated") // non standard way. If exist it isAuthenticated
+	if isAuthenticated {
+		defaultReturnUrl, _ := c.Get("defaultReturnUrl")
+		c.Redirect(http.StatusFound, defaultReturnUrl.(string))
 	} else {
-		_, twitterExist := config.Socials["twitter"]
-		_, githubExist := config.Socials["github"]
-		_, facebookExist := config.Socials["facebook"]
-		_, googleExist := config.Socials["google"]
-		_, tumblrExist := config.Socials["tumblr"]
-		c.HTML(http.StatusOK, "default.html", gin.H{
-			"oauthMessage": "",
-			"oauthTwitter": twitterExist,
-			"oauthGitHub": githubExist,
-			"oauthFacebook": facebookExist,
-			"oauthGoogle": googleExist,
-			"oauthTumblr": tumblrExist,
-		})
-	}*/
-	render, _ := TemplateStorage[c.Request.URL.Path]
+		render, _ := TemplateStorage[c.Request.URL.Path]
 
-	_, oauthTwitter := config.Socials["twitter"]
-	_, oauthGitHub := config.Socials["github"]
-	_, oauthFacebook := config.Socials["facebook"]
-	_, oauthGoogle := config.Socials["google"]
-	_, oauthTumblr := config.Socials["tumblr"]
+		_, oauthTwitter := config.Socials["twitter"]
+		_, oauthGitHub := config.Socials["github"]
+		_, oauthFacebook := config.Socials["facebook"]
+		_, oauthGoogle := config.Socials["google"]
+		_, oauthTumblr := config.Socials["tumblr"]
 
-	c.Set("oauth", oauthTwitter || oauthGitHub || oauthFacebook || oauthGoogle || oauthTumblr)
-	c.Set("oauthTwitter", oauthTwitter)
-	c.Set("oauthGitHub", oauthGitHub)
-	c.Set("oauthFacebook", oauthFacebook)
-	c.Set("oauthGoogle", oauthGoogle)
-	c.Set("oauthTumblr", oauthTumblr)
-	c.Set("oauthMessage", "")
+		c.Set("oauth", oauthTwitter || oauthGitHub || oauthFacebook || oauthGoogle || oauthTumblr)
+		c.Set("oauthTwitter", oauthTwitter)
+		c.Set("oauthGitHub", oauthGitHub)
+		c.Set("oauthFacebook", oauthFacebook)
+		c.Set("oauthGoogle", oauthGoogle)
+		c.Set("oauthTumblr", oauthTumblr)
+		c.Set("oauthMessage", "")
 
-	render.Data = c.Keys
-	c.Render(http.StatusOK, render)
+		render.Data = c.Keys
+		c.Render(http.StatusOK, render)
+	}
 }
 
 func Signup(c *gin.Context) {
@@ -175,11 +164,9 @@ func Signup(c *gin.Context) {
 	//todo  sendWelcomeEmail
 	//todo  sendWelcomeEmail ***************************************************
 	sess := sessions.Default(c)
-	sess.Set("public", us.Username)
+	sess.Set("public", us.ID.Hex())
 	sess.Save()
 
-
-	println("done")
-	response.Success = true
-	c.JSON(http.StatusOK, gin.H{})
+	response.Success = false
+	c.JSON(http.StatusOK, response)
 }

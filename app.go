@@ -10,6 +10,9 @@ import (
 	//"time"
 	//"log"
 	"net/http"
+	"gopkg.in/mgo.v2"
+	"github.com/im7mortal/gowall/schemas"
+	"gopkg.in/mgo.v2/bson"
 )
 
 const VERSION  = "0.1"
@@ -22,7 +25,7 @@ var Router *gin.Engine
 
 func init () {
 	config.Init()
-	store = sessions.NewCookieStore([]byte("MFDQmJQ4TFHVad3dEddQV8QkSUFBUkFi1CQkCRHVad3dEdUFB03HVad3dEddEdi1C"))
+	store = sessions.NewCookieStore([]byte("MFDQmJQ4TF"))
 	store.Options(sessions.Options{
 		Path: "/",
 		MaxAge: 60 * 60 * 6,
@@ -93,20 +96,28 @@ func Logined() bool {
 
 
 func IsAuthenticated(c *gin.Context) {
-	/*path := c.Request.URL.Path
-	if (len(path) > 5 && path[:6] == "/auth/") {
-		c.Next()
-		return
+	sess := sessions.Default(c)
+
+	public := sess.Get("public")
+
+	if public != nil && len(public.(string)) > 0 {
+		session, err := mgo.Dial("mongodb://localhost:27017")
+		defer session.Close()
+		if err != nil {
+			println(err.Error())
+		}
+		d := session.DB("test")
+		collection := d.C("User")
+		us := schemas.User{}
+		err = collection.Find(bson.M{"_id": bson.ObjectIdHex(public.(string))}).One(&us)
+		if err != nil {
+			println(err.Error())
+		}
+		if len(us.Username) > 0 {
+			c.Set("isAuthenticated", true)
+			c.Set("defaultReturnUrl", "/home/") // todo
+		}
 	}
-	session := getSession(c)
-	// reset cookies for mowing expiration time
-	// TODO  don't sure it's good
-	datr, err := c.Request.Cookie("datr")
-	if err == nil {
-		setCookieForJS("datr", datr.Value, c)
-		session.Set("session", session.Get("session"))
-		session.Save()
-	}*/
 	c.Next()
 }
 
