@@ -167,6 +167,6 @@ func Signup(c *gin.Context) {
 	sess.Set("public", us.ID.Hex())
 	sess.Save()
 
-	response.Success = false
+	response.Success = true
 	c.JSON(http.StatusOK, response)
 }

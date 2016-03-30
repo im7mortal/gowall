@@ -6,11 +6,6 @@
 <link rel='stylesheet' href='/views/account/index.min.css?#{cacheBreaker}'>
 {{end}}
 
-{{define "feet"}}
-<script src='/views/account/index.min.js?#{cacheBreaker}'></script>
-<link rel='stylesheet' href='/views/account/index.min.css?#{cacheBreaker}'>
-{{end}}
-
 {{define "body"}}
 <div class="row">
 	<div class="col-sm-6">
@@ -64,4 +59,9 @@
 		</div><i class="fa fa-dashboard super-awesome"></i>
 	</div>
 </div>
+{{end}}
+
+{{define "feet"}}
+<script src='/views/account/index.min.js?#{cacheBreaker}'></script>
+<link rel='stylesheet' href='/views/account/index.min.css?#{cacheBreaker}'>
 {{end}}

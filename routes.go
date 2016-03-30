@@ -121,7 +121,7 @@ func BindRoutes(router *gin.Engine) {
 	//account
 	//app.all('/account*', ensureAuthenticated); //TODO necessary midleware
 	//app.all('/account*', ensureAccount);
-	router.GET("/account/", handlers.Index)
+	router.GET("/account/", handlers.Account)
 
 	//account > verification
 	router.GET("/account/verification/", handlers.Index)

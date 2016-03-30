@@ -10,11 +10,14 @@ import (
 func LoadTemplates() {
 
 	defaultTmpl := "default.html"
+	accountTmpl := "account.html"
 
 	handlers.InitTemplate(defaultTmpl, "/", "views/index.html")
 	handlers.InitTemplate(defaultTmpl, "/about/", "views/about/index.html")
 	handlers.InitTemplate(defaultTmpl, "/contact/", "views/contact/index.html")
 	handlers.InitTemplate(defaultTmpl, "/signup/", "views/signup/index.html")
+
+	handlers.InitTemplate(accountTmpl, "/account/", "views/account/index.html")
 
 
 
