@@ -114,8 +114,10 @@ func IsAuthenticated(c *gin.Context) {
 			println(err.Error())
 		}
 		if len(us.Username) > 0 {
+			c.Set("Logined", true) // todo what is different between "Logined" and "isAuthenticated"
 			c.Set("isAuthenticated", true)
-			c.Set("defaultReturnUrl", us.DefaultReturnUrl()) // todo
+			c.Set("UserName", us.Username)
+			c.Set("DefaultReturnUrl", us.DefaultReturnUrl()) // todo
 		}
 	}
 	c.Next()

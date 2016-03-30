@@ -17,7 +17,7 @@ import (
 func SignupRender(c *gin.Context) {
 	_, isAuthenticated := c.Get("isAuthenticated") // non standard way. If exist it isAuthenticated
 	if isAuthenticated {
-		defaultReturnUrl, _ := c.Get("defaultReturnUrl")
+		defaultReturnUrl, _ := c.Get("DefaultReturnUrl")
 		c.Redirect(http.StatusFound, defaultReturnUrl.(string))
 	} else {
 		render, _ := TemplateStorage[c.Request.URL.Path]
