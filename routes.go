@@ -31,7 +31,7 @@ func BindRoutes(router *gin.Engine) {
 	router.GET("/signup/tumblr/callback/", handlers.Index)
 
 	//login/out
-	router.GET("/login/", handlers.Index)
+	router.GET("/login/", handlers.LoginRender)
 	router.POST("/login/", handlers.Index)
 	router.GET("/login/forgot/", handlers.Index)
 	router.POST("/login/forgot/", handlers.Index)
