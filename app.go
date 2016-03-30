@@ -115,7 +115,7 @@ func IsAuthenticated(c *gin.Context) {
 		}
 		if len(us.Username) > 0 {
 			c.Set("isAuthenticated", true)
-			c.Set("defaultReturnUrl", "/home/") // todo
+			c.Set("defaultReturnUrl", us.DefaultReturnUrl()) // todo
 		}
 	}
 	c.Next()

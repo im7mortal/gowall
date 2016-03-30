@@ -138,13 +138,20 @@ func Signup(c *gin.Context) {
 		return
 	}
 
-	collection = d.C("Account")
-	//collection := d.C("restaurants")
-	collection.Create(&mgo.CollectionInfo{})
 
 	ac := schemas.Account{}
 
 	ac.ID = bson.NewObjectId()
+
+	us.Roles.Account = ac.ID
+
+	err = collection.UpdateId(us.ID, us)
+	if err != nil {
+		response.Errors = append(response.Errors, err.Error())
+		response.Fail(c)
+		return
+	}
+
 	if config.RequireAccountVerification {
 		ac.IsVerified = "no"
 	} else {
@@ -154,6 +161,10 @@ func Signup(c *gin.Context) {
 	ac.User.ID = us.ID
 	ac.User.Name = us.Username
 	ac.Search = []string{username}
+
+	collection = d.C("Account")
+	//collection := d.C("restaurants")
+	collection.Create(&mgo.CollectionInfo{})
 	err = collection.Insert(ac)
 	if err != nil {
 		response.Errors = append(response.Errors, err.Error())

@@ -16,8 +16,8 @@ type User struct {// todo uniq
 	Password             string `bson:"password"`
 	Email                string `bson:"email"`
 	Roles                struct {
-						 Admin   mgo.DBRef `bson:"name,omitempty"`
-						 Account mgo.DBRef `bson:"time,omitempty"`
+						 Admin   bson.ObjectId `bson:"name,omitempty"`
+						 Account bson.ObjectId `bson:"time,omitempty"`
 					 } `bson:"roles"`
 
 	IsActive             string `bson:"isActive,omitempty"`
@@ -38,11 +38,10 @@ func (u *User) Flow()  {
 }
 
 func (user *User) CanPlayRoleOf(role string) bool {
-	// len(user.Roles.Admin.Id.(string)) > 0   duck typing  todo something
-	if role == "admin" && len(user.Roles.Admin.Id.(string)) > 0 {
+	if role == "admin" && len(user.Roles.Admin) > 0 {
 	return true;
 	}
-	if  role == "account" && len(user.Roles.Account.Id.(string)) > 0 {
+	if  role == "account" && len(user.Roles.Account) > 0 {
 	return true;
 	}
 	return false
