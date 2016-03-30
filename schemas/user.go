@@ -50,10 +50,10 @@ func (user *User) CanPlayRoleOf(role string) bool {
 func (user *User) DefaultReturnUrl() (returnUrl string) {
 	returnUrl = "/"
 	if user.CanPlayRoleOf("admin") {
-		returnUrl = "/account/"
+		returnUrl = "/admin/"
 	}
 	if user.CanPlayRoleOf("account") {
-		returnUrl = "/admin/"
+		returnUrl = "/account/"
 	}
 	return
 }
