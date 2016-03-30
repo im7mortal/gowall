@@ -152,5 +152,5 @@ func BindRoutes(router *gin.Engine) {
 	router.GET("/account/settings/tumblr/disconnect/", handlers.Index)
 
 	//route not found
-	router.NoRoute(handlers.Index)
+	router.NoRoute(handlers.Status404Render)
 }

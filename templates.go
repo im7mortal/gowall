@@ -18,6 +18,7 @@ func LoadTemplates() {
 	handlers.InitTemplate(defaultTmpl, "/signup/", "views/signup/index.html")
 	handlers.InitTemplate(defaultTmpl, "/login/", "views/login/index.html")
 	handlers.InitTemplate(defaultTmpl, "/login/forgot/", "views/login/forgot/index.html")
+	handlers.InitTemplate(defaultTmpl, "404", "views/http/404.html")
 
 	handlers.InitTemplate(accountTmpl, "/account/", "views/account/index.html")
 	handlers.InitTemplate(accountTmpl, "/account/verification/", "views/account/verification/index.html")

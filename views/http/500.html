@@ -1,0 +1,11 @@
+{{define "head"}}
+<title>Server Error</title>
+{{end}}
+
+{{define "body"}}
+<h1>Server Error</h1>
+<p class="lead">Sorry something went wrong.</p>
+{{if .ErrorDescription}}
+<pre>{{.Stack}}</pre>
+{{end}}
+{{end}}

@@ -4,8 +4,8 @@ block head
   title Server Error
 
 block body
-  h1 Server Error
-  p.lead
-    | Sorry something went wrong.
-  if err.stack
-    pre #{err.stack}
+h1 Server Error
+p.lead
+  | Sorry something went wrong.
+if err.stack
+  pre #{err.stack}
