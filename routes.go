@@ -129,7 +129,7 @@ func BindRoutes(router *gin.Engine) {
 	router.GET("/account/verification/:token/", handlers.Index)
 
 	//account > settings
-	router.GET("/account/settings/", handlers.Index)
+	router.GET("/account/settings/", handlers.AccountSettingsRender)
 	router.PUT("/account/settings/", handlers.Index)
 	router.PUT("/account/settings/identity/", handlers.Index)
 	router.PUT("/account/settings/password/", handlers.Index)

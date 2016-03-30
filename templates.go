@@ -21,6 +21,7 @@ func LoadTemplates() {
 
 	handlers.InitTemplate(accountTmpl, "/account/", "views/account/index.html")
 	handlers.InitTemplate(accountTmpl, "/account/verification/", "views/account/verification/index.html")
+	handlers.InitTemplate(accountTmpl, "/account/settings/", "views/account/settings/index.html")
 
 
 
