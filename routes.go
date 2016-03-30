@@ -38,7 +38,7 @@ func BindRoutes(router *gin.Engine) {
 	router.GET("/login/reset/", handlers.Index)
 	router.GET("/login/reset/:email/:token/", handlers.Index)
 	router.PUT("/login/reset/:email/:token/", handlers.Index)
-	router.GET("/logout/", handlers.Index)
+	router.GET("/logout/", handlers.Logout)
 
 	//social login
 	router.GET("/login/twitter/", handlers.Index)
