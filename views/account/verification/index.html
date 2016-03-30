@@ -1,0 +1,54 @@
+{{define "head"}}
+<title>Verification Required</title>
+{{end}}
+
+{{define "neck"}}
+<link rel='stylesheet' href='/views/account/verification/index.min.css?{{.CacheBreaker}}'>
+{{end}}
+
+{{define "body"}}
+<div class="row">
+	<div class="col-sm-6">
+		<div class="page-header">
+			<h1>Verification Required</h1>
+		</div>
+		<div class="alert alert-warning">Your account is nearly ready. Check your inbox for next steps.</div>
+		<div id="verify"></div>
+	</div>
+	<div class="col-sm-6 special">
+		<div class="page-header">
+			<h1>You're Almost Done</h1>
+		</div><i class="fa fa-key super-awesome"></i>
+	</div>
+</div>
+<script type="text/template" id="tmpl-verify">
+	<form>
+		<div class="alerts"><% _.each(errors, function(err) { %>
+			<div class="alert alert-danger alert-dismissable">
+				<button type="button" data-dismiss="alert" class="close">&times;</button><%- err %>
+			</div><% }); %>
+			<% if (success) { %>
+			<div class="alert alert-info alert-dismissable">
+				<button type="button" data-dismiss="alert" class="close">&times;</button>Verification email successfully re-sent.
+			</div><% } %>
+		</div><% if (!success) { %>
+		<div class="not-received<%= !keepFormOpen ? "" : " not-received-hidden" %>"><a class="btn btn-link btn-resend">I checked my email and spam folder, nothing yet.</a></div>
+		<div class="verify-form<%= keepFormOpen ? "" : " verify-form-hidden" %>">
+		<div class="form-group <%- errfor.email ? "has-error" : "" %>">
+		<label>Your Email:</label>
+		<input type="text" name="email" value="<%= email %>" class="form-control"/><span class="help-block"><%- errfor.email %></span>
+		</div>
+		<div class="form-group">
+			<button type="button" class="btn btn-primary btn-verify">Re-Send Verification</button>
+		</div>
+		</div><% } %>
+	</form>
+</script>
+<script type="text/template" id="data-user">
+	{{.User}}
+</script>
+{{end}}
+
+{{define "feet"}}
+<script src="/views/account/verification/index.min.js?{{.CacheBreaker}}"></script>
+{{end}}

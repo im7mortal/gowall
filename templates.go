@@ -20,6 +20,7 @@ func LoadTemplates() {
 	handlers.InitTemplate(defaultTmpl, "/login/forgot/", "views/login/forgot/index.html")
 
 	handlers.InitTemplate(accountTmpl, "/account/", "views/account/index.html")
+	handlers.InitTemplate(accountTmpl, "/account/verification/", "views/account/verification/index.html")
 
 
 
