@@ -11,6 +11,7 @@ func LoadTemplates() {
 
 	defaultTmpl := "default.html"
 	accountTmpl := "account.html"
+	adminTmpl := "admin.html"
 
 	handlers.InitTemplate(defaultTmpl, "/", "views/index.html")
 	handlers.InitTemplate(defaultTmpl, "/about/", "views/about/index.html")
@@ -23,6 +24,8 @@ func LoadTemplates() {
 	handlers.InitTemplate(accountTmpl, "/account/", "views/account/index.html")
 	handlers.InitTemplate(accountTmpl, "/account/verification/", "views/account/verification/index.html")
 	handlers.InitTemplate(accountTmpl, "/account/settings/", "views/account/settings/index.html")
+
+	handlers.InitTemplate(adminTmpl, "/admin/", "views/admin/index.html")
 
 
 

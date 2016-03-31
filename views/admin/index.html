@@ -1,62 +1,62 @@
 {{define "head"}}
-<title>Account Area</title>
+<title>Admin Area</title>
 {{end}}
 
 {{define "neck"}}
-<link rel='stylesheet' href='/public/views/account/verification/index.min.css?{{.cacheBreaker}}'>
+<link rel='stylesheet' href='/public/views/admin/index.min.css?{{.cacheBreaker}}'>
 {{end}}
 
 {{define "body"}}
 <div class="row">
 	<div class="col-sm-6">
 		<div class="page-header">
-			<h1>My Account</h1>
+			<h1>Admin Area</h1>
 		</div>
 		<div class="row">
 			<div class="col-sm-4">
 				<div class="well stat">
-					<div class="stat-value day-of-year">--</div>
-					<div class="stat-label">Day of Year</div>
+					<div class="stat-value"></div>
+					<div class="stat-label">Users {{.CountStatus}}</div>
 				</div>
 			</div>
 			<div class="col-sm-4">
 				<div class="well stat">
-					<div class="stat-value day-of-month">--</div>
-					<div class="stat-label">Day of Month</div>
+					<div class="stat-value"></div>
+					<div class="stat-label">Accounts {{.CountStatus}}</div>
 				</div>
 			</div>
 			<div class="col-sm-4">
 				<div class="well stat">
-					<div class="stat-value week-of-year">--</div>
-					<div class="stat-label">Week of Year</div>
+					<div class="stat-value"></div>
+					<div class="stat-label">Admins {{.CountStatus}}</div>
 				</div>
 			</div>
 		</div>
 		<div class="row">
 			<div class="col-sm-4">
 				<div class="well stat">
-					<div class="stat-value day-of-week">--</div>
-					<div class="stat-label">Day of Week</div>
+					<div class="stat-value"></div>
+					<div class="stat-label">Groups {{.CountStatus}}</div>
 				</div>
 			</div>
 			<div class="col-sm-4">
 				<div class="well stat">
-					<div class="stat-value week-year">--</div>
-					<div class="stat-label">Week Year</div>
+					<div class="stat-value"></div>
+					<div class="stat-label">Categories {{.CountStatus}}</div>
 				</div>
 			</div>
 			<div class="col-sm-4">
 				<div class="well stat">
-					<div class="stat-value hour-of-day">--</div>
-					<div class="stat-label">Hour of Day</div>
+					<div class="stat-value"></div>
+					<div class="stat-label">Statuses {{.CountStatus}}</div>
 				</div>
 			</div>
 		</div>
 	</div>
 	<div class="col-sm-6 special">
 		<div class="page-header">
-			<h1>Go Faster Everyday</h1>
-		</div><i class="fa fa-dashboard super-awesome"></i>
+			<h1>Super Dashboard</h1>
+		</div><i class="fa fa-gears super-awesome"></i>
 	</div>
 </div>
 {{end}}
