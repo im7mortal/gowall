@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/gin-gonic/contrib/gzip"
-	"github.com/im7mortal/gowall/config"
 	"github.com/gin-gonic/contrib/sessions"
 	//"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
@@ -24,7 +23,7 @@ var Router *gin.Engine
 
 
 func init () {
-	config.Init()
+	InitConfig()
 	store = sessions.NewCookieStore([]byte("MFDQmJQ4TF"))
 	store.Options(sessions.Options{
 		Path: "/",
