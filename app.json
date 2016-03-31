@@ -1,0 +1,9 @@
+{
+  "name": "gowall",
+  "description": "Go Getting Started Example App",
+  "keywords": [],
+  "image": "heroku/go:1.6",
+  "mount_dir": "src/github.com/im7mortal/gowall",
+  "website": "http://github.com/im7mortal/gowall",
+  "repository": "http://github.com/im7mortal/gowall"
+}
