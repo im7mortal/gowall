@@ -96,6 +96,7 @@ func Logined() bool {
 
 
 func IsAuthenticated(c *gin.Context) {
+	isAuthenticated := false
 	sess := sessions.Default(c)
 
 	public := sess.Get("public")
@@ -114,10 +115,28 @@ func IsAuthenticated(c *gin.Context) {
 			println(err.Error())
 		}
 		if len(us.Username) > 0 {
+			isAuthenticated = true
 			c.Set("Logined", true) // todo what is different between "Logined" and "isAuthenticated"
 			c.Set("isAuthenticated", true)
 			c.Set("UserName", us.Username)
+			c.Set("CurUser", us)
 			c.Set("DefaultReturnUrl", us.DefaultReturnUrl()) // todo
+		}
+	}
+	if !isAuthenticated {
+		goToLogin := false
+		if len(c.Request.URL.Path) >= 7 && c.Request.URL.Path[:7] == "/admin/" {
+			goToLogin = true
+		}
+		if len(c.Request.URL.Path) >= 9 && c.Request.URL.Path[:9] == "/account/" {
+			goToLogin = true
+		}
+		if goToLogin {
+			session := sessions.Default(c)
+			session.Set("returnURL", c.Request.URL.Path)
+			session.Save()
+			c.Redirect(http.StatusFound, "/login/")
+			return
 		}
 	}
 	c.Next()

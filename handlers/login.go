@@ -16,8 +16,17 @@ import (
 func LoginRender(c *gin.Context) {
 	_, isAuthenticated := c.Get("isAuthenticated") // non standard way. If exist it isAuthenticated
 	if isAuthenticated {
+		var redirectURL string
 		defaultReturnUrl, _ := c.Get("DefaultReturnUrl")
-		c.Redirect(http.StatusFound, defaultReturnUrl.(string))
+		redirectURL = defaultReturnUrl.(string)
+		sess := sessions.Default(c)
+		returnURL := sess.Get("returnURL")
+		if returnURL != nil {
+			redirectURL = returnURL.(string)
+			sess.Delete("returnURL")
+			sess.Save()
+		}
+		c.Redirect(http.StatusFound, redirectURL)
 	} else {
 		render, _ := TemplateStorage[c.Request.URL.Path]
 
@@ -109,6 +118,7 @@ func Login(c *gin.Context) {
 	if err != nil {
 		println(err.Error())
 	}
+	var returnURL string
 	if len(us.Username) > 0 {
 		err := bcrypt.CompareHashAndPassword([]byte(us.Password), []byte(password))
 		if err != nil {
@@ -118,8 +128,15 @@ func Login(c *gin.Context) {
 		}
 		sess := sessions.Default(c)
 		sess.Set("public", us.ID.Hex())
-		sess.Save()
 		response.Success = true
+		returnURL = sess.Get("returnURL").(string)
+		sess.Delete("returnURL")
+		sess.Save()
 	}
-	c.JSON(http.StatusOK, response)
+
+	if len(returnURL) > 0 {
+		c.Redirect(http.StatusFound, returnURL)
+	} else {
+		c.JSON(http.StatusOK, response)
+	}
 }
