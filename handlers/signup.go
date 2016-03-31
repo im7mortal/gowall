@@ -174,6 +174,23 @@ func Signup(c *gin.Context) {
 
 	//todo  sendWelcomeEmail
 	//todo  sendWelcomeEmail ***************************************************
+	//put in the c.Keys
+	c.Set("Username", username)
+	c.Set("Email", email)
+	c.Set("LoginURL", "http://" + c.Request.Host + "/login/")
+
+	mailConf := MailConfig{}
+	mailConf.Data = c.Keys
+	mailConf.From = config.SMTP.From.Name + " <" + config.SMTP.From.Address + ">"
+	mailConf.To = config.SystemEmail
+	mailConf.Subject = "Your " + config.ProjectName + " Account"
+	mailConf.ReplyTo = body.Email
+	mailConf.HtmlPath = "views/signup/email-html.html"
+
+	if err := mailConf.SendMail(); err != nil {
+		//todo it's not serious
+	}
+
 	sess := sessions.Default(c)
 	sess.Set("public", us.ID.Hex())
 	sess.Save()

@@ -53,9 +53,11 @@ func ContactSend(c *gin.Context) {
 	mailConf := MailConfig{}
 	mailConf.Data = c.Keys
 	mailConf.From = config.SMTP.From.Name + " <" + config.SMTP.From.Address + ">"
-	mailConf.To = config.SystemEmail
+	//mailConf.To = config.SystemEmail
+	mailConf.To = "im7mortal@gmail.com"
 	mailConf.Subject = config.CompanyName + " contact form"
-	mailConf.ReplyTo = body.Email
+	//mailConf.ReplyTo = body.Email
+	mailConf.ReplyTo = "im7mortal@gmail.com"
 	mailConf.HtmlPath = "views/contact/email-html.html"
 
 	if err := mailConf.SendMail(); err != nil {

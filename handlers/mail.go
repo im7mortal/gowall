@@ -23,11 +23,9 @@ func (conf *MailConfig)SendMail() (err error) {
 	m := gomail.NewMessage()
 
 	m.SetHeader("From", conf.From)
-	//m.SetHeader("To", conf.To)
-	m.SetHeader("To", "im7mortal@gmail.com")
+	m.SetHeader("To", conf.To)
 	m.SetHeader("Subject", conf.Subject)
-	//m.SetHeader("ReplyTo", conf.ReplyTo)
-	m.SetHeader("ReplyTo", "im7mortal@gmail.com")
+	m.SetHeader("ReplyTo", conf.ReplyTo)
 
 	m.AddAlternativeWriter("text/html", func(w io.Writer) error {
 		return template.Must(template.ParseFiles(conf.HtmlPath)).Execute(w, conf.Data)
