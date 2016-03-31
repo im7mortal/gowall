@@ -58,8 +58,11 @@ func Init() {
 	SMTP.From.Name = getEnvOrSetDef("SMTP_FROM_NAME", ProjectName + " Website")
 	SMTP.From.Address = getEnvOrSetDef("SMTP_FROM_ADDRESS", "your@email.addy")
 
-	SMTP.Credentials.User = getEnvOrSetDef("SMTP_USERNAME", "your@email.addy")
-	SMTP.Credentials.Password = getEnvOrSetDef("SMTP_PASSWORD", "bl4rg!")
+	//SMTP.Credentials.User = getEnvOrSetDef("SMTP_USERNAME", "your@email.addy")
+	//SMTP.Credentials.Password = getEnvOrSetDef("SMTP_PASSWORD", "bl4rg!")
+
+	SMTP.Credentials.User = getEnvOrSetDef("SMTP_USERNAME", "welcome@sturfee.com")
+	SMTP.Credentials.Password = getEnvOrSetDef("SMTP_PASSWORD", "sturfee_knoxville")
 	SMTP.Credentials.Host = getEnvOrSetDef("SMTP_HOST", "smtp.gmail.com")
 	SMTP.Credentials.SSL = true
 

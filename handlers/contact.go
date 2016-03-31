@@ -4,9 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"github.com/im7mortal/gowall/config"
-	"gopkg.in/gomail.v2"
-	"io"
-	"html/template"
 	"encoding/json"
 )
 
@@ -48,25 +45,20 @@ func ContactSend(c *gin.Context) {
 		return
 	}
 
-	m := gomail.NewMessage()
-
-	m.SetHeader("From", config.SMTP.From.Name + " <" + config.SMTP.From.Address + ">")
-	m.SetHeader("To", config.SystemEmail)
-	m.SetHeader("Subject", config.CompanyName + " contact form")
-	m.SetHeader("ReplyTo", body.Email)
-
 	//put in the c.Keys
 	c.Set("Name", body.Name)
 	c.Set("Email", body.Email)
 	c.Set("Message", body.Message)
 
-	m.AddAlternativeWriter("text/html", func(w io.Writer) error {
-		return template.Must(template.ParseFiles("views/contact/email-html.html")).Execute(w, c.Keys)
-	})
+	mailConf := MailConfig{}
+	mailConf.Data = c.Keys
+	mailConf.From = config.SMTP.From.Name + " <" + config.SMTP.From.Address + ">"
+	mailConf.To = config.SystemEmail
+	mailConf.Subject = config.CompanyName + " contact form"
+	mailConf.ReplyTo = body.Email
+	mailConf.HtmlPath = "views/contact/email-html.html"
 
-	d := gomail.NewDialer(config.SMTP.Credentials.Host, 587, config.SMTP.Credentials.User, config.SMTP.Credentials.Password)
-
-	if err := d.DialAndSend(m); err != nil {
+	if err := mailConf.SendMail(); err != nil {
 		response.Errors = append(response.Errors, "Error Sending: " + err.Error())
 		response.Fail(c)
 		return
