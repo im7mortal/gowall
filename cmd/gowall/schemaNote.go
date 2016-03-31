@@ -1,14 +1,13 @@
-package schemas
+package main
 
 import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
-type StatusLog struct {
+type Note struct {
 	ID bson.ObjectId `bson:"_id,omitempty"`
-	ID_ mgo.DBRef `bson:"id"`
-	Name string `bson:"name"`
+	Data string `bson:"data"`
 	UserCreated struct{
 		   ID mgo.DBRef `bson:"id"`
 		   Name string `bson:"name"`

@@ -2,7 +2,6 @@ package main
 
 import (
 	"gopkg.in/mgo.v2"
-	"github.com/im7mortal/gowall/schemas"
 	//"gopkg.in/mgo.v2/bson"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -30,21 +29,21 @@ func init() {
 
 
 
-	err = c.EnsureIndex(schemas.UserIndex)
+	err = c.EnsureIndex(UserIndex)
 	if err != nil {
 		println(err.Error())
 	}
 
-	err = c.Insert(schemas.User{Username:"valera", ID: bson.NewObjectId()})
+	err = c.Insert(User{Username:"valera", ID: bson.NewObjectId()})
 	if err != nil {
 		println(err.Error())
 	}
-	us := schemas.User{}
+	us := User{}
 	_ = c.Find(bson.M{"username": "valera"}).One(&us)
 
 	println(us.ID.Hex())
 
-	acc := schemas.Account{ID: bson.NewObjectId()}
+	acc := Account{ID: bson.NewObjectId()}
 	/*
 	acc.User.ID = mgo.DBRef{
 		Id: us.ID,

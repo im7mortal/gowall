@@ -5,13 +5,12 @@ import (
 	"net/http"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"github.com/im7mortal/gowall/schemas"
 	"github.com/gin-gonic/contrib/sessions"
 	"encoding/json"
 	"net/url"
 )
 
-func Account(c *gin.Context) {
+func AccountRender(c *gin.Context) {
 	render, _ := TemplateStorage[c.Request.URL.Path]
 	render.Data = c.Keys
 	c.Render(http.StatusOK, render)
@@ -34,7 +33,7 @@ func AccountSettingsRender(c *gin.Context) {
 	}
 	d := session.DB("test")
 	collection := d.C("User")
-	us := schemas.User{} // todo pool
+	us := User{} // todo pool
 	err = collection.FindId(bson.ObjectIdHex(public.(string))).One(&us)
 	if err != nil {
 		println(err.Error())
@@ -48,7 +47,7 @@ func AccountSettingsRender(c *gin.Context) {
 		c.Set("User", url.QueryEscape(string(User)))
 	}
 	collection = d.C("Account")
-	ac := schemas.Account{} // todo pool
+	ac := Account{} // todo pool
 	err = collection.FindId(bson.ObjectIdHex(us.Roles.Account.Hex())).One(&ac)
 	if err != nil {
 		println(err.Error())

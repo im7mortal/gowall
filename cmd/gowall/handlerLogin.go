@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"strings"
 	"gopkg.in/mgo.v2"
-	"github.com/im7mortal/gowall/schemas"
 	"gopkg.in/mgo.v2/bson"
 	"golang.org/x/crypto/bcrypt"
 	"github.com/gin-gonic/contrib/sessions"
@@ -102,7 +101,7 @@ func Login(c *gin.Context) {
 	d := session.DB("test")
 	collection := d.C("LoginAttempt")
 	collection.Create(&mgo.CollectionInfo{})
-	at := schemas.LoginAttempt{} // todo pool
+	at := LoginAttempt{} // todo pool
 	at.ID = bson.NewObjectId()
 	at.IP = c.ClientIP()
 	at.User = username
@@ -112,7 +111,7 @@ func Login(c *gin.Context) {
 	}
 
 	collection = d.C("User")
-	us := schemas.User{}
+	us := User{}
 	err = collection.Find(bson.M{"username": username}).One(&us)
 	if err != nil {
 		println(err.Error())

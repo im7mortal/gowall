@@ -7,7 +7,6 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"strings"
-	"github.com/im7mortal/gowall/schemas"
 	"encoding/json"
 	"golang.org/x/crypto/bcrypt"
 	"github.com/gin-gonic/contrib/sessions"
@@ -98,7 +97,7 @@ func Signup(c *gin.Context) {
 	collection := d.C("User")
 	//collection := d.C("restaurants")
 	collection.Create(&mgo.CollectionInfo{})
-	us := schemas.User{} // todo pool
+	us := User{} // todo pool
 	err = collection.Find(bson.M{"$or": []bson.M{bson.M{"username": username}, bson.M{"email": email}}}).One(&us)
 	if err != nil {
 		println(err.Error())
@@ -137,8 +136,7 @@ func Signup(c *gin.Context) {
 		return
 	}
 
-
-	ac := schemas.Account{}
+	ac := Account{}
 
 	ac.ID = bson.NewObjectId()
 

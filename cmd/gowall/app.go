@@ -10,7 +10,6 @@ import (
 	//"log"
 	"net/http"
 	"gopkg.in/mgo.v2"
-	"github.com/im7mortal/gowall/schemas"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -108,7 +107,7 @@ func IsAuthenticated(c *gin.Context) {
 		}
 		d := session.DB("test")
 		collection := d.C("User")
-		us := schemas.User{}
+		us := User{}
 		err = collection.Find(bson.M{"_id": bson.ObjectIdHex(public.(string))}).One(&us)
 		if err != nil {
 			println(err.Error())
