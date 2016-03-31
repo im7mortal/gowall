@@ -1,10 +1,9 @@
-package handlers
+package main
 
 import (
-"gopkg.in/gomail.v2"
-"github.com/im7mortal/gowall/config"
+	"gopkg.in/gomail.v2"
 	"io"
-"html/template"
+	"html/template"
 )
 
 //import "gopkg.in/gomail.v2"

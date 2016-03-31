@@ -1,4 +1,4 @@
-package handlers
+package main
 
 import (
 	"github.com/gin-gonic/gin"
@@ -7,7 +7,6 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"strings"
-	"github.com/im7mortal/gowall/config"
 	"github.com/im7mortal/gowall/schemas"
 	"encoding/json"
 	"golang.org/x/crypto/bcrypt"

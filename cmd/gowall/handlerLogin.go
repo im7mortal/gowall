@@ -1,9 +1,8 @@
-package handlers
+package main
 
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"github.com/im7mortal/gowall/config"
 	"encoding/json"
 	"strings"
 	"gopkg.in/mgo.v2"

@@ -7,13 +7,13 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-const url  = "mongodb://localhost:27017"
+const urlMONGO  = "mongodb://localhost:27017"
 
 
 
 func init() {
 
-	session, err := mgo.Dial(url)
+	session, err := mgo.Dial(urlMONGO)
 	defer session.Close()
 	if err != nil {
 		println(err.Error())
