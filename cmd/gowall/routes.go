@@ -52,70 +52,71 @@ func BindRoutes(router *gin.Engine) {
 	router.GET("/login/tumblr/callback/", Index)
 
 	//admin
-	//app.all('/admin*', ensureAuthenticated); TODO necessary midleware
-	//app.all('/admin*', ensureAdmin);
-	router.GET("/admin/", Index)
+	admin := router.Group("/admin")
+	//admin.Use(EnsureAuthenticated)
+	//admin.Use(ensureAdmin)
+	{
+		admin.GET("/admin/", Index)
 
-	//admin > users
-	router.GET("/admin/users/", Index)
-	router.POST("/admin/users/", Index)
-	router.GET("/admin/users/:id/", Index)
-	router.PUT("/admin/users/:id/", Index)
-	router.PUT("/admin/users/:id/password/", Index)
-	router.PUT("/admin/users/:id/role-admin/", Index)
-	router.DELETE("/admin/users/:id/role-admin/", Index)
-	router.PUT("/admin/users/:id/role-account/", Index)
-	router.DELETE("/admin/users/:id/role-account/", Index)
-	router.DELETE("/admin/users/:id/", Index)
+		//admin > users
+		admin.GET("/users/", Index)
+		admin.POST("/users/", Index)
+		admin.GET("/users/:id/", Index)
+		admin.PUT("/users/:id/", Index)
+		admin.PUT("/users/:id/password/", Index)
+		admin.PUT("/users/:id/role-admin/", Index)
+		admin.DELETE("/users/:id/role-admin/", Index)
+		admin.PUT("/users/:id/role-account/", Index)
+		admin.DELETE("/users/:id/role-account/", Index)
+		admin.DELETE("/users/:id/", Index)
 
-	//admin > administrators
-	router.GET("/admin/administrators/", Index)
-	router.POST("/admin/administrators/", Index)
-	router.GET("/admin/administrators/:id/", Index)
-	router.PUT("/admin/administrators/:id/", Index)
-	router.PUT("/admin/administrators/:id/permissions/", Index)
-	router.PUT("/admin/administrators/:id/groups/", Index)
-	router.PUT("/admin/administrators/:id/user/", Index)
-	router.DELETE("/admin/administrators/:id/user/", Index)
-	router.DELETE("/admin/administrators/:id/", Index)
+		//admin > administrators
+		admin.GET("/administrators/", Index)
+		admin.POST("/administrators/", Index)
+		admin.GET("/administrators/:id/", Index)
+		admin.PUT("/administrators/:id/", Index)
+		admin.PUT("/administrators/:id/permissions/", Index)
+		admin.PUT("/administrators/:id/groups/", Index)
+		admin.PUT("/administrators/:id/user/", Index)
+		admin.DELETE("/administrators/:id/user/", Index)
+		admin.DELETE("/administrators/:id/", Index)
 
-	//admin > admin groups
-	router.GET("/admin/admin-groups/", Index)
-	router.POST("/admin/admin-groups/", Index)
-	router.GET("/admin/admin-groups/:id/", Index)
-	router.PUT("/admin/admin-groups/:id/", Index)
-	router.PUT("/admin/admin-groups/:id/permissions/", Index)
-	router.DELETE("/admin/admin-groups/:id/", Index)
+		//admin > admin groups
+		admin.GET("/admin-groups/", Index)
+		admin.POST("/admin-groups/", Index)
+		admin.GET("/admin-groups/:id/", Index)
+		admin.PUT("/admin-groups/:id/", Index)
+		admin.PUT("/admin-groups/:id/permissions/", Index)
+		admin.DELETE("/admin-groups/:id/", Index)
 
-	//admin > accounts
-	router.GET("/admin/accounts/", Index)
-	router.POST("/admin/accounts/", Index)
-	router.GET("/admin/accounts/:id/", Index)
-	router.PUT("/admin/accounts/:id/", Index)
-	router.PUT("/admin/accounts/:id/user/", Index)
-	router.DELETE("/admin/accounts/:id/user/", Index)
-	router.POST("/admin/accounts/:id/notes/", Index)
-	router.POST("/admin/accounts/:id/status/", Index)
-	router.DELETE("/admin/accounts/:id/", Index)
+		//admin > accounts
+		admin.GET("/accounts/", Index)
+		admin.POST("/accounts/", Index)
+		admin.GET("/accounts/:id/", Index)
+		admin.PUT("/accounts/:id/", Index)
+		admin.PUT("/accounts/:id/user/", Index)
+		admin.DELETE("/accounts/:id/user/", Index)
+		admin.POST("/accounts/:id/notes/", Index)
+		admin.POST("/accounts/:id/status/", Index)
+		admin.DELETE("/accounts/:id/", Index)
 
+		//admin > statuses
+		admin.GET("/statuses/", Index)
+		admin.POST("/statuses/", Index)
+		admin.GET("/statuses/:id/", Index)
+		admin.PUT("/statuses/:id/", Index)
+		admin.DELETE("/statuses/:id/", Index)
 
-	//admin > statuses
-	router.GET("/admin/statuses/", Index)
-	router.POST("/admin/statuses/", Index)
-	router.GET("/admin/statuses/:id/", Index)
-	router.PUT("/admin/statuses/:id/", Index)
-	router.DELETE("/admin/statuses/:id/", Index)
+		//admin > categories
+		admin.GET("/categories/", Index)
+		admin.POST("/categories/", Index)
+		admin.GET("/categories/:id/", Index)
+		admin.PUT("/categories/:id/", Index)
+		admin.DELETE("/categories/:id/", Index)
 
-
-	//admin > categories
-	router.GET("/admin/categories/", Index)
-	router.POST("/admin/categories/", Index)
-	router.GET("/admin/categories/:id/", Index)
-	router.PUT("/admin/categories/:id/", Index)
-	router.DELETE("/admin/categories/:id/", Index)
-
-	//admin > search
-	router.GET("/admin/search/", Index)
+		//admin > search
+		admin.GET("/search/", Index)
+	}
 
 	//account
 	account := router.Group("/account")
