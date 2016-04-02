@@ -119,7 +119,7 @@ func BindRoutes(router *gin.Engine) {
 
 	//account
 	account := router.Group("/account")
-	//account.Use(ensureAuthenticated)
+	//account.Use(EnsureAuthenticated)
 	//account.Use(ensureAccount)
 	{
 		account.GET("/", AccountRender)
