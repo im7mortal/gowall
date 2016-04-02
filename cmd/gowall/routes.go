@@ -118,37 +118,40 @@ func BindRoutes(router *gin.Engine) {
 	router.GET("/admin/search/", Index)
 
 	//account
-	//app.all('/account*', ensureAuthenticated); //TODO necessary midleware
-	//app.all('/account*', ensureAccount);
-	router.GET("/account/", AccountRender)
+	account := router.Group("/account")
+	//account.Use(ensureAuthenticated)
+	//account.Use(ensureAccount)
+	{
+		account.GET("/", AccountRender)
 
-	//account > verification
-	router.GET("/account/verification/", AccountVerification)
-	router.POST("/account/verification/", Index)
-	router.GET("/account/verification/:token/", Index)
+		//account > verification
+		account.GET("/verification/", AccountVerification)
+		account.POST("/verification/", Index)
+		account.GET("/verification/:token/", Index)
 
-	//account > settings
-	router.GET("/account/settings/", AccountSettingsRender)
-	router.PUT("/account/settings/", Index)
-	router.PUT("/account/settings/identity/", Index)
-	router.PUT("/account/settings/password/", Index)
+		//account > settings
+		account.GET("/settings/", AccountSettingsRender)
+		account.PUT("/settings/", Index)
+		account.PUT("/settings/identity/", Index)
+		account.PUT("/settings/password/", Index)
 
-	//account > settings > social
-	router.GET("/account/settings/twitter/", Index)
-	router.GET("/account/settings/twitter/callback/", Index)
-	router.GET("/account/settings/twitter/disconnect/", Index)
-	router.GET("/account/settings/github/", Index)
-	router.GET("/account/settings/github/callback/", Index)
-	router.GET("/account/settings/github/disconnect/", Index)
-	router.GET("/account/settings/facebook/", Index)
-	router.GET("/account/settings/facebook/callback/", Index)
-	router.GET("/account/settings/facebook/disconnect/", Index)
-	router.GET("/account/settings/google/", Index)
-	router.GET("/account/settings/google/callback/", Index)
-	router.GET("/account/settings/google/disconnect/", Index)
-	router.GET("/account/settings/tumblr/", Index)
-	router.GET("/account/settings/tumblr/callback/", Index)
-	router.GET("/account/settings/tumblr/disconnect/", Index)
+		//account > settings > social
+		account.GET("/settings/twitter/", Index)
+		account.GET("/settings/twitter/callback/", Index)
+		account.GET("/settings/twitter/disconnect/", Index)
+		account.GET("/settings/github/", Index)
+		account.GET("/settings/github/callback/", Index)
+		account.GET("/settings/github/disconnect/", Index)
+		account.GET("/settings/facebook/", Index)
+		account.GET("/settings/facebook/callback/", Index)
+		account.GET("/settings/facebook/disconnect/", Index)
+		account.GET("/settings/google/", Index)
+		account.GET("/settings/google/callback/", Index)
+		account.GET("/settings/google/disconnect/", Index)
+		account.GET("/settings/tumblr/", Index)
+		account.GET("/settings/tumblr/callback/", Index)
+		account.GET("/settings/tumblr/disconnect/", Index)
+	}
 
 	//route not found
 	router.NoRoute(Status404Render)
