@@ -4,10 +4,17 @@ import (
 	"gopkg.in/mgo.v2"
 	"time"
 	"gopkg.in/mgo.v2/bson"
+	"sync"
 )
 
 type vendorOauth struct {
 
+}
+
+var UsersPool = sync.Pool{
+	New: func() interface{} {
+		return &User{}
+	},
 }
 
 type User struct {// todo uniq
