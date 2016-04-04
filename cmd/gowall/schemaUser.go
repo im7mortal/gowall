@@ -54,7 +54,7 @@ func (user *User) CanPlayRoleOf(role string) bool {
 	return false
 }
 
-func (user *User) DefaultReturnUrl() (returnUrl string) {
+func (user *User) DefaultReturnUrl() (returnUrl string) {// TODO  admin isn't possible
 	returnUrl = "/"
 	if user.CanPlayRoleOf("admin") {
 		returnUrl = "/admin/"

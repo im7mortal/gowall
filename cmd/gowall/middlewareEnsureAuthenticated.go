@@ -6,11 +6,14 @@ import (
 "gopkg.in/mgo.v2"
 "gopkg.in/mgo.v2/bson"
 	"net/http"
+	"regexp"
 )
 
 const MONGOURL  = "mongodb://localhost:27017"
 const DBNAME  = "test"
-const USERTABLE  = "User"
+const USERS  = "users"
+const LOGINATTEMPTS  = "loginattempts"
+const ACCOUNTS  = "accounts"
 
 func EnsureAuthenticated(c *gin.Context) {
 	isAuthenticated, _ := c.Get("isAuthenticated")
@@ -22,6 +25,55 @@ func EnsureAuthenticated(c *gin.Context) {
 		session.Save()
 		c.Redirect(http.StatusFound, "/login/")
 	}
+}
+
+func getUser(c *gin.Context) (user *User, ok bool) {
+	if _user, _ok := c.Get("User"); _ok {
+		user, ok = _user.(*User)
+	}
+	return
+}
+
+func getAccount(c *gin.Context) (account *Account, ok bool) {
+	if _account, _ok := c.Get("Account"); _ok {
+		account, ok = _account.(*Account)
+	}
+	return
+}
+
+func EnsureAccount(c *gin.Context) {
+	if user, ok := getUser(c); ok {
+		if ok = user.CanPlayRoleOf("account"); ok {
+			account := Account{}
+			session, _ := mgo.Dial(MONGOURL)
+			defer session.Close()
+			collection := session.DB(DBNAME).C(ACCOUNTS)
+			println()
+			collection.Find(bson.M{"_id": user.Roles.Account}).One(&account)
+			c.Set("Account", account)
+			if config.RequireAccountVerification {
+				if account.IsVerified != "yes" {
+					r, _ := regexp.MatchString(`^\/account\/verification\/`, c.Request.URL.Path)
+					if !r {
+						c.Redirect(http.StatusFound, "/account/verification/")
+					}
+				}
+			}
+			c.Next()
+			return
+		}
+	}
+	c.Redirect(http.StatusFound, "/")
+}
+
+func EnsureAdmin(c *gin.Context) {
+	if user, ok := getUser(c); ok {
+		if ok = user.CanPlayRoleOf("admin"); ok {
+			c.Next()
+			return
+		}
+	}
+	c.Redirect(http.StatusFound, "/")
 }
 
 func IsAuthenticated(c *gin.Context) {
@@ -37,9 +89,8 @@ func IsAuthenticated(c *gin.Context) {
 		if err != nil {
 			println(err.Error())
 		}
-		collection := session.DB(DBNAME).C(USERTABLE)
-		us := UsersPool.Get().(*User)
-		defer UsersPool.Put(us)
+		collection := session.DB(DBNAME).C(USERS)
+		us := User{}
 		err = collection.Find(bson.M{"_id": bson.ObjectIdHex(public.(string))}).One(&us)
 		if err != nil {
 			println(err.Error())
@@ -48,7 +99,7 @@ func IsAuthenticated(c *gin.Context) {
 			c.Set("Logined", true) // todo what is different between "Logined" and "isAuthenticated"
 			c.Set("isAuthenticated", true)
 			c.Set("UserName", us.Username)
-			c.Set("CurUser", us)
+			c.Set("User", &us)
 			c.Set("DefaultReturnUrl", us.DefaultReturnUrl()) // todo
 		}
 	}

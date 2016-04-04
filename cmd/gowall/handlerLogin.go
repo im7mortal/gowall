@@ -99,7 +99,7 @@ func Login(c *gin.Context) {
 		println(err.Error())
 	}
 	d := session.DB("test")
-	collection := d.C("LoginAttempt")
+	collection := d.C(LOGINATTEMPTS)
 	collection.Create(&mgo.CollectionInfo{})
 	at := LoginAttempt{} // todo pool
 	at.ID = bson.NewObjectId()
@@ -110,7 +110,7 @@ func Login(c *gin.Context) {
 		println(err.Error())
 	}
 
-	collection = d.C("User")
+	collection = d.C(USERS)
 	us := User{}
 	err = collection.Find(bson.M{"username": username}).One(&us)
 	if err != nil {

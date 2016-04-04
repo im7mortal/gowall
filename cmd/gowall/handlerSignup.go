@@ -94,8 +94,7 @@ func Signup(c *gin.Context) {
 		println(err.Error())
 	}
 	d := session.DB("test")
-	collection := d.C("User")
-	//collection := d.C("restaurants")
+	collection := d.C(USERS)
 	collection.Create(&mgo.CollectionInfo{})
 	us := User{} // todo pool
 	err = collection.Find(bson.M{"$or": []bson.M{bson.M{"username": username}, bson.M{"email": email}}}).One(&us)
@@ -159,8 +158,7 @@ func Signup(c *gin.Context) {
 	ac.User.Name = us.Username
 	ac.Search = []string{username}
 
-	collection = d.C("Account")
-	//collection := d.C("restaurants")
+	collection = d.C(ACCOUNTS)
 	collection.Create(&mgo.CollectionInfo{})
 	err = collection.Insert(ac)
 	if err != nil {

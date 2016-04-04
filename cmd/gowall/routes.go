@@ -54,7 +54,7 @@ func BindRoutes(router *gin.Engine) {
 	//admin
 	admin := router.Group("/admin")
 	admin.Use(EnsureAuthenticated)
-	//admin.Use(ensureAdmin)
+	admin.Use(EnsureAdmin)
 	{
 		admin.GET("/admin/", Index)
 
@@ -121,7 +121,7 @@ func BindRoutes(router *gin.Engine) {
 	//account
 	account := router.Group("/account")
 	account.Use(EnsureAuthenticated)
-	//account.Use(ensureAccount)
+	account.Use(EnsureAccount)
 	{
 		account.GET("/", AccountRender)
 

@@ -1,15 +1,16 @@
 package main
 
 import (
-	"gopkg.in/mgo.v2"
+	//"gopkg.in/mgo.v2"
 	//"gopkg.in/mgo.v2/bson"
-	"gopkg.in/mgo.v2/bson"
+	//"gopkg.in/mgo.v2/bson"
 )
 
 const urlMONGO  = "mongodb://localhost:27017"
 
 
 
+/*
 func init() {
 
 	session, err := mgo.Dial(urlMONGO)
@@ -44,13 +45,15 @@ func init() {
 	println(us.ID.Hex())
 
 	acc := Account{ID: bson.NewObjectId()}
-	/*
+	*/
+/*
 	acc.User.ID = mgo.DBRef{
 		Id: us.ID,
 		Collection: c.Name,
 		Database: d.Name,
 	}
-	*/
+	*//*
+
 	err = c.Insert(acc)
 	if err != nil {
 		println(err.Error())
@@ -62,4 +65,4 @@ func init() {
 	println(i)
 	println("dddddddddddddddddddddddddddddddddddddddddd")
 
-}
+}*/
