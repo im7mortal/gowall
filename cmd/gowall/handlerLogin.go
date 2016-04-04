@@ -12,8 +12,8 @@ import (
 )
 
 func LoginRender(c *gin.Context) {
-	_, isAuthenticated := c.Get("isAuthenticated") // non standard way. If exist it isAuthenticated
-	if isAuthenticated {
+	isAuthenticated, _ := c.Get("isAuthenticated")
+	if is, ok := isAuthenticated.(bool); ok && is {
 		var redirectURL string
 		defaultReturnUrl, _ := c.Get("DefaultReturnUrl")
 		redirectURL = defaultReturnUrl.(string)

@@ -35,6 +35,8 @@ func main() {
 	Router = gin.Default()
 	Router.Use(gzip.Gzip(gzip.DefaultCompression))
 
+	Router.Static("/public", "public")
+	Router.Static("/vendor", "vendor") // todo not good. conflict with go project structure
 
 	LoadTemplates()
 
@@ -50,7 +52,6 @@ func main() {
 	}))*/
 
 	Router.Use(sessions.Sessions("session", store))
-	Router.Use(IsAuthenticated)
 	Router.Use(func(c *gin.Context) {
 		c.Set("ProjectName", config.ProjectName)
 		c.Set("CopyrightYear", "2016") // todo
@@ -58,11 +59,7 @@ func main() {
 		c.Set("CacheBreaker", "br34k-01")
 		c.Next()
 	})
-
-	Router.Static("/public", "public")
-	Router.Static("/vendor", "vendor")
-	Router.Static("/views", "views") // todo not good
-
+	Router.Use(IsAuthenticated)
 	BindRoutes(Router) // --> cmd/go-getting-started/routers.go
 
 	Router.Run(":" + config.Port)
