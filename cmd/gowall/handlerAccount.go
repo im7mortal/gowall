@@ -81,6 +81,26 @@ func AccountVerificationRender(c *gin.Context) {
 	c.Render(http.StatusOK, render)
 }
 
+func Verify (c *gin.Context) {
+
+	account, _ := getAccount(c)
+	user, _ := getUser(c)
+	err := bcrypt.CompareHashAndPassword([]byte(account.VerificationToken), []byte(c.Param("token")))
+	if err == nil {
+		session, err := mgo.Dial("mongodb://localhost:27017")
+		defer session.Close()
+		if err != nil {
+			println(err.Error())
+		}
+		d := session.DB("test")
+		collection := d.C(ACCOUNTS)
+		account.VerificationToken = ""
+		account.IsVerified = "yes"
+		collection.UpdateId(account.ID, account)
+	}
+	c.Redirect(http.StatusFound, user.DefaultReturnUrl())
+}
+
 func AccountSettingsRender(c *gin.Context) {
 	sess := sessions.Default(c)
 

@@ -128,7 +128,7 @@ func BindRoutes(router *gin.Engine) {
 		//account > verification
 		account.GET("/verification/", AccountVerificationRender)
 		account.POST("/verification/", Index)
-		account.GET("/verification/:token/", Index)
+		account.GET("/verification/:token/", Verify)
 
 		//account > settings
 		account.GET("/settings/", AccountSettingsRender)
