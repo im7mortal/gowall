@@ -14,6 +14,10 @@ const DBNAME  = "test"
 const USERS  = "users"
 const LOGINATTEMPTS  = "loginattempts"
 const ACCOUNTS  = "accounts"
+const ADMINGROUPS  = "admingroups"
+const CATEGORIES  = "categories"
+const STATUS  = "status"
+const ADMINS  = "admins"
 
 func EnsureAuthenticated(c *gin.Context) {
 	isAuthenticated, _ := c.Get("isAuthenticated")

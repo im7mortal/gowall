@@ -29,6 +29,33 @@ func generateToken1(n int) []byte {
 
 func AdminRender(c *gin.Context) {
 	render, _ := TemplateStorage[c.Request.URL.Path]
+
+	// TODO
+	session, err := mgo.Dial("mongodb://localhost:27017")
+	defer session.Close()
+	if err != nil {
+		println(err.Error())
+	}
+	d := session.DB("test")
+	collection := d.C(ACCOUNTS)
+	count, _ := collection.Count()
+	c.Set("CountAccount", count)
+	collection = d.C(USERS)
+	count, _ = collection.Count()
+	c.Set("CountUser", count)
+	collection = d.C(ADMINS)
+	count, _ = collection.Count()
+	c.Set("CountAdmin", count)
+	collection = d.C(ADMINGROUPS)
+	count, _ = collection.Count()
+	c.Set("CountAdminGroup", count)
+	collection = d.C(CATEGORIES)
+	count, _ = collection.Count()
+	c.Set("CountCategory", count)
+	collection = d.C(STATUS)
+	count, _ = collection.Count()
+	c.Set("CountStatus", count)
+
 	render.Data = c.Keys
 	c.Render(http.StatusOK, render)
 }

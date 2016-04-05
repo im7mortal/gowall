@@ -16,19 +16,19 @@
 			<div class="col-sm-4">
 				<div class="well stat">
 					<div class="stat-value"></div>
-					<div class="stat-label">Users {{.CountStatus}}</div>
+					<div class="stat-label">Users {{.CountUser}}</div>
 				</div>
 			</div>
 			<div class="col-sm-4">
 				<div class="well stat">
 					<div class="stat-value"></div>
-					<div class="stat-label">Accounts {{.CountStatus}}</div>
+					<div class="stat-label">Accounts {{.CountAccount}}</div>
 				</div>
 			</div>
 			<div class="col-sm-4">
 				<div class="well stat">
 					<div class="stat-value"></div>
-					<div class="stat-label">Admins {{.CountStatus}}</div>
+					<div class="stat-label">Admins {{.CountAdmin}}</div>
 				</div>
 			</div>
 		</div>
@@ -36,13 +36,13 @@
 			<div class="col-sm-4">
 				<div class="well stat">
 					<div class="stat-value"></div>
-					<div class="stat-label">Groups {{.CountStatus}}</div>
+					<div class="stat-label">Groups {{.CountAdminGroup}}</div>
 				</div>
 			</div>
 			<div class="col-sm-4">
 				<div class="well stat">
 					<div class="stat-value"></div>
-					<div class="stat-label">Categories {{.CountStatus}}</div>
+					<div class="stat-label">Categories {{.CountCategory}}</div>
 				</div>
 			</div>
 			<div class="col-sm-4">
@@ -56,11 +56,8 @@
 	<div class="col-sm-6 special">
 		<div class="page-header">
 			<h1>Super Dashboard</h1>
-		</div><i class="fa fa-gears super-awesome"></i>
+		</div>
+		<i class="fa fa-gears super-awesome"></i>
 	</div>
 </div>
-{{end}}
-
-{{define "feet"}}
-<script src='/public/views/account/verification/index.js?#{cacheBreaker}'></script>
 {{end}}
