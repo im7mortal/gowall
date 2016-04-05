@@ -11,6 +11,8 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"golang.org/x/crypto/bcrypt"
+	"regexp"
+"strings"
 )
 
 func generateToken(n int) []byte {
@@ -35,7 +37,7 @@ func AccountVerificationRender(c *gin.Context) {
 	account, _ := getAccount(c)
 	user, _ := getUser(c)
 	if account.IsVerified == "yes" {
-		c.HTML(http.StatusOK, user.DefaultReturnUrl(), c.Keys)
+		c.Redirect(http.StatusFound, user.DefaultReturnUrl())
 		return
 	}
 	if len(account.VerificationToken) > 0 {
@@ -99,6 +101,90 @@ func Verify (c *gin.Context) {
 		collection.UpdateId(account.ID, account)
 	}
 	c.Redirect(http.StatusFound, user.DefaultReturnUrl())
+}
+
+func ResendVerification (c *gin.Context) {
+	account, _ := getAccount(c)
+	user, _ := getUser(c)
+	if account.IsVerified == "yes" {
+		c.HTML(http.StatusOK, user.DefaultReturnUrl(), c.Keys)
+		return
+	}
+	response := Response{} // todo sync.Pool
+	response.Errors = []string{}
+	response.ErrFor = make(map[string]string)
+	defer response.Recover(c)
+
+	var body struct {
+		Username    string  `json:"username"`
+		Email   string  `json:"email"`
+		Password string  `json:"password"`
+	}
+	decoder := json.NewDecoder(c.Request.Body)
+	err := decoder.Decode(&body)
+
+	email := strings.ToLower(body.Email)
+	if len(email) == 0 {
+		response.ErrFor["email"] = "required"
+	} else {
+		r, err := regexp.MatchString(`^[a-zA-Z0-9\-\_\.\+]+@[a-zA-Z0-9\-\_\.]+\.[a-zA-Z0-9\-\_]+$`, email)
+		if err != nil {
+			println(err.Error())
+		}
+		if !r {
+			response.ErrFor["email"] = `invalid email format`
+		}
+	}
+	if response.HasErrors() {
+		response.Fail(c)
+		return
+	}
+	session, err := mgo.Dial("mongodb://localhost:27017")
+	defer session.Close()
+	if err != nil {
+		println(err.Error())
+	}
+	d := session.DB("test")
+	collection := d.C(USERS)
+	{
+		user_ := User{}
+		collection.Find(bson.M{"email": email, "_id": bson.M{"$ne": user.ID}}).One(&user_)
+		if len(user_.Username) > 0 {
+			response.ErrFor["email"] = `email already taken`
+		}
+	}
+	if response.HasErrors() {
+		response.Fail(c)
+		return
+	}
+	user.Email = email
+	collection.UpdateId(user.ID, user)
+
+	collection = d.C(ACCOUNTS)
+	VerifyURL := generateToken(21)
+	hash, err := bcrypt.GenerateFromPassword(VerifyURL, bcrypt.DefaultCost)
+	if err != nil {
+		println(err.Error())
+		return
+	}
+	account.VerificationToken = string(hash)
+	collection.UpdateId(account.ID, account)// todo how to update only part?
+	verifyURL := "http" +"://"+ "localhost:3000" +"/account/verification/" + string(VerifyURL) + "/"
+	c.Set("VerifyURL", verifyURL)
+	mailConf := MailConfig{}
+	mailConf.Data = c.Keys
+	mailConf.From = config.SMTP.From.Name + " <" + config.SMTP.From.Address + ">"
+	mailConf.To = user.Email
+	mailConf.Subject = "Your " + config.ProjectName + " Account"
+	mailConf.ReplyTo = user.Email
+	mailConf.HtmlPath = "views/account/verification/email-html.html"
+
+	if err := mailConf.SendMail(); err != nil {
+		//todo it's not serious
+	}
+
+	response.Success = true
+	c.JSON(http.StatusOK, response)
 }
 
 func AccountSettingsRender(c *gin.Context) {
