@@ -35,6 +35,7 @@ func (r *Response)Fail(c *gin.Context) {
 
 func (r *Response) Recover(c *gin.Context) {
 	if rec := recover(); rec != nil {
+		println("recover!!!!!!")
 		r.Fail(c)
 	}
 }

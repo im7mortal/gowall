@@ -48,9 +48,8 @@ func EnsureAccount(c *gin.Context) {
 			session, _ := mgo.Dial(MONGOURL)
 			defer session.Close()
 			collection := session.DB(DBNAME).C(ACCOUNTS)
-			println()
 			collection.Find(bson.M{"_id": user.Roles.Account}).One(&account)
-			c.Set("Account", account)
+			c.Set("Account", &account)
 			if config.RequireAccountVerification {
 				if account.IsVerified != "yes" {
 					r, _ := regexp.MatchString(`^\/account\/verification\/`, c.Request.URL.Path)
