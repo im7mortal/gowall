@@ -23,8 +23,8 @@ type User struct {// todo uniq
 	Password             string `bson:"password"`
 	Email                string `bson:"email"`
 	Roles                struct {
-						 Admin   bson.ObjectId `bson:"name,omitempty"`
-						 Account bson.ObjectId `bson:"time,omitempty"`
+						 Admin   bson.ObjectId `bson:"admin,omitempty"`
+						 Account bson.ObjectId `bson:"account,omitempty"`
 					 } `bson:"roles"`
 
 	IsActive             string `bson:"isActive,omitempty"`
@@ -46,21 +46,21 @@ func (u *User) Flow()  {
 
 func (user *User) CanPlayRoleOf(role string) bool {
 	if role == "admin" && len(user.Roles.Admin) > 0 {
-	return true;
+		return true;
 	}
-	if  role == "account" && len(user.Roles.Account) > 0 {
-	return true;
+	if role == "account" && len(user.Roles.Account) > 0 {
+		return true;
 	}
 	return false
 }
 
-func (user *User) DefaultReturnUrl() (returnUrl string) {// TODO  admin isn't possible
+func (user *User) DefaultReturnUrl() (returnUrl string) {
 	returnUrl = "/"
-	if user.CanPlayRoleOf("admin") {
-		returnUrl = "/admin/"
-	}
 	if user.CanPlayRoleOf("account") {
 		returnUrl = "/account/"
+	}
+	if user.CanPlayRoleOf("admin") {
+		returnUrl = "/admin/"
 	}
 	return
 }

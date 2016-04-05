@@ -56,7 +56,7 @@ func BindRoutes(router *gin.Engine) {
 	admin.Use(EnsureAuthenticated)
 	admin.Use(EnsureAdmin)
 	{
-		admin.GET("/admin/", Index)
+		admin.GET("/", AdminRender)
 
 		//admin > users
 		admin.GET("/users/", Index)
