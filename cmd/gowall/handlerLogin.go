@@ -127,7 +127,9 @@ func Login(c *gin.Context) {
 		sess := sessions.Default(c)
 		sess.Set("public", us.ID.Hex())
 		response.Success = true
-		returnURL = sess.Get("returnURL").(string)
+		if returnURL_, ok_ := sess.Get("returnURL").(string); ok_ {
+			returnURL = returnURL_
+		}
 		sess.Delete("returnURL")
 		sess.Save()
 	}
