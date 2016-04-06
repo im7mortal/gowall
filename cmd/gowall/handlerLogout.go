@@ -3,13 +3,12 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"github.com/gin-gonic/contrib/sessions"
 )
 
 func Logout(c *gin.Context) {
-	removedCookie := http.Cookie{
-		Name:  "session",
-		MaxAge:   -1,
-	}
-	http.SetCookie(c.Writer, &removedCookie)
-	c.Redirect(http.StatusFound, "/home/")
+	session := sessions.Default(c)
+	session.Delete("public")
+	session.Save()
+	c.Redirect(http.StatusFound, "/")
 }
