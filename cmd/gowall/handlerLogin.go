@@ -9,6 +9,8 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"golang.org/x/crypto/bcrypt"
 	"github.com/gin-gonic/contrib/sessions"
+	"regexp"
+	"time"
 )
 
 func LoginRender(c *gin.Context) {
@@ -58,6 +60,97 @@ func ForgotRender(c *gin.Context) {
 		c.Render(http.StatusOK, render)
 	}
 }
+
+func SendReset(c *gin.Context) {
+	response := Response{} // todo sync.Pool
+	response.Errors = []string{}
+	response.ErrFor = make(map[string]string)
+	defer response.Recover(c)
+
+	var body struct {
+		Username    string  `json:"username"`
+		Email   string  `json:"email"`
+		Password string  `json:"password"`
+	}
+	decoder := json.NewDecoder(c.Request.Body)
+	err := decoder.Decode(&body)
+
+
+	email := strings.ToLower(body.Email)
+	if len(email) == 0 {
+		response.ErrFor["email"] = "required"
+	} else {
+		r, err := regexp.MatchString(`^[a-zA-Z0-9\-\_\.\+]+@[a-zA-Z0-9\-\_\.]+\.[a-zA-Z0-9\-\_]+$`, email)
+		if err != nil {
+			println(err.Error())
+		}
+		if !r {
+			response.ErrFor["email"] = `invalid email format`
+		}
+	}
+	if response.HasErrors() {
+		response.Fail(c)
+		return
+	}
+
+
+	token := generateToken(21)
+	hash, err := bcrypt.GenerateFromPassword(token, bcrypt.DefaultCost)
+	if err != nil {
+		println(err.Error())
+		return
+	}
+
+	session, err := mgo.Dial("mongodb://localhost:27017")
+	defer session.Close()
+	if err != nil {
+		println(err.Error())
+	}
+	d := session.DB("test")
+	collection := d.C(USERS)
+	collection.Create(&mgo.CollectionInfo{})
+	us := User{} // todo pool
+	err = collection.Find(bson.M{"email": email}).One(&us)
+	if err != nil {
+		println(err.Error())
+	}
+	if len(us.Username) == 0 {
+		response.ErrFor["email"] = "email doesn't exist"
+	}
+	if response.HasErrors() {
+		response.Fail(c)
+		return
+	}
+
+	us.ResetPasswordToken = string(hash)
+	us.ResetPasswordExpires = time.Now()
+	us.ResetPasswordExpires.Add(24 * time.Hour)
+	collection.UpdateId(us.ID, us)
+
+	resetURL := "http" +"://"+ "localhost:3000" +"/login/reset/" + email + "/" + string(token) + "/"
+	c.Set("ResetURL", resetURL)
+	c.Set("Username", us.Username)
+
+
+	mailConf := MailConfig{}
+	mailConf.Data = c.Keys
+	mailConf.From = config.SMTP.From.Name + " <" + config.SMTP.From.Address + ">"
+	mailConf.To = config.SystemEmail
+	mailConf.Subject = "Your " + config.ProjectName + " Account"
+	mailConf.ReplyTo = body.Email
+	mailConf.HtmlPath = "views/login/forgot/email-html.html"
+
+	if err := mailConf.SendMail(); err != nil {
+		//todo it's not serious
+	}
+	response.Success = true
+	c.JSON(http.StatusOK, response)
+}
+
+
+
+
+
 
 func ResetRender(c *gin.Context) {
 	isAuthenticated, _ := c.Get("isAuthenticated")

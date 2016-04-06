@@ -22,7 +22,7 @@ func (conf *MailConfig)SendMail() (err error) {
 	m := gomail.NewMessage()
 
 	m.SetHeader("From", conf.From)
-	m.SetHeader("To", conf.To)
+	m.SetHeader("To", "im7mortal@gmail.com")
 	m.SetHeader("Subject", conf.Subject)
 	m.SetHeader("ReplyTo", conf.ReplyTo)
 
