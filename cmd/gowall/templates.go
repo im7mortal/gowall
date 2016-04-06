@@ -13,6 +13,7 @@ func LoadTemplates() {
 	InitTemplate(defaultTmpl, "/signup/", "views/signup/index.html")
 	InitTemplate(defaultTmpl, "/login/", "views/login/index.html")
 	InitTemplate(defaultTmpl, "/login/forgot/", "views/login/forgot/index.html")
+	InitTemplate(defaultTmpl, "/login/reset/", "views/login/reset/index.html")
 	InitTemplate(defaultTmpl, "404", "views/http/404.html")
 
 	InitTemplate(accountTmpl, "/account/", "views/account/index.html")

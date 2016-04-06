@@ -48,8 +48,20 @@ func LoginRender(c *gin.Context) {
 }
 
 func ForgotRender(c *gin.Context) {
-	_, isAuthenticated := c.Get("isAuthenticated") // non standard way. If exist it isAuthenticated
-	if isAuthenticated {
+	isAuthenticated, _ := c.Get("isAuthenticated")
+	if is, ok := isAuthenticated.(bool); ok && is {
+		defaultReturnUrl, _ := c.Get("DefaultReturnUrl")
+		c.Redirect(http.StatusFound, defaultReturnUrl.(string))
+	} else {
+		render, _ := TemplateStorage[c.Request.URL.Path]
+		render.Data = c.Keys
+		c.Render(http.StatusOK, render)
+	}
+}
+
+func ResetRender(c *gin.Context) {
+	isAuthenticated, _ := c.Get("isAuthenticated")
+	if is, ok := isAuthenticated.(bool); ok && is {
 		defaultReturnUrl, _ := c.Get("DefaultReturnUrl")
 		c.Redirect(http.StatusFound, defaultReturnUrl.(string))
 	} else {

@@ -103,7 +103,7 @@ func IsAuthenticated(c *gin.Context) {
 			c.Set("isAuthenticated", true)
 			c.Set("UserName", us.Username)
 			c.Set("User", &us)
-			c.Set("DefaultReturnUrl", us.DefaultReturnUrl()) // todo
+			c.Set("DefaultReturnUrl", us.DefaultReturnUrl())
 		}
 	}
 

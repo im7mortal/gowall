@@ -34,7 +34,7 @@ func BindRoutes(router *gin.Engine) {
 	router.POST("/login/", Login)
 	router.GET("/login/forgot/", ForgotRender)
 	router.POST("/login/forgot/", Index)
-	router.GET("/login/reset/", Index)
+	router.GET("/login/reset/", ResetRender)
 	router.GET("/login/reset/:email/:token/", Index)
 	router.PUT("/login/reset/:email/:token/", Index)
 	router.GET("/logout/", Logout)// todo doesn't work
