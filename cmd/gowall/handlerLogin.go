@@ -123,8 +123,7 @@ func SendReset(c *gin.Context) {
 	}
 
 	us.ResetPasswordToken = string(hash)
-	us.ResetPasswordExpires = time.Now()
-	us.ResetPasswordExpires.Add(24 * time.Hour)
+	us.ResetPasswordExpires = time.Now().Add(24 * time.Hour)
 	collection.UpdateId(us.ID, us)
 
 	resetURL := "http" +"://"+ "localhost:3000" +"/login/reset/" + email + "/" + string(token) + "/"
@@ -158,11 +157,75 @@ func ResetRender(c *gin.Context) {
 		defaultReturnUrl, _ := c.Get("DefaultReturnUrl")
 		c.Redirect(http.StatusFound, defaultReturnUrl.(string))
 	} else {
-		render, _ := TemplateStorage[c.Request.URL.Path]
+		render, _ := TemplateStorage["/login/reset/"] // can't handle /login/reset/:email:token
 		render.Data = c.Keys
 		c.Render(http.StatusOK, render)
 	}
 }
+
+func ResetPassword (c *gin.Context) {
+
+	var body struct {
+		Confirm   string  `json:"confirm"`
+		Password string  `json:"password"`
+	}
+	decoder := json.NewDecoder(c.Request.Body)
+	err := decoder.Decode(&body)
+
+
+	response := Response{} // todo sync.Pool
+	response.Errors = []string{}
+	response.ErrFor = make(map[string]string)
+	defer response.Recover(c)
+
+
+	password := strings.ToLower(body.Password)
+	if len(password) == 0 {
+		response.ErrFor["password"] = "required"
+	}
+	confirm := strings.ToLower(body.Confirm)
+	if len(confirm) == 0 {
+		response.ErrFor["confirm"] = "required"
+	}
+	if confirm != password {
+		response.Errors = append(response.Errors,"Passwords do not match.")
+	}
+	if response.HasErrors() {
+		response.Fail(c)
+		return
+	}
+
+	session, err := mgo.Dial(MONGOURL)
+	defer session.Close()
+	if err != nil {
+		println(err.Error())
+	}
+	collection := session.DB(DBNAME).C(USERS)
+	us := User{}
+	err = collection.Find(bson.M{"email": c.Param("email"), "resetPasswordExpires": bson.M{"$gt": time.Now()}}).One(&us)
+
+	if err != nil {
+		println(err.Error())
+		response.Fail(c)
+		return
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(us.ResetPasswordToken), []byte(c.Param("token")))
+
+	if err == nil {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+		if err != nil {
+			response.Errors = append(response.Errors, err.Error())
+			response.Fail(c)
+			return
+		}
+		us.Password = string(hashedPassword)
+		collection.UpdateId(us.ID, us)
+	}
+	response.Success = true
+	c.JSON(http.StatusOK, response)
+}
+
 
 func Login(c *gin.Context) {
 	response := Response{} // todo sync.Pool
