@@ -59,7 +59,7 @@ func BindRoutes(router *gin.Engine) {
 		admin.GET("/", AdminRender)
 
 		//admin > users
-		admin.GET("/users/", Index)
+		admin.GET("/users/", AdminUsersRender)
 		admin.POST("/users/", Index)
 		admin.GET("/users/:id/", Index)
 		admin.PUT("/users/:id/", Index)

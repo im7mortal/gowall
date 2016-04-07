@@ -21,6 +21,7 @@ func LoadTemplates() {
 	InitTemplate(accountTmpl, "/account/settings/", "views/account/settings/index.html")
 
 	InitTemplate(adminTmpl, "/admin/", "views/admin/index.html")
+	InitTemplate(adminTmpl, "/admin/users/", "views/admin/users/index.html")
 
 
 
