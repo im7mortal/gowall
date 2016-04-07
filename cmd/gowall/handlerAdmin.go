@@ -27,12 +27,6 @@ func generateToken1(n int) []byte {
 	return token
 }
 
-func AdminUsersRender(c *gin.Context) {
-	render, _ := TemplateStorage[c.Request.URL.Path]
-	render.Data = c.Keys
-	c.Render(http.StatusOK, render)
-}
-
 func AdminRender(c *gin.Context) {
 	render, _ := TemplateStorage[c.Request.URL.Path]
 

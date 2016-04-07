@@ -37,7 +37,7 @@ func BindRoutes(router *gin.Engine) {
 	router.GET("/login/reset/", ResetRender)
 	router.GET("/login/reset/:email/:token/", ResetRender)
 	router.PUT("/login/reset/:email/:token/", ResetPassword)
-	router.GET("/logout/", Logout)// todo doesn't work
+	router.GET("/logout/", Logout)
 
 	//social login
 	router.GET("/login/twitter/", Index)
@@ -61,7 +61,7 @@ func BindRoutes(router *gin.Engine) {
 		//admin > users
 		admin.GET("/users/", AdminUsersRender)
 		admin.POST("/users/", Index)
-		admin.GET("/users/:id/", Index)
+		admin.GET("/users/:id/", UsersRender)
 		admin.PUT("/users/:id/", Index)
 		admin.PUT("/users/:id/password/", Index)
 		admin.PUT("/users/:id/role-admin/", Index)
