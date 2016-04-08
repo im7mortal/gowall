@@ -13,6 +13,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"regexp"
 "strings"
+	"html/template"
 )
 
 func generateToken(n int) []byte {
@@ -209,7 +210,7 @@ func AccountSettingsRender(c *gin.Context) {
 			"user": us.Username,
 			"email": us.Email,
 		})
-		c.Set("User", url.QueryEscape(string(User)))
+		c.Set("User", template.JS(url.QueryEscape(string(User))))
 	}
 	collection = d.C(ACCOUNTS)
 	ac := Account{} // todo pool
@@ -229,7 +230,7 @@ func AccountSettingsRender(c *gin.Context) {
 			"phone": ac.Phone,
 			"zip": ac.Zip,
 		})
-		c.Set("Account", url.QueryEscape(string(Account)))
+		c.Set("Account", template.JS(url.QueryEscape(string(Account))))
 	}
 	render, _ := TemplateStorage[c.Request.URL.Path]
 	render.Data = c.Keys
