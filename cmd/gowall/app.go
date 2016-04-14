@@ -35,6 +35,7 @@ func main() {
 	Router = gin.New()
 	Router.Use(gzip.Gzip(gzip.DefaultCompression))
 
+	Router.StaticFile("/favicon.ico", "public/favicon.ico")
 	Router.Static("/public", "public")
 	Router.Static("/vendor", "vendor") // todo not good. conflict with go project structure
 
