@@ -85,8 +85,8 @@ func IsAuthenticated(c *gin.Context) {
 	session := sessions.Default(c)
 
 	public := session.Get("public")
-
-	if public != nil && len(public.(string)) > 0 {
+	public_, ok := public.(string)
+	if ok && len(public_) > 0 {
 		session, err := mgo.Dial(MONGOURL)
 		defer session.Close()
 		if err != nil {
@@ -94,7 +94,7 @@ func IsAuthenticated(c *gin.Context) {
 		}
 		collection := session.DB(DBNAME).C(USERS)
 		us := User{}
-		err = collection.Find(bson.M{"_id": bson.ObjectIdHex(public.(string))}).One(&us)
+		err = collection.Find(bson.M{"_id": bson.ObjectIdHex(public_)}).One(&us)
 		if err != nil {
 			println(err.Error())
 		}
