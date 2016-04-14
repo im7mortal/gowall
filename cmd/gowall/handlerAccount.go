@@ -236,3 +236,66 @@ func AccountSettingsRender(c *gin.Context) {
 	render.Data = c.Keys
 	c.Render(http.StatusOK, render)
 }
+
+func SetSettings (c *gin.Context) {
+	account, _ := getAccount(c)
+	response := Response{} // todo sync.Pool
+	response.Errors = []string{}
+	response.ErrFor = make(map[string]string)
+	defer response.Recover(c)
+	var body struct {
+		First   string  `json:"first"`
+		Middle  string  `json:"middle"`
+		Last    string  `json:"last"`
+		Company string  `json:"company"`
+		Phone   string  `json:"phone"`
+		Zip     string  `json:"zip"`
+	}
+	decoder := json.NewDecoder(c.Request.Body)
+	err := decoder.Decode(&body)
+
+	if len(body.First) == 0 {
+		response.ErrFor["first"] = "required"
+	}
+	if len(body.Last) == 0 {
+		response.ErrFor["last"] = "required"
+	}
+
+	if response.HasErrors() {
+		response.Fail(c)
+		return
+	}
+	session, err := mgo.Dial("mongodb://localhost:27017")
+	defer session.Close()
+	if err != nil {
+		println(err.Error())
+	}
+	d := session.DB("test")
+
+	account.Name.Full = body.First + " " + body.Last
+	account.Name.First = body.First
+	account.Name.Middle = body.Middle
+	account.Name.Last = body.Last
+	account.Company = body.Company
+	account.Phone = body.Phone
+	account.Zip = body.Zip
+	account.Search = account.Search[:0]
+	account.Search = append(account.Search,
+		body.First,
+		body.Middle,
+		body.Last,
+		body.Company,
+		body.Phone,
+		body.Zip,
+	)
+
+	collection := d.C(ACCOUNTS)
+	_ = collection.UpdateId(account.ID, account)
+	if response.HasErrors() {
+		response.Fail(c)
+		return
+	}
+
+	response.Success = true
+	c.JSON(http.StatusOK, response)
+}

@@ -132,7 +132,7 @@ func BindRoutes(router *gin.Engine) {
 
 		//account > settings
 		account.GET("/settings/", AccountSettingsRender)
-		account.PUT("/settings/", Index)
+		account.PUT("/settings/", SetSettings)
 		account.PUT("/settings/identity/", Index)
 		account.PUT("/settings/password/", Index)
 
