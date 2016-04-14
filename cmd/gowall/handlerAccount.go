@@ -353,3 +353,79 @@ func ChangePassword (c *gin.Context) {
 	response.Success = true
 	c.JSON(http.StatusOK, response)
 }
+
+func ChangeIdentity (c *gin.Context) {
+	user, _ := getUser(c)
+	response := Response{} // todo sync.Pool
+	response.Errors = []string{}
+	response.ErrFor = make(map[string]string)
+	defer response.Recover(c)
+	var body struct {
+		Username    string  `json:"username"`
+		Email   string  `json:"email"`
+	}
+	decoder := json.NewDecoder(c.Request.Body)
+	err := decoder.Decode(&body)
+
+
+	username := strings.ToLower(body.Username)
+	if len(username) == 0 {
+		response.ErrFor["username"] = "required"
+	} else {
+		r, err := regexp.MatchString(`^[a-zA-Z0-9\-\_]+$`, username)
+		if err != nil {
+			println(err.Error())
+		}
+		if !r {
+			response.ErrFor["username"] = `only use letters, numbers, \'-\', \'_\'`
+		}
+	}
+	email := strings.ToLower(body.Email)
+	if len(email) == 0 {
+		response.ErrFor["email"] = "required"
+	} else {
+		r, err := regexp.MatchString(`^[a-zA-Z0-9\-\_\.\+]+@[a-zA-Z0-9\-\_\.]+\.[a-zA-Z0-9\-\_]+$`, email)
+		if err != nil {
+			println(err.Error())
+		}
+		if !r {
+			response.ErrFor["email"] = `invalid email format`
+		}
+	}
+
+	if response.HasErrors() {
+		response.Fail(c)
+		return
+	}
+	session, err := mgo.Dial("mongodb://localhost:27017")
+	defer session.Close()
+	if err != nil {
+		println(err.Error())
+	}
+
+	d := session.DB("test")
+	collection := d.C(USERS)
+
+	{
+		us := User{} // todo pool
+		err = collection.Find(bson.M{"$or": []bson.M{bson.M{"username": username}, bson.M{"email": email}}}).One(&us)
+		if err != nil {
+			response.Errors = append(response.Errors, "username or email already exist")
+			response.Fail(c)
+			return
+		}
+	}
+
+	user.Username = body.Username
+	user.Email = body.Email
+
+	err = collection.UpdateId(user.ID, user)
+	if err != nil {
+		response.Errors = append(response.Errors, err.Error())
+		response.Fail(c)
+		return
+	}
+	// TODO  patch admin and account
+	response.Success = true
+	c.JSON(http.StatusOK, response)
+}
