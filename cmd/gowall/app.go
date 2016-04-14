@@ -32,7 +32,7 @@ func init () {
 
 func main() {
 	gin.SetMode(gin.ReleaseMode)
-	Router = gin.Default()
+	Router = gin.New()
 	Router.Use(gzip.Gzip(gzip.DefaultCompression))
 
 	Router.Static("/public", "public")
@@ -40,6 +40,8 @@ func main() {
 
 	LoadTemplates()
 
+	Router.Use(gin.Logger())
+	Router.Use(checkRecover)
 
 /*	router.Use(cors.Middleware(cors.Config{
 		Origins:         "*",

@@ -33,9 +33,4 @@ func (r *Response)Fail(c *gin.Context) {
 	c.JSON(http.StatusOK, r)
 }
 
-func (r *Response) Recover(c *gin.Context) {
-	if rec := recover(); rec != nil {
-		println("recover!!!!!!")
-		r.Fail(c)
-	}
-}
+func (r *Response) Recover(c *gin.Context) {}
