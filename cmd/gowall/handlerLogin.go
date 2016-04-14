@@ -42,7 +42,6 @@ func LoginRender(c *gin.Context) {
 		c.Set("oauthFacebook", oauthFacebook)
 		c.Set("oauthGoogle", oauthGoogle)
 		c.Set("oauthTumblr", oauthTumblr)
-		c.Set("oauthMessage", "")
 
 		render.Data = c.Keys
 		c.Render(http.StatusOK, render)

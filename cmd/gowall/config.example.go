@@ -85,8 +85,8 @@ func InitConfig() {
 		config.Socials["twitter"] = ins
 	}
 
-	ins.Key = getEnvOrSetDef("FACEBOOK_OAUTH_KEY", "11")
-	ins.Secret = getEnvOrSetDef("FACEBOOK_OAUTH_SECRET", "")
+	ins.Key = getEnvOrSetDef("FACEBOOK_OAUTH_KEY", "985092244920047")
+	ins.Secret = getEnvOrSetDef("FACEBOOK_OAUTH_SECRET", "db9a775bf08037f48cb89e7a9e50088e")
 	if len(ins.Key) != 0 {
 		config.Socials["facebook"] = ins
 	}
