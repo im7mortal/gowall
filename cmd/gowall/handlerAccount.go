@@ -290,8 +290,62 @@ func SetSettings (c *gin.Context) {
 	)
 
 	collection := d.C(ACCOUNTS)
-	_ = collection.UpdateId(account.ID, account)
+	err = collection.UpdateId(account.ID, account)
+	if err != nil {
+		response.Fail(c)
+		return
+	}
+
+	response.Success = true
+	c.JSON(http.StatusOK, response)
+}
+
+func ChangePassword (c *gin.Context) {
+	user, _ := getUser(c)
+	response := Response{} // todo sync.Pool
+	response.Errors = []string{}
+	response.ErrFor = make(map[string]string)
+	defer response.Recover(c)
+	var body struct {
+		Confirm   string  `json:"confirm"`
+		Password string  `json:"newPassword"`
+	}
+	decoder := json.NewDecoder(c.Request.Body)
+	err := decoder.Decode(&body)
+
+	if len(body.Password) == 0 {
+		response.ErrFor["newPassword"] = "required"
+	}
+	if len(body.Confirm) == 0 {
+		response.ErrFor["confirm"] = "required"
+	} else if body.Password != body.Confirm {
+		response.Errors = append(response.Errors, "Passwords do not match.")
+	}
+
 	if response.HasErrors() {
+		response.Fail(c)
+		return
+	}
+	session, err := mgo.Dial("mongodb://localhost:27017")
+	defer session.Close()
+	if err != nil {
+		println(err.Error())
+	}
+	d := session.DB("test")
+
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
+	if err != nil {
+		response.Errors = append(response.Errors, err.Error()) // TODO don't like that this error goes to client
+		response.Fail(c)
+		return
+	}
+
+	user.Password = string(hashedPassword)
+	collection := d.C(USERS)
+	err = collection.UpdateId(user.ID, user)
+	if err != nil {
+		response.Errors = append(response.Errors, err.Error())
 		response.Fail(c)
 		return
 	}
