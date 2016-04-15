@@ -4,6 +4,9 @@ import (
 	"os"
 )
 
+const defaultLocalMongoDBUrl  = "mongodb://localhost:27017"
+
+
 var config struct {
 	Port                       string
 	CompanyName                string
@@ -56,8 +59,13 @@ func InitConfig() {
 	config.RequireAccountVerification = true
 
 	config.MongoDB = getEnvOrSetDef(
-		"process.env.MONGOLAB_URI",
-		getEnvOrSetDef("process.env.MONGOHQ_URL", "mongodb://localhost:27017"))
+		"process.env.MONGODB_URI",
+		getEnvOrSetDef(
+			"process.env.MONGOLAB_URI",
+			getEnvOrSetDef(
+				"process.env.MONGOHQ_URL",
+				defaultLocalMongoDBUrl,
+			)))
 
 	config.LoginAttempts.ForIp = 50
 	config.LoginAttempts.ForIpAndUser = 7
