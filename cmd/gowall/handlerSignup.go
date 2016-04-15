@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"regexp"
-	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"strings"
 	"encoding/json"
@@ -13,7 +12,6 @@ import (
 	"github.com/markbates/goth/gothic"
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/providers/facebook"
-	"fmt"
 )
 
 
@@ -101,17 +99,10 @@ func Signup(c *gin.Context) {
 		return
 	}
 
-	session, err := mgo.Dial(config.MongoDB)
-	defer session.Close()
-	if err != nil {
-		println(err.Error())
-	}
-	ii, _ := session.DatabaseNames()
-	fmt.Printf("%v\n", ii)
-	d := session.DB("heroku_fjpz2bj8")
-	collection := d.C(USERS)
-	collection.Create(&mgo.CollectionInfo{})
-	us := User{} // todo pool
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+	collection := db.C(USERS)
+	us := User{}
 	err = collection.Find(bson.M{"$or": []bson.M{bson.M{"username": username}, bson.M{"email": email}}}).One(&us)
 	if err != nil {
 		println(err.Error())
@@ -173,8 +164,7 @@ func Signup(c *gin.Context) {
 	ac.User.Name = us.Username
 	ac.Search = []string{username}
 
-	collection = d.C(ACCOUNTS)
-	collection.Create(&mgo.CollectionInfo{})
+	collection = db.C(ACCOUNTS)
 	err = collection.Insert(ac)
 	if err != nil {
 		response.Errors = append(response.Errors, err.Error())
@@ -308,13 +298,9 @@ func SignUpSocial(c *gin.Context) {
 	username = string(usernameSrc)
 
 
-	DBSession, err := mgo.Dial(config.MongoDB)
-	defer DBSession.Close()
-	if err != nil {
-		println(err.Error())
-	}
-	d := DBSession.DB("test")
-	collection := d.C(USERS)
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+	collection := db.C(USERS)
 	us := User{} // todo pool
 	err = collection.Find(bson.M{"$or": []bson.M{bson.M{"username": username}, bson.M{"email": email}}}).One(&us)
 
@@ -368,8 +354,7 @@ func SignUpSocial(c *gin.Context) {
 	ac.User.Name = us.Username
 	ac.Search = []string{username}
 
-	collection = d.C(ACCOUNTS)
-	collection.Create(&mgo.CollectionInfo{})
+	collection = db.C(ACCOUNTS)
 	err = collection.Insert(ac)
 	if err != nil {
 		response.Errors = append(response.Errors, err.Error())

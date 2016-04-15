@@ -16,6 +16,7 @@ var config struct {
 	CryptoKey                  string
 	RequireAccountVerification bool
 	MongoDB                    string
+	MongoDBName                string
 	LoginAttempts              LoginAttempts
 	SMTP                       SMTP
 	Socials                    map[string]OAuth
