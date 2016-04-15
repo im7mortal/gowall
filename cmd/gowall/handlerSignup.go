@@ -108,7 +108,7 @@ func Signup(c *gin.Context) {
 	}
 	ii, _ := session.DatabaseNames()
 	fmt.Printf("%v\n", ii)
-	d := session.DB("test")
+	d := session.DB("heroku_fjpz2bj8")
 	collection := d.C(USERS)
 	collection.Create(&mgo.CollectionInfo{})
 	us := User{} // todo pool
