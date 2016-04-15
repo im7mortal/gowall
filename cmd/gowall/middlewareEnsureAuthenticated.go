@@ -3,13 +3,11 @@ package main
 import (
 "github.com/gin-gonic/contrib/sessions"
 "github.com/gin-gonic/gin"
-"gopkg.in/mgo.v2"
 "gopkg.in/mgo.v2/bson"
 	"net/http"
 	"regexp"
 )
 
-const DBNAME  = "test"
 const USERS  = "users"
 const LOGINATTEMPTS  = "loginattempts"
 const ACCOUNTS  = "accounts"
@@ -48,9 +46,9 @@ func EnsureAccount(c *gin.Context) {
 	if user, ok := getUser(c); ok {
 		if ok = user.CanPlayRoleOf("account"); ok {
 			account := Account{}
-			session, _ := mgo.Dial(config.MongoDB)
-			defer session.Close()
-			collection := session.DB(DBNAME).C(ACCOUNTS)
+			db := getMongoDBInstance()
+			defer db.Session.Close()
+			collection := db.C(ACCOUNTS)
 			collection.Find(bson.M{"_id": user.Roles.Account}).One(&account)
 			c.Set("Account", &account)
 			if config.RequireAccountVerification {
@@ -86,14 +84,11 @@ func IsAuthenticated(c *gin.Context) {
 	public := session.Get("public")
 	public_, ok := public.(string)
 	if ok && len(public_) > 0 {
-		session, err := mgo.Dial(config.MongoDB)
-		defer session.Close()
-		if err != nil {
-			println(err.Error())
-		}
-		collection := session.DB(DBNAME).C(USERS)
+		db := getMongoDBInstance()
+		defer db.Session.Close()
+		collection := db.C(USERS)
 		us := User{}
-		err = collection.Find(bson.M{"_id": bson.ObjectIdHex(public_)}).One(&us)
+		err := collection.Find(bson.M{"_id": bson.ObjectIdHex(public_)}).One(&us)
 		if err != nil {
 			println(err.Error())
 		}

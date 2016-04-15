@@ -194,12 +194,9 @@ func ResetPassword (c *gin.Context) {
 		return
 	}
 
-	session, err := mgo.Dial(config.MongoDB)
-	defer session.Close()
-	if err != nil {
-		println(err.Error())
-	}
-	collection := session.DB(DBNAME).C(USERS)
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+	collection := db.C(USERS)
 	us := User{}
 	err = collection.Find(bson.M{"email": c.Param("email"), "resetPasswordExpires": bson.M{"$gt": time.Now()}}).One(&us)
 
