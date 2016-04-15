@@ -17,7 +17,9 @@ func BindRoutes(router *gin.Engine) {
 	router.POST("/signup/", Signup)
 
 	//social sign up
-	router.POST("/signup/social/", Index)
+	router.POST("/signup/social/", SignUpSocial)
+	router.GET("/signup_/:provider/", startOAuth)
+	router.GET("/signup_/:provider/callback/", CompleteUserAuth)
 	router.GET("/signup/twitter/", Index)
 	router.GET("/signup/twitter/callback/", Index)
 	router.GET("/signup/github/", Index)

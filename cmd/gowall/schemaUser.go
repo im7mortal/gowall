@@ -8,7 +8,7 @@ import (
 )
 
 type vendorOauth struct {
-
+	ID string `bson:"id"`
 }
 
 var UsersPool = sync.Pool{

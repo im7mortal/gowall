@@ -11,6 +11,7 @@ func LoadTemplates() {
 	InitTemplate(defaultTmpl, "/about/", "views/about/index.html")
 	InitTemplate(defaultTmpl, "/contact/", "views/contact/index.html")
 	InitTemplate(defaultTmpl, "/signup/", "views/signup/index.html")
+	InitTemplate(defaultTmpl, "/signup/social/", "views/signup/social.html")
 	InitTemplate(defaultTmpl, "/login/", "views/login/index.html")
 	InitTemplate(defaultTmpl, "/login/forgot/", "views/login/forgot/index.html")
 	InitTemplate(defaultTmpl, "/login/reset/", "views/login/reset/index.html")
