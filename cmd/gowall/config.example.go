@@ -4,7 +4,8 @@ import (
 	"os"
 )
 
-const defaultLocalMongoDBUrl  = "mongodb://localhost:27017"
+const defaultLocalMongoDBUrl  = "mongodb://localhost:27017/gowall"
+const defaultPORT  = "3000"
 
 
 var config struct {
@@ -50,7 +51,7 @@ func getEnvOrSetDef(envName, defValue string) (val string) {
 
 func InitConfig() {
 
-	config.Port = getEnvOrSetDef("PORT", "3000")
+	config.Port = getEnvOrSetDef("PORT", defaultPORT)
 
 	config.CompanyName = "Acme, Inc."
 	config.ProjectName = "Gowall"
@@ -63,12 +64,9 @@ func InitConfig() {
 		getEnvOrSetDef(
 			"MONGOLAB_URI",
 			getEnvOrSetDef(
-				"as",
+				"MONGOHQ_URL",
 				defaultLocalMongoDBUrl,
 			)))
-	println("*****************************************************************************8")
-	println(config.MongoDB)
-	println("*****************************************************************************8")
 	config.LoginAttempts.ForIp = 50
 	config.LoginAttempts.ForIpAndUser = 7
 	config.LoginAttempts.LogExpiration = "20m"

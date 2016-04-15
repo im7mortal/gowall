@@ -13,6 +13,7 @@ import (
 	"github.com/markbates/goth/gothic"
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/providers/facebook"
+	"fmt"
 )
 
 
@@ -105,6 +106,8 @@ func Signup(c *gin.Context) {
 	if err != nil {
 		println(err.Error())
 	}
+	ii, _ := session.DatabaseNames()
+	fmt.Printf("%v\n", ii)
 	d := session.DB("test")
 	collection := d.C(USERS)
 	collection.Create(&mgo.CollectionInfo{})
