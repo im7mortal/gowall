@@ -9,7 +9,6 @@ import (
 	"regexp"
 )
 
-const MONGOURL  = "mongodb://localhost:27017"
 const DBNAME  = "test"
 const USERS  = "users"
 const LOGINATTEMPTS  = "loginattempts"
@@ -49,7 +48,7 @@ func EnsureAccount(c *gin.Context) {
 	if user, ok := getUser(c); ok {
 		if ok = user.CanPlayRoleOf("account"); ok {
 			account := Account{}
-			session, _ := mgo.Dial(MONGOURL)
+			session, _ := mgo.Dial(config.MongoDB)
 			defer session.Close()
 			collection := session.DB(DBNAME).C(ACCOUNTS)
 			collection.Find(bson.M{"_id": user.Roles.Account}).One(&account)
@@ -87,7 +86,7 @@ func IsAuthenticated(c *gin.Context) {
 	public := session.Get("public")
 	public_, ok := public.(string)
 	if ok && len(public_) > 0 {
-		session, err := mgo.Dial(MONGOURL)
+		session, err := mgo.Dial(config.MongoDB)
 		defer session.Close()
 		if err != nil {
 			println(err.Error())

@@ -31,7 +31,7 @@ func AdminRender(c *gin.Context) {
 	render, _ := TemplateStorage[c.Request.URL.Path]
 
 	// TODO
-	session, err := mgo.Dial("mongodb://localhost:27017")
+	session, err := mgo.Dial(config.MongoDB)
 	defer session.Close()
 	if err != nil {
 		println(err.Error())
@@ -77,7 +77,7 @@ func AccountVerificationRender1(c *gin.Context) {
 			return
 		}
 
-		session, err := mgo.Dial("mongodb://localhost:27017")
+		session, err := mgo.Dial(config.MongoDB)
 		defer session.Close()
 		if err != nil {
 			println(err.Error())
@@ -116,7 +116,7 @@ func Verify1 (c *gin.Context) {
 	user, _ := getUser(c)
 	err := bcrypt.CompareHashAndPassword([]byte(account.VerificationToken), []byte(c.Param("token")))
 	if err == nil {
-		session, err := mgo.Dial("mongodb://localhost:27017")
+		session, err := mgo.Dial(config.MongoDB)
 		defer session.Close()
 		if err != nil {
 			println(err.Error())
@@ -166,7 +166,7 @@ func ResendVerification1 (c *gin.Context) {
 		response.Fail(c)
 		return
 	}
-	session, err := mgo.Dial("mongodb://localhost:27017")
+	session, err := mgo.Dial(config.MongoDB)
 	defer session.Close()
 	if err != nil {
 		println(err.Error())
@@ -218,7 +218,7 @@ func AccountSettingsRender1(c *gin.Context) {
 	sess := sessions.Default(c)
 
 	public := sess.Get("public")
-	session, err := mgo.Dial("mongodb://localhost:27017")
+	session, err := mgo.Dial(config.MongoDB)
 	defer session.Close()
 	if err != nil {
 		println(err.Error())

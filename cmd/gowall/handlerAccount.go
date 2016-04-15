@@ -51,7 +51,7 @@ func AccountVerificationRender(c *gin.Context) {
 			return
 		}
 
-		session, err := mgo.Dial("mongodb://localhost:27017")
+		session, err := mgo.Dial(config.MongoDB)
 		defer session.Close()
 		if err != nil {
 			println(err.Error())
@@ -90,7 +90,7 @@ func Verify (c *gin.Context) {
 	user, _ := getUser(c)
 	err := bcrypt.CompareHashAndPassword([]byte(account.VerificationToken), []byte(c.Param("token")))
 	if err == nil {
-		session, err := mgo.Dial("mongodb://localhost:27017")
+		session, err := mgo.Dial(config.MongoDB)
 		defer session.Close()
 		if err != nil {
 			println(err.Error())
@@ -140,7 +140,7 @@ func ResendVerification (c *gin.Context) {
 		response.Fail(c)
 		return
 	}
-	session, err := mgo.Dial("mongodb://localhost:27017")
+	session, err := mgo.Dial(config.MongoDB)
 	defer session.Close()
 	if err != nil {
 		println(err.Error())
@@ -192,7 +192,7 @@ func AccountSettingsRender(c *gin.Context) {
 	sess := sessions.Default(c)
 
 	public := sess.Get("public")
-	session, err := mgo.Dial("mongodb://localhost:27017")
+	session, err := mgo.Dial(config.MongoDB)
 	defer session.Close()
 	if err != nil {
 		println(err.Error())
@@ -265,7 +265,7 @@ func SetSettings (c *gin.Context) {
 		response.Fail(c)
 		return
 	}
-	session, err := mgo.Dial("mongodb://localhost:27017")
+	session, err := mgo.Dial(config.MongoDB)
 	defer session.Close()
 	if err != nil {
 		println(err.Error())
@@ -326,7 +326,7 @@ func ChangePassword (c *gin.Context) {
 		response.Fail(c)
 		return
 	}
-	session, err := mgo.Dial("mongodb://localhost:27017")
+	session, err := mgo.Dial(config.MongoDB)
 	defer session.Close()
 	if err != nil {
 		println(err.Error())
@@ -397,7 +397,7 @@ func ChangeIdentity (c *gin.Context) {
 		response.Fail(c)
 		return
 	}
-	session, err := mgo.Dial("mongodb://localhost:27017")
+	session, err := mgo.Dial(config.MongoDB)
 	defer session.Close()
 	if err != nil {
 		println(err.Error())

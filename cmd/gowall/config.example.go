@@ -57,7 +57,7 @@ func InitConfig() {
 
 	config.MongoDB = getEnvOrSetDef(
 		"process.env.MONGOLAB_URI",
-		getEnvOrSetDef("process.env.MONGOHQ_URL", "mongodb://localhost:27017/drywall"))
+		getEnvOrSetDef("process.env.MONGOHQ_URL", "mongodb://localhost:27017"))
 
 	config.LoginAttempts.ForIp = 50
 	config.LoginAttempts.ForIpAndUser = 7

@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2"
 	"encoding/json"
 )
 
@@ -15,7 +15,7 @@ func AdminUsersRender(c *gin.Context) {
 
 func UsersRender(c *gin.Context) {
 
-	session, err := mgo.Dial("mongodb://localhost:27017")
+	session, err := mgo.Dial(config.MongoDB)
 	defer session.Close()
 	if err != nil {
 		println(err.Error())

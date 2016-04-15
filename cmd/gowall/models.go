@@ -6,7 +6,6 @@ import (
 	//"gopkg.in/mgo.v2/bson"
 )
 
-const urlMONGO  = "mongodb://localhost:27017"
 
 
 

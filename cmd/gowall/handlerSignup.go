@@ -100,7 +100,7 @@ func Signup(c *gin.Context) {
 		return
 	}
 
-	session, err := mgo.Dial("mongodb://localhost:27017")
+	session, err := mgo.Dial(config.MongoDB)
 	defer session.Close()
 	if err != nil {
 		println(err.Error())
@@ -305,7 +305,7 @@ func SignUpSocial(c *gin.Context) {
 	username = string(usernameSrc)
 
 
-	DBSession, err := mgo.Dial("mongodb://localhost:27017")
+	DBSession, err := mgo.Dial(config.MongoDB)
 	defer DBSession.Close()
 	if err != nil {
 		println(err.Error())

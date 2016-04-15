@@ -100,7 +100,7 @@ func SendReset(c *gin.Context) {
 		return
 	}
 
-	session, err := mgo.Dial("mongodb://localhost:27017")
+	session, err := mgo.Dial(config.MongoDB)
 	defer session.Close()
 	if err != nil {
 		println(err.Error())
@@ -194,7 +194,7 @@ func ResetPassword (c *gin.Context) {
 		return
 	}
 
-	session, err := mgo.Dial(MONGOURL)
+	session, err := mgo.Dial(config.MongoDB)
 	defer session.Close()
 	if err != nil {
 		println(err.Error())
@@ -253,14 +253,14 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	session, err := mgo.Dial("mongodb://localhost:27017")
+	session, err := mgo.Dial(config.MongoDB)
 	defer session.Close()
 	if err != nil {
 		println(err.Error())
 	}
 
 	// TODO  abuseFilter!!!!!!!!!!!!!
-	session, err = mgo.Dial("mongodb://localhost:27017")
+	session, err = mgo.Dial(config.MongoDB)
 	defer session.Close()
 	if err != nil {
 		println(err.Error())
