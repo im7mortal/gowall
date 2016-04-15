@@ -59,14 +59,16 @@ func InitConfig() {
 	config.RequireAccountVerification = true
 
 	config.MongoDB = getEnvOrSetDef(
-		"process.env.MONGODB_URI",
+		"MONGODB_URI",
 		getEnvOrSetDef(
-			"process.env.MONGOLAB_URI",
+			"MONGOLAB_URI",
 			getEnvOrSetDef(
-				"process.env.MONGOHQ_URL",
+				"as",
 				defaultLocalMongoDBUrl,
 			)))
-
+	println("*****************************************************************************8")
+	println(config.MongoDB)
+	println("*****************************************************************************8")
 	config.LoginAttempts.ForIp = 50
 	config.LoginAttempts.ForIpAndUser = 7
 	config.LoginAttempts.LogExpiration = "20m"
