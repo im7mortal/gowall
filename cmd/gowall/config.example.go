@@ -1,9 +1,6 @@
 package main
 
-import (
-	"os"
-	"strings"
-)
+import "os"
 
 const defaultLocalMongoDBUrl  = "mongodb://localhost:27017/gowall"
 const defaultPORT  = "3000"
@@ -71,7 +68,7 @@ func InitConfig() {
 			)))
 
 	if config.dbName == "" {
-		setDBName()
+		config.dbName = getDBName(&config.MongoDB)
 	}
 
 	config.LoginAttempts.ForIp = 50
@@ -124,10 +121,4 @@ func InitConfig() {
 		config.Socials["tumblr"] = ins
 	}
 
-}
-
-func setDBName() {
-	arr := strings.Split(config.MongoDB, ":")
-	arr = strings.Split(arr[len(arr) - 1], "/")
-	config.dbName = arr[len(arr) - 1]
 }
