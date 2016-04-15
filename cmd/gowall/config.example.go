@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"strings"
 )
 
 const defaultLocalMongoDBUrl  = "mongodb://localhost:27017/gowall"
@@ -16,7 +17,7 @@ var config struct {
 	CryptoKey                  string
 	RequireAccountVerification bool
 	MongoDB                    string
-	MongoDBName                string
+	dbName                     string
 	LoginAttempts              LoginAttempts
 	SMTP                       SMTP
 	Socials                    map[string]OAuth
@@ -68,6 +69,11 @@ func InitConfig() {
 				"MONGOHQ_URL",
 				defaultLocalMongoDBUrl,
 			)))
+
+	if config.dbName == "" {
+		setDBName()
+	}
+
 	config.LoginAttempts.ForIp = 50
 	config.LoginAttempts.ForIpAndUser = 7
 	config.LoginAttempts.LogExpiration = "20m"
@@ -118,4 +124,10 @@ func InitConfig() {
 		config.Socials["tumblr"] = ins
 	}
 
+}
+
+func setDBName() {
+	arr := strings.Split(config.MongoDB, ":")
+	arr = strings.Split(arr[len(arr) - 1], "/")
+	config.dbName = arr[len(arr) - 1]
 }

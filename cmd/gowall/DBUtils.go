@@ -11,5 +11,5 @@ func getMongoDBInstance() *mgo.Database {
 	}
 	// if MongoDBName == "" it will check the connection url MongoDB for a dbname
 	// that logic inside mgo
-	return session.DB(config.MongoDBName)
+	return session.DB(config.dbName)
 }
