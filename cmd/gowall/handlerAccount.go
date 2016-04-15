@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"github.com/gin-gonic/contrib/sessions"
 	"encoding/json"
@@ -12,7 +11,7 @@ import (
 	"encoding/hex"
 	"golang.org/x/crypto/bcrypt"
 	"regexp"
-"strings"
+	"strings"
 	"html/template"
 )
 
@@ -51,13 +50,9 @@ func AccountVerificationRender(c *gin.Context) {
 			return
 		}
 
-		session, err := mgo.Dial(config.MongoDB)
-		defer session.Close()
-		if err != nil {
-			println(err.Error())
-		}
-		d := session.DB("test")
-		collection := d.C(ACCOUNTS)
+		db := getMongoDBInstance()
+		defer db.Session.Close()
+		collection := db.C(ACCOUNTS)
 		account.VerificationToken = string(hash)
 		collection.UpdateId(account.ID, account)// todo how to update only part?
 		verifyURL := "http" +"://"+ "localhost:3000" +"/account/verification/" + string(VerifyURL) + "/"
@@ -90,13 +85,9 @@ func Verify (c *gin.Context) {
 	user, _ := getUser(c)
 	err := bcrypt.CompareHashAndPassword([]byte(account.VerificationToken), []byte(c.Param("token")))
 	if err == nil {
-		session, err := mgo.Dial(config.MongoDB)
-		defer session.Close()
-		if err != nil {
-			println(err.Error())
-		}
-		d := session.DB("test")
-		collection := d.C(ACCOUNTS)
+		db := getMongoDBInstance()
+		defer db.Session.Close()
+		collection := db.C(ACCOUNTS)
 		account.VerificationToken = ""
 		account.IsVerified = "yes"
 		collection.UpdateId(account.ID, account)
@@ -140,13 +131,9 @@ func ResendVerification (c *gin.Context) {
 		response.Fail(c)
 		return
 	}
-	session, err := mgo.Dial(config.MongoDB)
-	defer session.Close()
-	if err != nil {
-		println(err.Error())
-	}
-	d := session.DB("test")
-	collection := d.C(USERS)
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+	collection := db.C(USERS)
 	{
 		user_ := User{}
 		collection.Find(bson.M{"email": email, "_id": bson.M{"$ne": user.ID}}).One(&user_)
@@ -161,7 +148,7 @@ func ResendVerification (c *gin.Context) {
 	user.Email = email
 	collection.UpdateId(user.ID, user)
 
-	collection = d.C(ACCOUNTS)
+	collection = db.C(ACCOUNTS)
 	VerifyURL := generateToken(21)
 	hash, err := bcrypt.GenerateFromPassword(VerifyURL, bcrypt.DefaultCost)
 	if err != nil {
@@ -192,15 +179,11 @@ func AccountSettingsRender(c *gin.Context) {
 	sess := sessions.Default(c)
 
 	public := sess.Get("public")
-	session, err := mgo.Dial(config.MongoDB)
-	defer session.Close()
-	if err != nil {
-		println(err.Error())
-	}
-	d := session.DB("test")
-	collection := d.C(USERS)
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+	collection := db.C(USERS)
 	us := User{} // todo pool
-	err = collection.FindId(bson.ObjectIdHex(public.(string))).One(&us)
+	err := collection.FindId(bson.ObjectIdHex(public.(string))).One(&us)
 	if err != nil {
 		println(err.Error())
 	}
@@ -212,7 +195,7 @@ func AccountSettingsRender(c *gin.Context) {
 		})
 		c.Set("User", template.JS(url.QueryEscape(string(User))))
 	}
-	collection = d.C(ACCOUNTS)
+	collection = db.C(ACCOUNTS)
 	ac := Account{} // todo pool
 	err = collection.FindId(bson.ObjectIdHex(us.Roles.Account.Hex())).One(&ac)
 	if err != nil {
@@ -265,12 +248,8 @@ func SetSettings (c *gin.Context) {
 		response.Fail(c)
 		return
 	}
-	session, err := mgo.Dial(config.MongoDB)
-	defer session.Close()
-	if err != nil {
-		println(err.Error())
-	}
-	d := session.DB("test")
+	db := getMongoDBInstance()
+	defer db.Session.Close()
 
 	account.Name.Full = body.First + " " + body.Last
 	account.Name.First = body.First
@@ -289,7 +268,7 @@ func SetSettings (c *gin.Context) {
 		body.Zip,
 	)
 
-	collection := d.C(ACCOUNTS)
+	collection := db.C(ACCOUNTS)
 	err = collection.UpdateId(account.ID, account)
 	if err != nil {
 		response.Fail(c)
@@ -326,12 +305,8 @@ func ChangePassword (c *gin.Context) {
 		response.Fail(c)
 		return
 	}
-	session, err := mgo.Dial(config.MongoDB)
-	defer session.Close()
-	if err != nil {
-		println(err.Error())
-	}
-	d := session.DB("test")
+	db := getMongoDBInstance()
+	defer db.Session.Close()
 
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
@@ -342,7 +317,7 @@ func ChangePassword (c *gin.Context) {
 	}
 
 	user.Password = string(hashedPassword)
-	collection := d.C(USERS)
+	collection := db.C(USERS)
 	err = collection.UpdateId(user.ID, user)
 	if err != nil {
 		response.Errors = append(response.Errors, err.Error())
@@ -397,14 +372,9 @@ func ChangeIdentity (c *gin.Context) {
 		response.Fail(c)
 		return
 	}
-	session, err := mgo.Dial(config.MongoDB)
-	defer session.Close()
-	if err != nil {
-		println(err.Error())
-	}
-
-	d := session.DB("test")
-	collection := d.C(USERS)
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+	collection := db.C(USERS)
 
 	{
 		us := User{} // todo pool

@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"github.com/gin-gonic/contrib/sessions"
 	"encoding/json"
@@ -31,28 +30,24 @@ func AdminRender(c *gin.Context) {
 	render, _ := TemplateStorage[c.Request.URL.Path]
 
 	// TODO
-	session, err := mgo.Dial(config.MongoDB)
-	defer session.Close()
-	if err != nil {
-		println(err.Error())
-	}
-	d := session.DB("test")
-	collection := d.C(ACCOUNTS)
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+	collection := db.C(ACCOUNTS)
 	count, _ := collection.Count()
 	c.Set("CountAccount", count)
-	collection = d.C(USERS)
+	collection = db.C(USERS)
 	count, _ = collection.Count()
 	c.Set("CountUser", count)
-	collection = d.C(ADMINS)
+	collection = db.C(ADMINS)
 	count, _ = collection.Count()
 	c.Set("CountAdmin", count)
-	collection = d.C(ADMINGROUPS)
+	collection = db.C(ADMINGROUPS)
 	count, _ = collection.Count()
 	c.Set("CountAdminGroup", count)
-	collection = d.C(CATEGORIES)
+	collection = db.C(CATEGORIES)
 	count, _ = collection.Count()
 	c.Set("CountCategory", count)
-	collection = d.C(STATUS)
+	collection = db.C(STATUS)
 	count, _ = collection.Count()
 	c.Set("CountStatus", count)
 
@@ -77,13 +72,9 @@ func AccountVerificationRender1(c *gin.Context) {
 			return
 		}
 
-		session, err := mgo.Dial(config.MongoDB)
-		defer session.Close()
-		if err != nil {
-			println(err.Error())
-		}
-		d := session.DB("test")
-		collection := d.C(ACCOUNTS)
+		db := getMongoDBInstance()
+		defer db.Session.Close()
+		collection := db.C(ACCOUNTS)
 		account.VerificationToken = string(hash)
 		collection.UpdateId(account.ID, account)// todo how to update only part?
 		verifyURL := "http" +"://"+ "localhost:3000" +"/account/verification/" + string(VerifyURL) + "/"
@@ -116,13 +107,9 @@ func Verify1 (c *gin.Context) {
 	user, _ := getUser(c)
 	err := bcrypt.CompareHashAndPassword([]byte(account.VerificationToken), []byte(c.Param("token")))
 	if err == nil {
-		session, err := mgo.Dial(config.MongoDB)
-		defer session.Close()
-		if err != nil {
-			println(err.Error())
-		}
-		d := session.DB("test")
-		collection := d.C(ACCOUNTS)
+		db := getMongoDBInstance()
+		defer db.Session.Close()
+		collection := db.C(ACCOUNTS)
 		account.VerificationToken = ""
 		account.IsVerified = "yes"
 		collection.UpdateId(account.ID, account)
@@ -166,13 +153,9 @@ func ResendVerification1 (c *gin.Context) {
 		response.Fail(c)
 		return
 	}
-	session, err := mgo.Dial(config.MongoDB)
-	defer session.Close()
-	if err != nil {
-		println(err.Error())
-	}
-	d := session.DB("test")
-	collection := d.C(USERS)
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+	collection := db.C(USERS)
 	{
 		user_ := User{}
 		collection.Find(bson.M{"email": email, "_id": bson.M{"$ne": user.ID}}).One(&user_)
@@ -187,7 +170,7 @@ func ResendVerification1 (c *gin.Context) {
 	user.Email = email
 	collection.UpdateId(user.ID, user)
 
-	collection = d.C(ACCOUNTS)
+	collection = db.C(ACCOUNTS)
 	VerifyURL := generateToken(21)
 	hash, err := bcrypt.GenerateFromPassword(VerifyURL, bcrypt.DefaultCost)
 	if err != nil {
@@ -218,15 +201,11 @@ func AccountSettingsRender1(c *gin.Context) {
 	sess := sessions.Default(c)
 
 	public := sess.Get("public")
-	session, err := mgo.Dial(config.MongoDB)
-	defer session.Close()
-	if err != nil {
-		println(err.Error())
-	}
-	d := session.DB("test")
-	collection := d.C(USERS)
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+	collection := db.C(USERS)
 	us := User{} // todo pool
-	err = collection.FindId(bson.ObjectIdHex(public.(string))).One(&us)
+	err := collection.FindId(bson.ObjectIdHex(public.(string))).One(&us)
 	if err != nil {
 		println(err.Error())
 	}
@@ -238,7 +217,7 @@ func AccountSettingsRender1(c *gin.Context) {
 		})
 		c.Set("User", url.QueryEscape(string(User)))
 	}
-	collection = d.C(ACCOUNTS)
+	collection = db.C(ACCOUNTS)
 	ac := Account{} // todo pool
 	err = collection.FindId(bson.ObjectIdHex(us.Roles.Account.Hex())).One(&ac)
 	if err != nil {

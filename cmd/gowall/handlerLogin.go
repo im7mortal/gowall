@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"encoding/json"
 	"strings"
-	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"golang.org/x/crypto/bcrypt"
 	"github.com/gin-gonic/contrib/sessions"
@@ -100,14 +99,9 @@ func SendReset(c *gin.Context) {
 		return
 	}
 
-	session, err := mgo.Dial(config.MongoDB)
-	defer session.Close()
-	if err != nil {
-		println(err.Error())
-	}
-	d := session.DB("test")
-	collection := d.C(USERS)
-	collection.Create(&mgo.CollectionInfo{})
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+	collection := db.C(USERS)
 	us := User{} // todo pool
 	err = collection.Find(bson.M{"email": email}).One(&us)
 	if err != nil {
@@ -250,21 +244,11 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	session, err := mgo.Dial(config.MongoDB)
-	defer session.Close()
-	if err != nil {
-		println(err.Error())
-	}
 
 	// TODO  abuseFilter!!!!!!!!!!!!!
-	session, err = mgo.Dial(config.MongoDB)
-	defer session.Close()
-	if err != nil {
-		println(err.Error())
-	}
-	d := session.DB("test")
-	collection := d.C(LOGINATTEMPTS)
-	collection.Create(&mgo.CollectionInfo{})
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+	collection := db.C(LOGINATTEMPTS)
 	at := LoginAttempt{} // todo pool
 	at.ID = bson.NewObjectId()
 	at.IP = c.ClientIP()
@@ -274,7 +258,7 @@ func Login(c *gin.Context) {
 		println(err.Error())
 	}
 
-	collection = d.C(USERS)
+	collection = db.C(USERS)
 	us := User{}
 	err = collection.Find(bson.M{"username": username}).One(&us)
 	if err != nil {

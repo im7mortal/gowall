@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"gopkg.in/mgo.v2"
 	"encoding/json"
 )
 
@@ -15,13 +14,9 @@ func AdminUsersRender(c *gin.Context) {
 
 func UsersRender(c *gin.Context) {
 
-	session, err := mgo.Dial(config.MongoDB)
-	defer session.Close()
-	if err != nil {
-		println(err.Error())
-	}
-	d := session.DB("test")
-	collection := d.C(USERS)
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+	collection := db.C(USERS)
 	user := User{}
 	collection.FindId(c.Param("id")).One(&user)
 	userJSON, _ := json.Marshal(user)

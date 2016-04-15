@@ -3,9 +3,9 @@ package main
 import (
 "github.com/gin-gonic/contrib/sessions"
 "github.com/gin-gonic/gin"
-"gopkg.in/mgo.v2/bson"
 	"net/http"
 	"regexp"
+"gopkg.in/mgo.v2/bson"
 )
 
 const USERS  = "users"
