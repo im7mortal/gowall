@@ -190,7 +190,7 @@ func AccountSettingsRender(c *gin.Context) {
 	if len(us.Username) != 0 {
 		User, _ := json.Marshal(gin.H{
 			"_id": us.ID.Hex(),
-			"user": us.Username,
+			"username": us.Username,
 			"email": us.Email,
 		})
 		c.Set("User", template.JS(url.QueryEscape(string(User))))
