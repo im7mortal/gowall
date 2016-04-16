@@ -55,7 +55,7 @@ func AccountVerificationRender(c *gin.Context) {
 		collection := db.C(ACCOUNTS)
 		account.VerificationToken = string(hash)
 		collection.UpdateId(account.ID, account)// todo how to update only part?
-		verifyURL := "http" +"://"+ "localhost:3000" +"/account/verification/" + string(VerifyURL) + "/"
+		verifyURL := "http" +"://"+ c.Request.Host +"/account/verification/" + string(VerifyURL) + "/"
 		c.Set("VerifyURL", verifyURL)
 
 		mailConf := MailConfig{}
@@ -157,7 +157,7 @@ func ResendVerification (c *gin.Context) {
 	}
 	account.VerificationToken = string(hash)
 	collection.UpdateId(account.ID, account)// todo how to update only part?
-	verifyURL := "http" +"://"+ "localhost:3000" +"/account/verification/" + string(VerifyURL) + "/"
+	verifyURL := "http" +"://"+ c.Request.Host +"/account/verification/" + string(VerifyURL) + "/"
 	c.Set("VerifyURL", verifyURL)
 	mailConf := MailConfig{}
 	mailConf.Data = c.Keys

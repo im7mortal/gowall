@@ -119,7 +119,7 @@ func SendReset(c *gin.Context) {
 	us.ResetPasswordExpires = time.Now().Add(24 * time.Hour)
 	collection.UpdateId(us.ID, us)
 
-	resetURL := "http" +"://"+ "localhost:3000" +"/login/reset/" + email + "/" + string(token) + "/"
+	resetURL := "http" +"://"+ c.Request.Host +"/login/reset/" + email + "/" + string(token) + "/"
 	c.Set("ResetURL", resetURL)
 	c.Set("Username", us.Username)
 
