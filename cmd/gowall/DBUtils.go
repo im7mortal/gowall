@@ -16,7 +16,7 @@ func getMongoDBInstance() *mgo.Database {
 }
 
 // attempt to get dbName from URL
-// will work on MongoLab where dbName is part of url
+// it will work on MongoLab where dbName is part of url
 func getDBName(url *string) string {
 	arr := strings.Split(*url, ":")
 	arr = strings.Split(arr[len(arr) - 1], "/")
