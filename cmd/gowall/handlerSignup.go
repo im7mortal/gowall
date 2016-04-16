@@ -204,9 +204,13 @@ func startOAuth(c *gin.Context) {
 	c.Request.URL.RawQuery += "provider=" + provider
 	_, err := goth.GetProvider(provider)
 	if err != nil {
+		redir := "http://" + c.Request.Host + "/signup_/facebook/callback"
 		goth.UseProviders(
-			facebook.New(config.Socials["facebook"].Key, config.Socials["facebook"].Secret, "http://" + c.Request.Host + "/signup_/facebook/callback"),
+			facebook.New(config.Socials["facebook"].Key, config.Socials["facebook"].Secret, redir),
 		)
+		println(")))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))")
+		println(redir)
+		println(")))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))")
 	}
 	gothic.BeginAuthHandler(c.Writer, c.Request)
 }
