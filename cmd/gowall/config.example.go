@@ -91,19 +91,19 @@ func InitConfig() {
 
 	ins := OAuth{} // todo i hope it's not like JS link
 
-	ins.Key = getEnvOrSetDef("TWITTER_OAUTH_KEY", "11")
+	ins.Key = getEnvOrSetDef("TWITTER_OAUTH_KEY", "")
 	ins.Secret = getEnvOrSetDef("TWITTER_OAUTH_SECRET", "")
 	if len(ins.Key) != 0 {
 		config.Socials["twitter"] = ins
 	}
 
-	ins.Key = getEnvOrSetDef("FACEBOOK_OAUTH_KEY", "985092244920047")
-	ins.Secret = getEnvOrSetDef("FACEBOOK_OAUTH_SECRET", "db9a775bf08037f48cb89e7a9e50088e")
+	ins.Key = getEnvOrSetDef("FACEBOOK_OAUTH_KEY", "")
+	ins.Secret = getEnvOrSetDef("FACEBOOK_OAUTH_SECRET", "")
 	if len(ins.Key) != 0 {
 		config.Socials["facebook"] = ins
 	}
 
-	ins.Key = getEnvOrSetDef("GITHUB_OAUTH_KEY", "11")
+	ins.Key = getEnvOrSetDef("GITHUB_OAUTH_KEY", "")
 	ins.Secret = getEnvOrSetDef("GITHUB_OAUTH_SECRET", "")
 	if len(ins.Key) != 0 {
 		config.Socials["github"] = ins
