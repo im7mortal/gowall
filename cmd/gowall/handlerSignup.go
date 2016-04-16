@@ -17,9 +17,6 @@ import (
 
 func init()  {
 	gothic.Store = store
-	goth.UseProviders(
-		facebook.New("985092244920047", "db9a775bf08037f48cb89e7a9e50088e", "http://localhost:3000/signup_/facebook/callback"),
-	)
 }
 
 
@@ -203,7 +200,14 @@ func startOAuth(c *gin.Context) {
 	// don't like that hack
 	// gothic was written for another path
 	// i just put provider query
-	c.Request.URL.RawQuery += "provider=" + c.Param("provider")
+	provider := c.Param("provider")
+	c.Request.URL.RawQuery += "provider=" + provider
+	_, err := goth.GetProvider(provider)
+	if err != nil {
+		goth.UseProviders(
+			facebook.New(config.Socials["facebook"].Key, config.Socials["facebook"].Secret, "http://" + c.Request.Host + "/signup_/facebook/callback"),
+		)
+	}
 	gothic.BeginAuthHandler(c.Writer, c.Request)
 }
 
