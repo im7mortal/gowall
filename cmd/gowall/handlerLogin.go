@@ -8,8 +8,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"golang.org/x/crypto/bcrypt"
 	"github.com/gin-gonic/contrib/sessions"
-	"regexp"
-	"time"
+	"gopkg.in/mgo.v2"
 )
 
 func LoginRender(c *gin.Context) {
@@ -18,12 +17,12 @@ func LoginRender(c *gin.Context) {
 		var redirectURL string
 		defaultReturnUrl, _ := c.Get("DefaultReturnUrl")
 		redirectURL = defaultReturnUrl.(string)
-		sess := sessions.Default(c)
-		returnURL := sess.Get("returnURL")
+		session := sessions.Default(c)
+		returnURL := session.Get("returnURL")
 		if returnURL != nil {
 			redirectURL = returnURL.(string)
-			sess.Delete("returnURL")
-			sess.Save()
+			session.Delete("returnURL")
+			session.Save()
 		}
 		c.Redirect(http.StatusFound, redirectURL)
 	} else {
@@ -47,196 +46,26 @@ func LoginRender(c *gin.Context) {
 	}
 }
 
-func ForgotRender(c *gin.Context) {
-	isAuthenticated, _ := c.Get("isAuthenticated")
-	if is, ok := isAuthenticated.(bool); ok && is {
-		defaultReturnUrl, _ := c.Get("DefaultReturnUrl")
-		c.Redirect(http.StatusFound, defaultReturnUrl.(string))
-	} else {
-		render, _ := TemplateStorage[c.Request.URL.Path]
-		render.Data = c.Keys
-		c.Render(http.StatusOK, render)
-	}
-}
-
-func SendReset(c *gin.Context) {
-	response := Response{} // todo sync.Pool
-	response.Errors = []string{}
-	response.ErrFor = make(map[string]string)
-	defer response.Recover(c)
-
-	var body struct {
-		Username    string  `json:"username"`
-		Email   string  `json:"email"`
-		Password string  `json:"password"`
-	}
-	decoder := json.NewDecoder(c.Request.Body)
-	err := decoder.Decode(&body)
-
-
-	email := strings.ToLower(body.Email)
-	if len(email) == 0 {
-		response.ErrFor["email"] = "required"
-	} else {
-		r, err := regexp.MatchString(`^[a-zA-Z0-9\-\_\.\+]+@[a-zA-Z0-9\-\_\.]+\.[a-zA-Z0-9\-\_]+$`, email)
-		if err != nil {
-			println(err.Error())
-		}
-		if !r {
-			response.ErrFor["email"] = `invalid email format`
-		}
-	}
-	if response.HasErrors() {
-		response.Fail(c)
-		return
-	}
-
-
-	token := generateToken(21)
-	hash, err := bcrypt.GenerateFromPassword(token, bcrypt.DefaultCost)
-	if err != nil {
-		println(err.Error())
-		return
-	}
-
-	db := getMongoDBInstance()
-	defer db.Session.Close()
-	collection := db.C(USERS)
-	us := User{} // todo pool
-	err = collection.Find(bson.M{"email": email}).One(&us)
-	if err != nil {
-		println(err.Error())
-	}
-	if len(us.Username) == 0 {
-		response.ErrFor["email"] = "email doesn't exist"
-	}
-	if response.HasErrors() {
-		response.Fail(c)
-		return
-	}
-
-	us.ResetPasswordToken = string(hash)
-	us.ResetPasswordExpires = time.Now().Add(24 * time.Hour)
-	collection.UpdateId(us.ID, us)
-
-	resetURL := "http" +"://"+ c.Request.Host +"/login/reset/" + email + "/" + string(token) + "/"
-	c.Set("ResetURL", resetURL)
-	c.Set("Username", us.Username)
-
-
-	mailConf := MailConfig{}
-	mailConf.Data = c.Keys
-	mailConf.From = config.SMTP.From.Name + " <" + config.SMTP.From.Address + ">"
-	mailConf.To = config.SystemEmail
-	mailConf.Subject = "Your " + config.ProjectName + " Account"
-	mailConf.ReplyTo = body.Email
-	mailConf.HtmlPath = "views/login/forgot/email-html.html"
-
-	if err := mailConf.SendMail(); err != nil {
-		//todo it's not serious
-	}
-	response.Success = true
-	c.JSON(http.StatusOK, response)
-}
-
-
-
-
-
-
-func ResetRender(c *gin.Context) {
-	isAuthenticated, _ := c.Get("isAuthenticated")
-	if is, ok := isAuthenticated.(bool); ok && is {
-		defaultReturnUrl, _ := c.Get("DefaultReturnUrl")
-		c.Redirect(http.StatusFound, defaultReturnUrl.(string))
-	} else {
-		render, _ := TemplateStorage["/login/reset/"] // can't handle /login/reset/:email:token
-		render.Data = c.Keys
-		c.Render(http.StatusOK, render)
-	}
-}
-
-func ResetPassword (c *gin.Context) {
-
-	var body struct {
-		Confirm   string  `json:"confirm"`
-		Password string  `json:"password"`
-	}
-	decoder := json.NewDecoder(c.Request.Body)
-	err := decoder.Decode(&body)
-
-
-	response := Response{} // todo sync.Pool
-	response.Errors = []string{}
-	response.ErrFor = make(map[string]string)
-	defer response.Recover(c)
-
-
-	password := strings.ToLower(body.Password)
-	if len(password) == 0 {
-		response.ErrFor["password"] = "required"
-	}
-	confirm := strings.ToLower(body.Confirm)
-	if len(confirm) == 0 {
-		response.ErrFor["confirm"] = "required"
-	}
-	if confirm != password {
-		response.Errors = append(response.Errors,"Passwords do not match.")
-	}
-	if response.HasErrors() {
-		response.Fail(c)
-		return
-	}
-
-	db := getMongoDBInstance()
-	defer db.Session.Close()
-	collection := db.C(USERS)
-	us := User{}
-	err = collection.Find(bson.M{"email": c.Param("email"), "resetPasswordExpires": bson.M{"$gt": time.Now()}}).One(&us)
-
-	if err != nil {
-		println(err.Error())
-		response.Fail(c)
-		return
-	}
-
-	err = bcrypt.CompareHashAndPassword([]byte(us.ResetPasswordToken), []byte(c.Param("token")))
-
-	if err == nil {
-		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-		if err != nil {
-			response.Errors = append(response.Errors, err.Error())
-			response.Fail(c)
-			return
-		}
-		us.Password = string(hashedPassword)
-		collection.UpdateId(us.ID, us)
-	}
-	response.Success = true
-	c.JSON(http.StatusOK, response)
-}
-
-
 func Login(c *gin.Context) {
 	response := Response{} // todo sync.Pool
-	response.Errors = []string{}
-	response.ErrFor = make(map[string]string)
 	defer response.Recover(c)
 
-	var body struct {
-		Username    string  `json:"username"`
-		Email   string  `json:"email"`
-		Password string  `json:"password"`
-	}
 	decoder := json.NewDecoder(c.Request.Body)
-	err := decoder.Decode(&body)
+	err := decoder.Decode(&response)
+	if err != nil {
+		response.Errors = append(response.Errors, err.Error())
+		response.Fail(c)
+		return
+	}
+	// clean errors from client
+	response.CleanErrors()
 
-	username := strings.ToLower(body.Username)
-	if len(username) == 0 {
+	// validate
+	response.Username = strings.ToLower(response.Username)
+	if len(response.Username) == 0 {
 		response.ErrFor["username"] = "required"
 	}
-	password := body.Password
-	if len(password) == 0 {
+	if len(response.Password) == 0 {
 		response.ErrFor["password"] = "required"
 	}
 	if response.HasErrors() {
@@ -244,47 +73,69 @@ func Login(c *gin.Context) {
 		return
 	}
 
-
-	// TODO  abuseFilter!!!!!!!!!!!!!
 	db := getMongoDBInstance()
 	defer db.Session.Close()
+
+	// abuseFilter
 	collection := db.C(LOGINATTEMPTS)
-	at := LoginAttempt{} // todo pool
-	at.ID = bson.NewObjectId()
-	at.IP = c.ClientIP()
-	at.User = username
-	err = collection.Insert(at)
-	if err != nil {
-		println(err.Error())
+	IpCountChan := make(chan int)
+	IpUserCountChan := make(chan int)
+	clientIP := c.ClientIP()
+	go getCount(collection, IpCountChan, bson.M{
+		"ip": clientIP,
+	})
+	go getCount(collection, IpUserCountChan, bson.M{
+		"ip": clientIP,
+		"user": response.Username,
+	})
+	IpCount := <- IpCountChan
+	IpUserCount := <- IpUserCountChan
+	if IpCount > config.LoginAttempts.ForIp || IpUserCount > config.LoginAttempts.ForIpAndUser {
+		response.Errors = append(response.Errors, "You've reached the maximum number of login attempts. Please try again later.")
+		response.Fail(c)
+		return
 	}
 
+	// attemptLogin
 	collection = db.C(USERS)
-	us := User{}
-	err = collection.Find(bson.M{"username": username}).One(&us)
+	user := User{}
+	err = collection.Find(bson.M{"$or": []bson.M{
+		bson.M{"username": response.Username},
+		bson.M{"email": response.Email},
+	}}).One(&user)
 	if err != nil {
-		println(err.Error())
-	}
-	var returnURL string
-	if len(us.Username) > 0 {
-		err := bcrypt.CompareHashAndPassword([]byte(us.Password), []byte(password))
-		if err != nil {
-			response.Errors = append(response.Errors, err.Error())
+		if err == mgo.ErrNotFound {
+			response.Errors = append(response.Errors, "check username and password")
 			response.Fail(c)
 			return
 		}
-		sess := sessions.Default(c)
-		sess.Set("public", us.ID.Hex())
-		response.Success = true
-		if returnURL_, ok_ := sess.Get("returnURL").(string); ok_ {
-			returnURL = returnURL_
+		panic(err)
+	}
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(response.Password))
+	if err != nil {
+		attempt := LoginAttempt{}
+		attempt.ID = bson.NewObjectId()
+		attempt.IP = clientIP
+		attempt.User = response.Username
+		collection = db.C(LOGINATTEMPTS)
+		err = collection.Insert(attempt)
+		if err != nil {
+			panic(err)
 		}
-		sess.Delete("returnURL")
-		sess.Save()
+		response.Errors = append(response.Errors, "check username and password")
+		response.Fail(c)
+		return
 	}
 
-	if len(returnURL) > 0 {
+	session := sessions.Default(c)
+	session.Set("public", user.ID.Hex())
+	if returnURL, ok := session.Get("returnURL").(string); ok {
 		c.Redirect(http.StatusFound, returnURL)
-	} else {
-		c.JSON(http.StatusOK, response)
 	}
+	session.Delete("returnURL")
+	session.Save()
+
+	response.Success = true
+	c.JSON(http.StatusOK, response)
 }
+

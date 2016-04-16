@@ -22,3 +22,9 @@ func getDBName(url *string) string {
 	arr = strings.Split(arr[len(arr) - 1], "/")
 	return arr[len(arr) - 1]
 }
+
+// count of documents in collection
+func getCount(collection *mgo.Collection, c chan int, query interface{}) {
+	count, _ := collection.Find(query).Count()
+	c <- count
+}
