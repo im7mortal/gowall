@@ -11,6 +11,7 @@ import (
 	"github.com/markbates/goth/gothic"
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/providers/facebook"
+	"gopkg.in/mgo.v2"
 )
 
 
@@ -26,7 +27,7 @@ func startOAuth(c *gin.Context) {
 	c.Request.URL.RawQuery += "provider=" + provider
 	_, err := goth.GetProvider(provider)
 	if err != nil {
-		// TODO
+		// TODO HACK
 		redir := "http://" + c.Request.Host + "/signup_/facebook/callback"
 		goth.UseProviders(
 			facebook.New(config.Socials["facebook"].Key, config.Socials["facebook"].Secret, redir),
@@ -38,36 +39,45 @@ func startOAuth(c *gin.Context) {
 func CompleteUserAuth(c *gin.Context) {
 	// gothic was written for another path
 	// i just put provider query
-	c.Request.URL.RawQuery += "&provider=" + c.Param("provider")
+	provider := c.Param("provider")
+	c.Request.URL.RawQuery += "&provider=" + provider
 	// print our state string to the console. Ideally, you should verify
 	// that it's the same string as the one you set in `setState`
-	user_, err := gothic.CompleteUserAuth(c.Writer, c.Request)
+	userGoth, err := gothic.CompleteUserAuth(c.Writer, c.Request)
 	if err != nil {
-		println(err.Error())
-		//todo error handling
-		return
-	}
-	if len(user_.Name) == 0 {
-		println("12  error")
-		//todo error handling
-		return
-	}
-	user_string, _ := json.Marshal(user_)
-
-	sessionCookie := sessions.Default(c)
-	sessionCookie.Set("socialProfile", user_string)
-	sessionCookie.Set("provider", c.Param("provider"))
-	sessionCookie.Save()
-
-	if len(user_.Email) == 0 {
-		render, _ := TemplateStorage["/signup/social/"]
+		render, _ := TemplateStorage["/signup/"]
 		render.Data = c.Keys
 		c.Render(http.StatusOK, render)
 		return
 	}
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+	collection := db.C(USERS)
+	user := User{}
+	err = collection.Find(bson.M{"facebook.id": userGoth.UserID}).One(&user)
+	// we expect err == mgo.ErrNotFound for success
+	if err == nil {
+		render, _ := TemplateStorage["/signup/"]
+		render.Data = c.Keys
+		c.Render(http.StatusOK, render)
+		return
+	} else if err != mgo.ErrNotFound {
+		panic(err)
+	}
+	userGothString, err := json.Marshal(userGoth)
+	if err != nil {
+		panic(err)
+	}
 
+	sessionCookie := sessions.Default(c)
+	sessionCookie.Set("socialProfile", userGothString)
+	sessionCookie.Set("provider", provider)
+	sessionCookie.Save()
 
-	SignUpSocial(c)
+	c.Set("emailExist", len(userGoth.Email) != 0)
+	render, _ := TemplateStorage["/signup/social/"]
+	render.Data = c.Keys
+	c.Render(http.StatusOK, render)
 }
 
 func SignUpSocial(c *gin.Context) {
