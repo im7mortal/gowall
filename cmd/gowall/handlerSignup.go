@@ -43,8 +43,7 @@ func Signup(c *gin.Context) {
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&response)
 	if err != nil {
-		response.Errors = append(response.Errors, err.Error())
-		response.Fail(c)
+		panic(err)
 		return
 	}
 	// clean errors from client
@@ -87,8 +86,7 @@ func Signup(c *gin.Context) {
 	// createUser
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(response.Password), bcrypt.DefaultCost)
 	if err != nil {
-		response.Errors = append(response.Errors, err.Error())
-		response.Fail(c)
+		panic(err)
 		return
 	}
 
@@ -101,8 +99,7 @@ func Signup(c *gin.Context) {
 
 	err = collection.Insert(user)
 	if err != nil {
-		response.Errors = append(response.Errors, err.Error())
-		response.Fail(c)
+		panic(err)
 		return
 	}
 
@@ -115,8 +112,7 @@ func Signup(c *gin.Context) {
 	user.Roles.Account = account.ID
 	err = collection.UpdateId(user.ID, user)
 	if err != nil {
-		response.Errors = append(response.Errors, err.Error())
-		response.Fail(c)
+		panic(err)
 		return
 	}
 
@@ -133,8 +129,7 @@ func Signup(c *gin.Context) {
 	collection = db.C(ACCOUNTS)
 	err = collection.Insert(account)
 	if err != nil {
-		response.Errors = append(response.Errors, err.Error())
-		response.Fail(c)
+		panic(err)
 		return
 	}
 

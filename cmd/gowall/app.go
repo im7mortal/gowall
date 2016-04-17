@@ -56,6 +56,14 @@ func main() {
 
 	Router.Use(sessions.Sessions("session", store))
 	Router.Use(func(c *gin.Context) {
+
+		session := sessions.Default(c)
+		oauthMessage, exist := session.Get("oauthMessage").(string)
+		session.Delete("oauthMessage")
+		session.Save()
+
+		c.Set("oauthMessage", oauthMessage)
+		c.Set("oauthMessageExist", exist)
 		c.Set("ProjectName", config.ProjectName)
 		c.Set("CopyrightYear", "2016") // todo
 		c.Set("CopyrightName", config.CompanyName)

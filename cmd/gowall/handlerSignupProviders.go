@@ -12,6 +12,7 @@ import (
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/providers/facebook"
 	"gopkg.in/mgo.v2"
+	"html/template"
 )
 
 
@@ -57,10 +58,10 @@ func CompleteUserAuth(c *gin.Context) {
 	err = collection.Find(bson.M{"facebook.id": userGoth.UserID}).One(&user)
 	// we expect err == mgo.ErrNotFound for success
 	if err == nil {
-		render, _ := TemplateStorage["/signup/"]
-		c.Set("oauthMessage", "We found a user linked to your " + provider + " account")
-		render.Data = c.Keys
-		c.Render(http.StatusOK, render)
+		session := sessions.Default(c)
+		session.Set("oauthMessage", "We found a user linked to your " + provider + " account")
+		session.Save()
+		c.Redirect(http.StatusFound, "/signup/")
 		return
 	} else if err != mgo.ErrNotFound {
 		panic(err)
@@ -71,11 +72,11 @@ func CompleteUserAuth(c *gin.Context) {
 	}
 
 	sessionCookie := sessions.Default(c)
-	sessionCookie.Set("socialProfile", userGothString)
+	sessionCookie.Set("socialProfile", string(userGothString))
 	sessionCookie.Set("provider", provider)
 	sessionCookie.Save()
 
-	c.Set("email", userGoth.Email)
+	c.Set("email", template.JS(userGoth.Email))
 	render, _ := TemplateStorage["/signup/social/"]
 	render.Data = c.Keys
 	c.Render(http.StatusOK, render)
@@ -83,8 +84,6 @@ func CompleteUserAuth(c *gin.Context) {
 
 func SignUpSocial(c *gin.Context) {
 	response := Response{}
-	response.Errors = []string{}
-	response.ErrFor = make(map[string]string)
 	defer response.Recover(c)
 
 	decoder := json.NewDecoder(c.Request.Body)
@@ -92,6 +91,8 @@ func SignUpSocial(c *gin.Context) {
 	if err != nil {
 		panic(err)
 	}
+	response.Errors = []string{}
+	response.ErrFor = make(map[string]string)
 
 	// validate
 	response.ValidateEmail()
@@ -105,9 +106,8 @@ func SignUpSocial(c *gin.Context) {
 
 	socialProfile_, ok := session.Get("socialProfile").(string)
 	if !ok || len(socialProfile_) == 0 {
-		render, _ := TemplateStorage["/signup/"]
-		render.Data = c.Keys
-		c.Render(http.StatusOK, render)
+		response.Errors= append(response.Errors, "something went wrong. Refresh please")
+		response.Fail(c)
 		return
 	}
 	socialProfile := goth.User{}
@@ -121,13 +121,12 @@ func SignUpSocial(c *gin.Context) {
 	defer db.Session.Close()
 	collection := db.C(USERS)
 	user := User{}
+	println(response.Email)
 	err = collection.Find(bson.M{"email": response.Email}).One(&user)
 	// we expect err == mgo.ErrNotFound for success
 	if err == nil {
-		render, _ := TemplateStorage["/signup/"]
-		c.Set("oauthMessage", "email already registered") // TODO
-		render.Data = c.Keys
-		c.Render(http.StatusOK, render)
+		response.ErrFor["email"] = "email already registered"
+		response.Fail(c)
 		return
 	} else if err != mgo.ErrNotFound {
 		panic(err)
@@ -151,11 +150,7 @@ func SignUpSocial(c *gin.Context) {
 	}
 	err = collection.Find(bson.M{"username": username}).One(&user)
 	if err == nil {
-		render, _ := TemplateStorage["/signup/"]
-		c.Set("oauthMessage", "email already registered") // TODO
-		render.Data = c.Keys
-		c.Render(http.StatusOK, render)
-		return
+		username += "-gowallUser"
 	} else if err != mgo.ErrNotFound {
 		panic(err)
 	}
