@@ -75,7 +75,7 @@ func CompleteUserAuth(c *gin.Context) {
 	sessionCookie.Set("provider", provider)
 	sessionCookie.Save()
 
-	c.Set("emailExist", len(userGoth.Email) != 0)
+	c.Set("email", userGoth.Email)
 	render, _ := TemplateStorage["/signup/social/"]
 	render.Data = c.Keys
 	c.Render(http.StatusOK, render)
