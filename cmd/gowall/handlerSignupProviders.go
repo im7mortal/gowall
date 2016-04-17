@@ -58,6 +58,7 @@ func CompleteUserAuth(c *gin.Context) {
 	// we expect err == mgo.ErrNotFound for success
 	if err == nil {
 		render, _ := TemplateStorage["/signup/"]
+		c.Set("oauthMessage", "We found a user linked to your " + provider + " account")
 		render.Data = c.Keys
 		c.Render(http.StatusOK, render)
 		return
@@ -81,47 +82,57 @@ func CompleteUserAuth(c *gin.Context) {
 }
 
 func SignUpSocial(c *gin.Context) {
-
-	response := Response{} // todo sync.Pool
+	response := Response{}
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
 	defer response.Recover(c)
 
-	var body struct {
-		Email   string  `json:"email"`
-	}
 	decoder := json.NewDecoder(c.Request.Body)
-	err := decoder.Decode(&body)
-
-	email := strings.ToLower(body.Email)
-	if len(email) == 0 {
-		response.ErrFor["email"] = "required"
-	} else {
-		r, err := regexp.MatchString(`^[a-zA-Z0-9\-\_\.\+]+@[a-zA-Z0-9\-\_\.]+\.[a-zA-Z0-9\-\_]+$`, email)
-		if err != nil {
-			println(err.Error())
-		}
-		if !r {
-			response.ErrFor["email"] = `invalid email format`
-		}
+	err := decoder.Decode(&response)
+	if err != nil {
+		panic(err)
 	}
 
+	// validate
+	response.ValidateEmail()
 	if response.HasErrors() {
 		response.Fail(c)
 		return
 	}
+
+	// check duplicate
 	session := sessions.Default(c)
 
 	socialProfile_, ok := session.Get("socialProfile").(string)
-	if ok && len(socialProfile_) == 0 {
+	if !ok || len(socialProfile_) == 0 {
+		render, _ := TemplateStorage["/signup/"]
+		render.Data = c.Keys
+		c.Render(http.StatusOK, render)
 		return
 	}
 	socialProfile := goth.User{}
 	err = json.Unmarshal([]byte(socialProfile_), &socialProfile)
 	if err != nil {
-
+		panic(err)
 	}
 
+	// duplicateEmailCheck
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+	collection := db.C(USERS)
+	user := User{}
+	err = collection.Find(bson.M{"email": response.Email}).One(&user)
+	// we expect err == mgo.ErrNotFound for success
+	if err == nil {
+		render, _ := TemplateStorage["/signup/"]
+		c.Set("oauthMessage", "email already registered") // TODO
+		render.Data = c.Keys
+		c.Render(http.StatusOK, render)
+		return
+	} else if err != mgo.ErrNotFound {
+		panic(err)
+	}
+	// duplicateUsernameCheck
 	var username string
 	if len(socialProfile.Name) != 0 {
 		username = socialProfile.Name
@@ -129,79 +140,91 @@ func SignUpSocial(c *gin.Context) {
 		username = socialProfile.UserID
 	}
 	reg, err := regexp.Compile(`/[^a-zA-Z0-9\-\_]/g`)
-
-
+	if err != nil {
+		panic(err)
+	}
 	usernameSrc := []byte(username)
 	reg.ReplaceAll(usernameSrc, []byte(""))
 	username = string(usernameSrc)
-
-
-	db := getMongoDBInstance()
-	defer db.Session.Close()
-	collection := db.C(USERS)
-	us := User{} // todo pool
-	err = collection.Find(bson.M{"$or": []bson.M{bson.M{"username": username}, bson.M{"email": email}}}).One(&us)
-
-	if len(us.Username) != 0 {
+	if len(user.Username) != 0 {
 		response.Fail(c)
-		return
 	}
-	if len(us.Email) != 0 {
-		response.Fail(c)
+	err = collection.Find(bson.M{"username": username}).One(&user)
+	if err == nil {
+		render, _ := TemplateStorage["/signup/"]
+		c.Set("oauthMessage", "email already registered") // TODO
+		render.Data = c.Keys
+		c.Render(http.StatusOK, render)
 		return
+	} else if err != mgo.ErrNotFound {
+		panic(err)
 	}
 
-	us.ID = bson.NewObjectId()
-	us.IsActive = "yes"
-	us.Username = us.ID.Hex()
-	us.Email = strings.ToLower(email)
-	us.Search = []string{username, email}
-
-	//provider, _ := session.Get("provider").(string)
-
-	us.Facebook = vendorOauth{}
-	us.Facebook.ID = socialProfile.UserID
-
-	err = collection.Insert(us)
-
+	// createUser
+	user.ID = bson.NewObjectId()
+	user.IsActive = "yes"
+	user.Username = user.ID.Hex()
+	user.Email = strings.ToLower(response.Email)
+	user.Search = []string{username, response.Email}
+	user.Facebook = vendorOauth{}
+	user.Facebook.ID = socialProfile.UserID
+	err = collection.Insert(user)
 	if err != nil {
-		println(err.Error())
-		//todo error handling
+		panic(err)
 		return
 	}
-	ac := Account{}
 
-	ac.ID = bson.NewObjectId()
+	// createAccount
+	account := Account{}
 
-	us.Roles.Account = ac.ID
+	account.ID = bson.NewObjectId()
 
-	err = collection.UpdateId(us.ID, us)
+	user.Roles.Account = account.ID
+
+	err = collection.UpdateId(user.ID, user)
 	if err != nil {
-		response.Errors = append(response.Errors, err.Error())
-		response.Fail(c)
+		panic(err)
 		return
 	}
 
 	if config.RequireAccountVerification {
-		ac.IsVerified = "no"
+		account.IsVerified = "no"
 	} else {
-		ac.IsVerified = "yes"
+		account.IsVerified = "yes"
 	}
-	ac.Name.Full = username
-	ac.User.ID = us.ID
-	ac.User.Name = us.Username
-	ac.Search = []string{username}
+	account.Name.Full = username
+	account.User.ID = user.ID
+	account.User.Name = user.Username
+	account.Search = []string{username}
 
 	collection = db.C(ACCOUNTS)
-	err = collection.Insert(ac)
+	err = collection.Insert(account)
 	if err != nil {
-		response.Errors = append(response.Errors, err.Error())
-		response.Fail(c)
+		panic(err)
 		return
 	}
-	sess := sessions.Default(c)
-	sess.Set("public", us.ID.Hex())
-	sess.Save()
+
+	// sendWelcomeEmail
+	go func() {
+		c.Set("Username", response.Username)
+		c.Set("Email", response.Email)
+		c.Set("LoginURL", "http://" + c.Request.Host + "/login/")
+
+		mailConf := MailConfig{}
+		mailConf.Data = c.Keys
+		mailConf.From = config.SMTP.From.Name + " <" + config.SMTP.From.Address + ">"
+		mailConf.To = config.SystemEmail
+		mailConf.Subject = "Your " + config.ProjectName + " Account"
+		mailConf.ReplyTo = response.Email
+		mailConf.HtmlPath = "views/signup/email-html.html"
+
+		if err := mailConf.SendMail(); err != nil {
+			println("Error Sending Welcome Email: " + err.Error())
+		}
+	}()
+
+	// logUserIn
+	user.login(c)
 
 	response.Success = true
 	c.JSON(http.StatusOK, response)
