@@ -172,3 +172,6 @@ first.
 ## License
 
 MIT
+
+1. Can't do dynamic providers
+2. Can't init check hostName

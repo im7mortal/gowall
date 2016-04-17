@@ -11,12 +11,12 @@ import (
 	"github.com/markbates/goth/gothic"
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/providers/facebook"
+	"github.com/markbates/goth/providers/github"
 	"gopkg.in/mgo.v2"
 	"html/template"
 )
 
-
-func init()  {
+func init() {
 	gothic.Store = store
 }
 
@@ -28,11 +28,17 @@ func startOAuth(c *gin.Context) {
 	c.Request.URL.RawQuery += "provider=" + provider
 	_, err := goth.GetProvider(provider)
 	if err != nil {
-		// TODO HACK
-		redir := "http://" + c.Request.Host + "/signup_/facebook/callback"
-		goth.UseProviders(
-			facebook.New(config.Socials["facebook"].Key, config.Socials["facebook"].Secret, redir),
-		)
+		callbackURL := "http://" + c.Request.Host + "/signup_/" + provider + "/callback"
+		if provider == "github" {
+			goth.UseProviders(
+				github.New(config.Socials[provider].Key, config.Socials[provider].Secret, callbackURL),
+			)
+		}
+		if provider == "facebook" {
+			goth.UseProviders(
+				facebook.New(config.Socials[provider].Key, config.Socials[provider].Secret, callbackURL),
+			)
+		}
 	}
 	gothic.BeginAuthHandler(c.Writer, c.Request)
 }
@@ -55,7 +61,7 @@ func CompleteUserAuth(c *gin.Context) {
 	defer db.Session.Close()
 	collection := db.C(USERS)
 	user := User{}
-	err = collection.Find(bson.M{"facebook.id": userGoth.UserID}).One(&user)
+	err = collection.Find(bson.M{provider + ".id": userGoth.UserID}).One(&user)
 	// we expect err == mgo.ErrNotFound for success
 	if err == nil {
 		session := sessions.Default(c)
@@ -106,7 +112,7 @@ func SignUpSocial(c *gin.Context) {
 
 	socialProfile_, ok := session.Get("socialProfile").(string)
 	if !ok || len(socialProfile_) == 0 {
-		response.Errors= append(response.Errors, "something went wrong. Refresh please")
+		response.Errors = append(response.Errors, "something went wrong. Refresh please")
 		response.Fail(c)
 		return
 	}
@@ -161,8 +167,7 @@ func SignUpSocial(c *gin.Context) {
 	user.Username = user.ID.Hex()
 	user.Email = strings.ToLower(response.Email)
 	user.Search = []string{username, response.Email}
-	user.Facebook = vendorOauth{}
-	user.Facebook.ID = socialProfile.UserID
+	user.updateProvider(socialProfile)
 	err = collection.Insert(user)
 	if err != nil {
 		panic(err)
