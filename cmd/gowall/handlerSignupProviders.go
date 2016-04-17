@@ -28,7 +28,7 @@ func startOAuth(c *gin.Context) {
 	c.Request.URL.RawQuery += "provider=" + provider
 	_, err := goth.GetProvider(provider)
 	if err != nil {
-		callbackURL := "http://" + c.Request.Host + "/signup_/" + provider + "/callback"
+		callbackURL := "http://" + c.Request.Host + "/signup/" + provider + "/callback"
 		if provider == "github" {
 			goth.UseProviders(
 				github.New(config.Socials[provider].Key, config.Socials[provider].Secret, callbackURL),
