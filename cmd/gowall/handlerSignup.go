@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"golang.org/x/crypto/bcrypt"
 	"github.com/gin-gonic/contrib/sessions"
-	"github.com/markbates/goth"
 )
 
 func SignupRender(c *gin.Context) {
@@ -164,19 +163,4 @@ func (user *User)login(c *gin.Context) {
 	sess := sessions.Default(c)
 	sess.Set("public", user.ID.Hex())
 	sess.Save()
-}
-
-func (user *User) updateProvider (socialProfile goth.User) {
-	switch socialProfile.Provider {
-	case "facebook":
-		user.Facebook = vendorOauth{}
-		user.Facebook.ID = socialProfile.UserID
-		return
-	case "github":
-		user.Github = vendorOauth{}
-		user.Github.ID = socialProfile.UserID
-		return
-	default:
-		panic("provider doesn't exist")
-	}
 }

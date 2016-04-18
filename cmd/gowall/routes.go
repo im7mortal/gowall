@@ -18,8 +18,13 @@ func BindRoutes(router *gin.Engine) {
 
 	//social sign up
 	router.POST("/signup/social/", SignUpSocial)
-	router.GET("/signup/:provider/", startOAuth)
-	router.GET("/signup/:provider/callback/", CompleteUserAuth)
+	router.GET("/signup/:provider/", SignUpProvider)
+
+	//OAuth callback for /signup/  /login/  /settings/connect/
+	router.GET("/provider/:provider/callback/", CompleteOAuth)
+
+	//social login
+	router.GET("/provider/:provider/", LoginProvider)
 
 	//login/out
 	router.GET("/login/", LoginRender)
@@ -30,9 +35,6 @@ func BindRoutes(router *gin.Engine) {
 	router.GET("/login/reset/:email/:token/", ResetRender)
 	router.PUT("/login/reset/:email/:token/", ResetPassword)
 	router.GET("/logout/", Logout)
-
-	//social login
-	router.GET("/provider/:provider/", LoginProvider)
 
 	//admin
 	admin := router.Group("/admin")

@@ -9,7 +9,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"github.com/gin-gonic/contrib/sessions"
 	"gopkg.in/mgo.v2"
-	"github.com/markbates/goth/gothic"
 )
 
 func LoginRender(c *gin.Context) {
@@ -138,65 +137,4 @@ func Login(c *gin.Context) {
 
 	response.Success = true
 	c.JSON(http.StatusOK, response)
-}
-
-func LoginProvider(c *gin.Context) {
-	// don't like that hack
-	// gothic was written for another path
-	// I just put provider query
-	provider := c.Param("provider")
-	c.Request.URL.RawQuery += "provider=" + provider
-
-	// TODO I don't like it
-	checkProvider(provider, c.Request.Host)
-	gothic.BeginAuthHandler(c.Writer, c.Request)
-}
-
-func LoginCallbackProvider(c *gin.Context) {
-	// gothic was written for another path
-	// i just put provider query
-	provider := c.Param("provider")
-	c.Request.URL.RawQuery += "&provider=" + provider
-
-	//TODO some recommendation from goth
-	// print our state string to the console. Ideally, you should verify
-	// that it's the same string as the one you set in `setState`
-
-	userGoth, err := gothic.CompleteUserAuth(c.Writer, c.Request)
-	if err != nil {
-		println("here")
-		render, _ := TemplateStorage["/login/"]
-		render.Data = c.Keys
-		c.Render(http.StatusOK, render)
-		return
-	}
-	db := getMongoDBInstance()
-	defer db.Session.Close()
-	collection := db.C(USERS)
-	user := User{}
-	err = collection.Find(bson.M{provider + ".id": userGoth.UserID}).One(&user)
-	// we expect err == mgo.ErrNotFound for success
-	if err != nil {
-		println("here")
-		if err == mgo.ErrNotFound {
-			session := sessions.Default(c)
-			session.Set("oauthMessage", "No users found linked to your " + provider + " account. You may need to create an account first.")
-			session.Save()
-			c.Redirect(http.StatusFound, "/login/")
-			return
-		}
-		panic(err)
-	}
-
-	session := sessions.Default(c)
-	session.Set("public", user.ID.Hex())
-	returnURL, ok := session.Get("returnURL").(string)
-	session.Delete("returnURL")
-	session.Save()
-
-	if ok {
-		c.Redirect(http.StatusFound, returnURL)
-	} else {
-		c.Redirect(http.StatusFound, user.DefaultReturnUrl())
-	}
 }

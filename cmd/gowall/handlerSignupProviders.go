@@ -8,53 +8,28 @@ import (
 	"strings"
 	"encoding/json"
 	"github.com/gin-gonic/contrib/sessions"
-	"github.com/markbates/goth/gothic"
 	"github.com/markbates/goth"
-	"github.com/markbates/goth/providers/facebook"
-	"github.com/markbates/goth/providers/github"
 	"gopkg.in/mgo.v2"
 	"html/template"
 )
 
-func init() {
-	gothic.Store = store
+func SignUpProvider(c *gin.Context) {
+	session := sessions.Default(c)
+	session.Set("action", "/signup/")
+	session.Save()
+	startOAuth(c)
 }
 
-func startOAuth(c *gin.Context) {
-	// don't like that hack
-	// gothic was written for another path
-	// I just put provider query
-	provider := c.Param("provider")
-	c.Request.URL.RawQuery += "provider=" + provider
-
-	// TODO I don't like it
-	checkProvider(provider, c.Request.Host)
-	gothic.BeginAuthHandler(c.Writer, c.Request)
-}
-
-func CompleteUserAuth(c *gin.Context) {
-	// gothic was written for another path
-	// i just put provider query
-	provider := c.Param("provider")
-	c.Request.URL.RawQuery += "&provider=" + provider
-	// print our state string to the console. Ideally, you should verify
-	// that it's the same string as the one you set in `setState`
-	userGoth, err := gothic.CompleteUserAuth(c.Writer, c.Request)
-	if err != nil {
-		render, _ := TemplateStorage["/signup/"]
-		render.Data = c.Keys
-		c.Render(http.StatusOK, render)
-		return
-	}
+func signupProvider(c *gin.Context, userGoth goth.User) {
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(USERS)
 	user := User{}
-	err = collection.Find(bson.M{provider + ".id": userGoth.UserID}).One(&user)
+	err := collection.Find(bson.M{userGoth.Provider + ".id": userGoth.UserID}).One(&user)
 	// we expect err == mgo.ErrNotFound for success
 	if err == nil {
 		session := sessions.Default(c)
-		session.Set("oauthMessage", "We found a user linked to your " + provider + " account")
+		session.Set("oauthMessage", "We found a user linked to your " + userGoth.Provider + " account")
 		session.Save()
 		c.Redirect(http.StatusFound, "/signup/")
 		return
@@ -66,10 +41,10 @@ func CompleteUserAuth(c *gin.Context) {
 		panic(err)
 	}
 
-	sessionCookie := sessions.Default(c)
-	sessionCookie.Set("socialProfile", string(userGothString))
-	sessionCookie.Set("provider", provider)
-	sessionCookie.Save()
+	session := sessions.Default(c)
+	session.Set("socialProfile", string(userGothString))
+	session.Set("provider", userGoth.Provider)
+	session.Save()
 
 	c.Set("email", template.JS(userGoth.Email))
 	render, _ := TemplateStorage["/signup/social/"]
@@ -217,25 +192,4 @@ func SignUpSocial(c *gin.Context) {
 
 	response.Success = true
 	c.JSON(http.StatusOK, response)
-}
-
-func checkProvider(provider, hostname string) {
-	_, err := goth.GetProvider(provider)
-	if err != nil {
-		callbackURL := "http://" + hostname + "/signup/" + provider + "/callback"
-		switch provider {
-		case "facebook":
-			goth.UseProviders(
-				facebook.New(config.Socials[provider].Key, config.Socials[provider].Secret, callbackURL),
-			)
-			return
-		case "github":
-			goth.UseProviders(
-				github.New(config.Socials[provider].Key, config.Socials[provider].Secret, callbackURL),
-			)
-			return
-		default:
-			panic("provider doesn't exist")
-		}
-	}
 }
