@@ -32,16 +32,7 @@ func BindRoutes(router *gin.Engine) {
 	router.GET("/logout/", Logout)
 
 	//social login
-	router.GET("/login/twitter/", Index)
-	router.GET("/login/twitter/callback/", Index)
-	router.GET("/login/github/", Index)
-	router.GET("/login/github/callback/", Index)
-	router.GET("/login/facebook/", Index)
-	router.GET("/login/facebook/callback/", Index)
-	router.GET("/login/google/", Index)
-	router.GET("/login/google/callback/", Index)
-	router.GET("/login/tumblr/", Index)
-	router.GET("/login/tumblr/callback/", Index)
+	router.GET("/provider/:provider/", LoginProvider)
 
 	//admin
 	admin := router.Group("/admin")

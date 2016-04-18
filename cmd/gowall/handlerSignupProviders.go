@@ -26,20 +26,9 @@ func startOAuth(c *gin.Context) {
 	// I just put provider query
 	provider := c.Param("provider")
 	c.Request.URL.RawQuery += "provider=" + provider
-	_, err := goth.GetProvider(provider)
-	if err != nil {
-		callbackURL := "http://" + c.Request.Host + "/signup/" + provider + "/callback"
-		if provider == "github" {
-			goth.UseProviders(
-				github.New(config.Socials[provider].Key, config.Socials[provider].Secret, callbackURL),
-			)
-		}
-		if provider == "facebook" {
-			goth.UseProviders(
-				facebook.New(config.Socials[provider].Key, config.Socials[provider].Secret, callbackURL),
-			)
-		}
-	}
+
+	// TODO I don't like it
+	checkProvider(provider, c.Request.Host)
 	gothic.BeginAuthHandler(c.Writer, c.Request)
 }
 
@@ -228,4 +217,25 @@ func SignUpSocial(c *gin.Context) {
 
 	response.Success = true
 	c.JSON(http.StatusOK, response)
+}
+
+func checkProvider(provider, hostname string) {
+	_, err := goth.GetProvider(provider)
+	if err != nil {
+		callbackURL := "http://" + hostname + "/signup/" + provider + "/callback"
+		switch provider {
+		case "facebook":
+			goth.UseProviders(
+				facebook.New(config.Socials[provider].Key, config.Socials[provider].Secret, callbackURL),
+			)
+			return
+		case "github":
+			goth.UseProviders(
+				github.New(config.Socials[provider].Key, config.Socials[provider].Secret, callbackURL),
+			)
+			return
+		default:
+			panic("provider doesn't exist")
+		}
+	}
 }

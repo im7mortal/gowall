@@ -176,5 +176,7 @@ func (user *User) updateProvider (socialProfile goth.User) {
 		user.Github = vendorOauth{}
 		user.Github.ID = socialProfile.UserID
 		return
+	default:
+		panic("provider doesn't exist")
 	}
 }
