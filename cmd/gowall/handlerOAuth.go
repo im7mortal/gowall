@@ -58,6 +58,9 @@ func CompleteOAuth(c *gin.Context) {
 	case "/login/":
 		loginProvider(c, userGoth)
 		return
+	case "/account/settings/":
+		settingsProvider(c, userGoth)
+		return
 	default:
 		panic("OAuth action isn't defined")
 	}
@@ -97,5 +100,39 @@ func (user *User) updateProvider (socialProfile goth.User) {
 		return
 	default:
 		panic("provider doesn't exist")
+	}
+}
+
+func injectSocials(c *gin.Context) {
+
+	_, oauthTwitter := config.Socials["twitter"]
+	_, oauthGitHub := config.Socials["github"]
+	_, oauthFacebook := config.Socials["facebook"]
+	_, oauthGoogle := config.Socials["google"]
+	_, oauthTumblr := config.Socials["tumblr"]
+
+	c.Set("oauth", oauthTwitter || oauthGitHub || oauthFacebook || oauthGoogle || oauthTumblr)
+	c.Set("oauthTwitter", oauthTwitter)
+	c.Set("oauthGitHub", oauthGitHub)
+	c.Set("oauthFacebook", oauthFacebook)
+	c.Set("oauthGoogle", oauthGoogle)
+	c.Set("oauthTumblr", oauthTumblr)
+}
+
+func doUserHasSocials(c *gin.Context, user *User) {
+	if len(user.Facebook.ID) != 0 {
+		c.Set("oauthFacebookActive", true)
+	}
+	if len(user.Twitter.ID) != 0 {
+		c.Set("oauthTwitterActive", true)
+	}
+	if len(user.Github.ID) != 0 {
+		c.Set("oauthGitHubActive", true)
+	}
+	if len(user.Google.ID) != 0 {
+		c.Set("oauthGoogleActive", true)
+	}
+	if len(user.Tumblr.ID) != 0 {
+		c.Set("oauthTumblrActive", true)
 	}
 }

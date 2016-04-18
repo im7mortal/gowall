@@ -122,21 +122,8 @@ func BindRoutes(router *gin.Engine) {
 		account.PUT("/settings/password/", ChangePassword)
 
 		//account > settings > social
-		account.GET("/settings/twitter/", Index)
-		account.GET("/settings/twitter/callback/", Index)
-		account.GET("/settings/twitter/disconnect/", Index)
-		account.GET("/settings/github/", Index)
-		account.GET("/settings/github/callback/", Index)
-		account.GET("/settings/github/disconnect/", Index)
-		account.GET("/settings/facebook/", Index)
-		account.GET("/settings/facebook/callback/", Index)
-		account.GET("/settings/facebook/disconnect/", Index)
-		account.GET("/settings/google/", Index)
-		account.GET("/settings/google/callback/", Index)
-		account.GET("/settings/google/disconnect/", Index)
-		account.GET("/settings/tumblr/", Index)
-		account.GET("/settings/tumblr/callback/", Index)
-		account.GET("/settings/tumblr/disconnect/", Index)
+		account.GET("/providerSettings/:provider/", providerSettings)
+		account.GET("/providerSettings/:provider/disconnect/", Index)
 	}
 
 	//route not found
