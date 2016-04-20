@@ -103,6 +103,19 @@ func (user *User) updateProvider (socialProfile goth.User) {
 	}
 }
 
+func (user *User) disconnectProviderDB (provider string) {
+	switch provider {
+	case "facebook":
+		user.Facebook.ID = ""
+		return
+	case "github":
+		user.Github.ID = ""
+		return
+	default:
+		panic("provider doesn't exist")
+	}
+}
+
 func injectSocials(c *gin.Context) {
 
 	_, oauthTwitter := config.Socials["twitter"]

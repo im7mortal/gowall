@@ -286,3 +286,20 @@ func settingsProvider (c *gin.Context, userGoth goth.User) {
 	c.Redirect(http.StatusFound, "/account/settings/")
 }
 
+func disconnectProvider (c *gin.Context) {
+	user, ok := getUser(c)
+	if !ok {
+		panic("not authorised")
+	}
+	user.disconnectProviderDB(c.Param("provider"))
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+	collection := db.C(USERS)
+	err := collection.UpdateId(user.ID, user)
+	if err != nil {
+		panic(err)
+		return
+	}
+
+	c.Redirect(http.StatusFound, "/account/settings/")
+}

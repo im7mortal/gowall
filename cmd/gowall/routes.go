@@ -123,7 +123,7 @@ func BindRoutes(router *gin.Engine) {
 
 		//account > settings > social
 		account.GET("/providerSettings/:provider/", providerSettings)
-		account.GET("/providerSettings/:provider/disconnect/", Index)
+		account.GET("/providerSettings/:provider/disconnect/", disconnectProvider)
 	}
 
 	//route not found
