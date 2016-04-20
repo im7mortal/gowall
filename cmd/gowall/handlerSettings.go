@@ -277,7 +277,7 @@ func settingsProvider (c *gin.Context, userGoth goth.User) {
 	}
 
 	user.updateProvider(userGoth)
-	err = collection.Insert(user)
+	err = collection.UpdateId(user.ID, user)
 	if err != nil {
 		panic(err)
 		return

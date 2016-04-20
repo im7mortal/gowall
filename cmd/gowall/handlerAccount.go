@@ -165,7 +165,7 @@ func ResendVerification (c *gin.Context) {
 	mailConf.HtmlPath = "views/account/verification/email-html.html"
 
 	if err := mailConf.SendMail(); err != nil {
-		//todo it's not serious
+		//todo it's serious
 	}
 
 	response.Success = true
