@@ -93,9 +93,9 @@ func BindRoutes(router *gin.Engine) {
 		admin.DELETE("/statuses/:id/", Index)
 
 		//admin > categories
-		admin.GET("/categories/", Index)
+		admin.GET("/categories/", AdminCategoriesRender)
 		admin.POST("/categories/", Index)
-		admin.GET("/categories/:id/", Index)
+		admin.GET("/categories/:id/", CategoryRender)
 		admin.PUT("/categories/:id/", Index)
 		admin.DELETE("/categories/:id/", Index)
 
