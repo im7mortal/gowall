@@ -26,6 +26,7 @@ func LoadTemplates() {
 	InitTemplate(adminTmpl, "/admin/users/", "views/admin/users/index.html")
 	InitTemplate(adminTmpl, "/admin/users/details/", "views/admin/users/details.html")
 
-
+	InitTemplate(adminTmpl, "/admin/admin-groups/", "views/admin/admin-groups/index.html")
+	InitTemplate(adminTmpl, "/admin/admin-groups/details/", "views/admin/admin-groups/details.html")
 
 }

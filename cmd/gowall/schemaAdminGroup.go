@@ -2,6 +2,7 @@ package main
 
 import (
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type Permission struct {
@@ -10,7 +11,7 @@ type Permission struct {
 }
 
 type AdminGroup struct {
-	ID          string `bson:"_id,omitempty"`
+	ID          bson.ObjectId `bson:"_id,omitempty"`
 	Name        string `bson:"name"`
 	Permissions []Permission `bson:"permissions"`
 }

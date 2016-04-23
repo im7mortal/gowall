@@ -7,30 +7,15 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"strconv"
 	"html/template"
-	"strings"
 )
 
-func AdminUsersRender(c *gin.Context) {
+func AdminAdminGroupsRender(c *gin.Context) {
 	query := bson.M{}
 
-	username, ok := c.GetQuery("username")
-	if ok && len(username) != 0 {
-		query["username"] = bson.M{
-			"$regex": "/^.*?" + username + ".*$/i",
-		}
-	}
-
-	isActive, ok := c.GetQuery("isActive")
-	if ok && len(isActive) != 0 {
-		query["isActive"] = isActive
-	}
-
-
-	roles, ok := c.GetQuery("roles")
-	if ok && len(roles) != 0 {
-		// roles.admin or roles.account
-		query["roles." + roles] = bson.M{
-			"$exists": true,
+	name, ok := c.GetQuery("name")
+	if ok && len(name) != 0 {
+		query["name"] = bson.M{
+			"$regex": "/^.*?" + name + ".*$/i",
 		}
 	}
 
@@ -45,22 +30,19 @@ func AdminUsersRender(c *gin.Context) {
 
 	sort := c.DefaultQuery("sort", "_id")
 
-	var results []User
+	var results []AdminGroup
 
 	db := getMongoDBInstance()
 	defer db.Session.Close()
-	collection := db.C(USERS)
-
+	collection := db.C(ADMINGROUPS)
 	collection.Find(query).Skip(int(limit * page)).Sort(sort).Limit(int(limit)).All(&results)
 
 	users := []gin.H{}
 
-	for _, user := range results {
+	for _, adminGroup := range results {
 		users = append(users, gin.H{
-			"_id": user.ID.Hex(),
-			"username": user.Username,
-			"isActive": user.IsActive,
-			"email": user.Email,
+			"_id": adminGroup.ID.Hex(),
+			"name": adminGroup.Name,
 		})
 	}
 
@@ -83,7 +65,7 @@ func AdminUsersRender(c *gin.Context) {
 	c.Render(http.StatusOK, render)
 }
 
-func UsersRender(c *gin.Context) {
+func AdminGroupRender(c *gin.Context) {
 
 	db := getMongoDBInstance()
 	defer db.Session.Close()
@@ -95,8 +77,4 @@ func UsersRender(c *gin.Context) {
 	render, _ := TemplateStorage["/admin/users/details/"]
 	render.Data = c.Keys
 	c.Render(http.StatusOK, render)
-}
-
-func XHR(c *gin.Context) bool {
-	return strings.ToLower(c.Request.Header.Get("X-Requested-With")) == "xmlhttprequest"
 }

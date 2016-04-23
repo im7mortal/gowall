@@ -67,9 +67,9 @@ func BindRoutes(router *gin.Engine) {
 		admin.DELETE("/administrators/:id/", Index)
 
 		//admin > admin groups
-		admin.GET("/admin-groups/", Index)
+		admin.GET("/admin-groups/", AdminAdminGroupsRender)
 		admin.POST("/admin-groups/", Index)
-		admin.GET("/admin-groups/:id/", Index)
+		admin.GET("/admin-groups/:id/", AdminGroupRender)
 		admin.PUT("/admin-groups/:id/", Index)
 		admin.PUT("/admin-groups/:id/permissions/", Index)
 		admin.DELETE("/admin-groups/:id/", Index)
