@@ -66,7 +66,7 @@ func AdminRender(c *gin.Context) {
 	go getCount(db.C(ADMINS), CountAdminChan, bson.M{})
 	go getCount(db.C(ADMINGROUPS), CountAdminGroupChan, bson.M{})
 	go getCount(db.C(CATEGORIES), CountCategoryChan, bson.M{})
-	go getCount(db.C(STATUS), CountStatusChan, bson.M{})
+	go getCount(db.C(STATUSES), CountStatusChan, bson.M{})
 
 	c.Set("CountAccount", <- CountAccountChan)
 	c.Set("CountUser", <- CountUserChan)

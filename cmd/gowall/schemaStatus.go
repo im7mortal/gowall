@@ -2,12 +2,13 @@ package main
 
 import (
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type Status struct {
-	ID    string `bson:"_id"`
-	Pivot string `bson:"pivot"`
+	ID    bson.ObjectId `bson:"_id"`
 	Name  string `bson:"name"`
+	Pivot string `bson:"pivot"`
 }
 
 var StatusIndex mgo.Index = mgo.Index{
