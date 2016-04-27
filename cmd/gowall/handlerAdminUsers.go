@@ -114,6 +114,60 @@ func getData (c *gin.Context, query *mgo.Query, results interface{}) (data gin.H
 }
 
 
+func CreateUser(c *gin.Context) {
+	response := Response{} // todo sync.Pool
+	defer response.Recover(c)
+
+	decoder := json.NewDecoder(c.Request.Body)
+	err := decoder.Decode(&response)
+	if err != nil {
+		panic(err)
+		return
+	}
+	// clean errors from client
+	response.CleanErrors()
+
+	// validate
+	response.ValidateUsername()
+
+	if response.HasErrors() {
+		response.Fail(c)
+		return
+	}
+
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+	collection := db.C(USERS)
+	user := User{}
+	err = collection.Find(bson.M{"username": response.Username}).One(&user)
+	if err != nil {
+		println(err.Error())
+	}
+
+	// duplicateUsernameCheck
+	if len(user.Username) != 0 {
+		if user.Username == response.Username {
+			response.Errors = append(response.Errors, "That username is already taken.")
+		}
+	}
+	if response.HasErrors() {
+		response.Fail(c)
+		return
+	}
+
+	// createUser
+
+	user.ID = bson.NewObjectId()
+	user.Username = response.Username
+	user.Search = []string{response.Username}
+
+	err = collection.Insert(user)
+	if err != nil {
+		panic(err)
+		return
+	}
+}
+
 func UsersRender(c *gin.Context) {
 
 	db := getMongoDBInstance()
