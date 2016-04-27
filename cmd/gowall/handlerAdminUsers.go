@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"gopkg.in/mgo.v2"
+	"net/url"
 )
 
 func AdminUsersRender(c *gin.Context) {
@@ -174,9 +175,14 @@ func UsersRender(c *gin.Context) {
 	defer db.Session.Close()
 	collection := db.C(USERS)
 	user := User{}
-	collection.FindId(c.Param("id")).One(&user)
-	userJSON, _ := json.Marshal(user)
-	c.Set("Record", string(userJSON))
+	collection.FindId(bson.ObjectIdHex(c.Param("id"))).One(&user)
+	userJSON, _ := json.Marshal(gin.H{
+		"_id": user.ID.Hex(),
+		"username": user.Username,
+		"email": user.Email,
+		"isActive": user.IsActive,
+	})
+	c.Set("Record", template.JS(url.QueryEscape(string(userJSON))))
 	render, _ := TemplateStorage["/admin/users/details/"]
 	render.Data = c.Keys
 	c.Render(http.StatusOK, render)
