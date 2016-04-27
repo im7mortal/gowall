@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"html/template"
 	"strings"
+
+	"gopkg.in/mgo.v2"
 )
 
 func AdminUsersRender(c *gin.Context) {
@@ -42,7 +44,12 @@ func AdminUsersRender(c *gin.Context) {
 	}
 	var results []_user
 
-	Result := getData(c, &query, &results)
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+	// TODO keys
+	collection := db.C(USERS)
+
+	Result := getData(c, collection.Find(query), &results)
 
 
 
@@ -61,7 +68,7 @@ func AdminUsersRender(c *gin.Context) {
 	c.Render(http.StatusOK, render)
 }
 
-func getData (c *gin.Context, query *bson.M, results interface{}) (data gin.H) {
+func getData (c *gin.Context, query *mgo.Query, results interface{}) (data gin.H) {
 	limitS := c.DefaultQuery("limit", "20")
 	limit_, _ := strconv.ParseInt(limitS, 0, 0)
 	limit := int(limit_)
@@ -74,13 +81,8 @@ func getData (c *gin.Context, query *bson.M, results interface{}) (data gin.H) {
 	page := int(page_)
 	sort := c.DefaultQuery("sort", "_id")
 
-	db := getMongoDBInstance()
-	defer db.Session.Close()
-	// TODO keys
-	collection := db.C(USERS)
-	_query := collection.Find(query) // TODO 2 query
-	count, _ := _query.Count()
-	_query.Skip(page * limit).Sort(sort).Limit(limit).All(results)
+	count, _ := query.Count()
+	query.Skip(page * limit).Sort(sort).Limit(limit).All(results)
 
 	page += 1
 	count_ := page * limit

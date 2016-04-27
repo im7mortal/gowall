@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"encoding/json"
 	"gopkg.in/mgo.v2/bson"
-	"strconv"
 	"html/template"
 )
 
@@ -26,37 +25,19 @@ func AdminStatusesRender(c *gin.Context) {
 		}
 	}
 
-	limit_ := c.DefaultQuery("limit", "20")
-	limit, _ := strconv.ParseInt(limit_, 0, 0)
-	if limit > 100 {
-		limit = 100
+	type status struct {
+		ID bson.ObjectId `bson:"_id" json:"_id"`
+		Name string `bson:"name" json:"name"`
+		Pivot string `bson:"pivot" json:"pivot"`
 	}
 
-	page_ := c.DefaultQuery("page", "0")
-	page, _ := strconv.ParseInt(page_, 0, 0)
-
-	sort := c.DefaultQuery("sort", "_id")
-
-	var results []Status
+	var results []status
 
 	db := getMongoDBInstance()
 	defer db.Session.Close()
+	// TODO keys
 	collection := db.C(STATUSES)
-	collection.Find(query).Skip(int(limit * page)).Sort(sort).Limit(int(limit)).All(&results)
-
-	statuses := []gin.H{}
-
-	for _, adminGroup := range results {
-		statuses = append(statuses, gin.H{
-			"_id": adminGroup.ID.Hex(),
-			"name": adminGroup.Name,
-			"pivot": adminGroup.Pivot,
-		})
-	}
-
-	Result := gin.H{
-		"data": statuses,
-	}
+	Result := getData(c, collection.Find(query), &results)
 
 	Results, _ := json.Marshal(Result)
 
