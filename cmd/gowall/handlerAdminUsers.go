@@ -15,9 +15,6 @@ func AdminUsersRender(c *gin.Context) {
 
 	username, ok := c.GetQuery("username")
 	if ok && len(username) != 0 {
-		/*query["username"] = bson.M{
-			"$regex": "/^.*?" + username + ".*$/i",
-		}*/
 		query["username"] = bson.RegEx{
 			Pattern: `^.*?` + username + `.*$`,
 			Options: "i",
@@ -29,7 +26,6 @@ func AdminUsersRender(c *gin.Context) {
 		query["isActive"] = isActive
 	}
 
-
 	roles, ok := c.GetQuery("roles")
 	if ok && len(roles) != 0 {
 		// roles.admin or roles.account
@@ -38,6 +34,34 @@ func AdminUsersRender(c *gin.Context) {
 		}
 	}
 
+	type _user struct {
+		ID bson.ObjectId `bson:"_id" json:"_id"`
+		Username string `bson:"username" json:"username"`
+		IsActive string `bson:"isActive" json:"isActive"`
+		Email string `bson:"email" json:"email"`
+	}
+	var results []_user
+
+	Result := getData(c, &query, &results)
+
+
+
+	Results, _ := json.Marshal(Result)
+
+	if XHR(c) {
+		c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
+		c.Data(http.StatusOK, "application/json; charset=utf-8", Results)
+		return
+	}
+
+	c.Set("Results", template.JS(string(Results)))
+
+	render, _ := TemplateStorage[c.Request.URL.Path]
+	render.Data = c.Keys
+	c.Render(http.StatusOK, render)
+}
+
+func getData (c *gin.Context, query *bson.M, results interface{}) (data gin.H) {
 	limitS := c.DefaultQuery("limit", "20")
 	limit_, _ := strconv.ParseInt(limitS, 0, 0)
 	limit := int(limit_)
@@ -50,31 +74,13 @@ func AdminUsersRender(c *gin.Context) {
 	page := int(page_)
 	sort := c.DefaultQuery("sort", "_id")
 
-	type _user struct {
-		ID string `bson:"_id" json:"_id"`
-		Username string `bson:"username" json:"username"`
-		IsActive string `bson:"isActive" json:"isActive"`
-		Email string `bson:"email" json:"email"`
-	}
-	var results []_user
-
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	// TODO keys
 	collection := db.C(USERS)
 	_query := collection.Find(query) // TODO 2 query
 	count, _ := _query.Count()
-	_query.Skip(page * limit).Sort(sort).Limit(limit).All(&results)
-
-	//users := []gin.H{}
-/*	for _, user := range results {
-		users = append(users, gin.H{
-			"_id": user.ID.Hex(),
-			"username": user.Username,
-			"isActive": user.IsActive,
-			"email": user.Email,
-		})
-	}*/
+	_query.Skip(page * limit).Sort(sort).Limit(limit).All(results)
 
 	page += 1
 	count_ := page * limit
@@ -98,26 +104,13 @@ func AdminUsersRender(c *gin.Context) {
 		"total": count,
 	}
 
-	Result := gin.H{
+	return gin.H{
 		"data": results,
 		"pages": pages,
 		"items": items,
 	}
-
-	Results, _ := json.Marshal(Result)
-
-	if XHR(c) {
-		c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
-		c.Data(http.StatusOK, "application/json; charset=utf-8", Results)
-		return
-	}
-
-	c.Set("Results", template.JS(string(Results)))
-
-	render, _ := TemplateStorage[c.Request.URL.Path]
-	render.Data = c.Keys
-	c.Render(http.StatusOK, render)
 }
+
 
 func UsersRender(c *gin.Context) {
 
