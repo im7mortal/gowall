@@ -53,7 +53,7 @@ func BindRoutes(router *gin.Engine) {
 		admin.DELETE("/users/:id/role-admin/", Index)
 		admin.PUT("/users/:id/role-account/", Index)
 		admin.DELETE("/users/:id/role-account/", Index)
-		admin.DELETE("/users/:id/", Index)
+		admin.DELETE("/users/:id/", DeleteUser)
 
 		//admin > administrators
 		admin.GET("/administrators/", Index)

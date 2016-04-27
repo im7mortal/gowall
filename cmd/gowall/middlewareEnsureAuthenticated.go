@@ -66,9 +66,22 @@ func EnsureAccount(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/")
 }
 
+func getAdmin(c *gin.Context) (account *Admin, ok bool) {
+	if _account, _ok := c.Get("Admin"); _ok {
+		account, ok = _account.(*Admin)
+	}
+	return
+}
+
 func EnsureAdmin(c *gin.Context) {
 	if user, ok := getUser(c); ok {
 		if ok = user.CanPlayRoleOf("admin"); ok {
+			admin := Admin{}
+			db := getMongoDBInstance()
+			defer db.Session.Close()
+			collection := db.C(ADMINS)
+			collection.Find(bson.M{"_id": user.Roles.Admin}).One(&admin)
+			c.Set("Admin", &admin)
 			c.Next()
 			return
 		}

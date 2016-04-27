@@ -188,6 +188,50 @@ func UsersRender(c *gin.Context) {
 	c.Render(http.StatusOK, render)
 }
 
+func DeleteUser(c *gin.Context) {
+	admin, ok := getAdmin(c)
+	if !ok {// todo extra
+		panic("not authorised")
+	}
+	user, ok := getUser(c)
+	if !ok {// todo extra
+		panic("not authorised")
+	}
+
+	response := Response{} // todo sync.Pool
+	defer response.Recover(c)
+
+	// validate
+	ok = admin.IsMemberOf("root")
+	if !ok {
+		response.Errors = append(response.Errors, "You may not delete users.")
+		response.Fail(c)
+		return
+	}
+
+	deleteID := c.Param("id")
+
+	if deleteID == user.ID.Hex() {
+		response.Errors = append(response.Errors, "You may not delete yourself from user.")
+		response.Fail(c)
+		return
+	}
+
+	// deleteUser
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+	collection := db.C(USERS)
+	err := collection.RemoveId(bson.ObjectIdHex(deleteID))
+	if err != nil {
+		response.Errors = append(response.Errors, err.Error())
+		response.Fail(c)
+		return
+	}
+
+	response.Success = true
+	c.JSON(http.StatusOK, response)
+}
+
 func XHR(c *gin.Context) bool {
 	return strings.ToLower(c.Request.Header.Get("X-Requested-With")) == "xmlhttprequest"
 }
