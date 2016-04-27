@@ -48,7 +48,7 @@ func BindRoutes(router *gin.Engine) {
 		admin.POST("/users/", CreateUser)
 		admin.GET("/users/:id/", UsersRender)
 		admin.PUT("/users/:id/", Index)
-		admin.PUT("/users/:id/password/", Index)
+		admin.PUT("/users/:id/password/", ChangeUserPassword)
 		admin.PUT("/users/:id/role-admin/", Index)
 		admin.DELETE("/users/:id/role-admin/", Index)
 		admin.PUT("/users/:id/role-account/", Index)

@@ -11,6 +11,7 @@ import (
 
 	"gopkg.in/mgo.v2"
 	"net/url"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func AdminUsersRender(c *gin.Context) {
@@ -234,5 +235,66 @@ func DeleteUser(c *gin.Context) {
 
 func XHR(c *gin.Context) bool {
 	return strings.ToLower(c.Request.Header.Get("X-Requested-With")) == "xmlhttprequest"
+}
+
+func ChangeUserPassword (c *gin.Context) {
+	response := Response{} // todo sync.Pool
+	response.Errors = []string{}
+	response.ErrFor = make(map[string]string)
+	defer response.Recover(c)
+	var body struct {
+		Confirm   string  `json:"confirm"`
+		Password string  `json:"newPassword"`
+	}
+	decoder := json.NewDecoder(c.Request.Body)
+	err := decoder.Decode(&body)
+
+	// validate
+	if len(body.Password) == 0 {
+		response.ErrFor["newPassword"] = "required"
+	}
+	if len(body.Confirm) == 0 {
+		response.ErrFor["confirm"] = "required"
+	} else if body.Password != body.Confirm {
+		response.Errors = append(response.Errors, "Passwords do not match.")
+	}
+
+	if response.HasErrors() {
+		response.Fail(c)
+		return
+	}
+
+	// patchUser
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+	collection := db.C(USERS)
+	user := User{}
+	err = collection.FindId(bson.ObjectIdHex(c.Param("id"))).One(&user)
+	if err != nil {
+		if err != mgo.ErrNotFound {
+			panic(err)
+		}
+		response.Errors = append(response.Errors, "User wasn't found.")
+		response.Fail(c)
+		return
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
+	if err != nil {
+		response.Errors = append(response.Errors, err.Error()) // TODO don't like that this error goes to client
+		response.Fail(c)
+		return
+	}
+
+	user.Password = string(hashedPassword)
+	err = collection.UpdateId(user.ID, user)
+	if err != nil {
+		response.Errors = append(response.Errors, err.Error())
+		response.Fail(c)
+		return
+	}
+
+	response.Success = true
+	c.JSON(http.StatusOK, response)
 }
 

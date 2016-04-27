@@ -139,6 +139,7 @@ func ChangePassword (c *gin.Context) {
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&body)
 
+	// validate
 	if len(body.Password) == 0 {
 		response.ErrFor["newPassword"] = "required"
 	}
