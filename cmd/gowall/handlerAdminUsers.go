@@ -15,8 +15,12 @@ func AdminUsersRender(c *gin.Context) {
 
 	username, ok := c.GetQuery("username")
 	if ok && len(username) != 0 {
-		query["username"] = bson.M{
+		/*query["username"] = bson.M{
 			"$regex": "/^.*?" + username + ".*$/i",
+		}*/
+		query["username"] = bson.RegEx{
+			Pattern: `^.*?` + username + `.*$`,
+			Options: "i",
 		}
 	}
 
@@ -66,6 +70,14 @@ func AdminUsersRender(c *gin.Context) {
 
 	Result := gin.H{
 		"data": users,
+		"pages": gin.H{
+			"current": page + 1,
+			"prev": 0,
+			"hasPrev": false,
+			"next": 0,
+			"hasNext": false,
+			"total": 0,
+		},
 	}
 
 	Results, _ := json.Marshal(Result)
