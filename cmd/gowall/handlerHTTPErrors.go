@@ -15,18 +15,17 @@ func Status404Render(c *gin.Context) {
 func checkRecover(c *gin.Context) {
 	defer func(c *gin.Context) {
 		if rec := recover(); rec != nil {
-			println("recover!!!!!!")
-			if c.Request.Method == "GET" {  // TODO i don't know how i can distinguish XHR
+			if XHR(c) {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error": "Something went wrong.",
+					"details": rec,
+				})
+			} else {
 				render, _ := TemplateStorage["500"]
 				render.Data = gin.H{
 					"Stack": fmt.Sprintf("%v\n", rec),
 				}
 				c.Render(http.StatusInternalServerError, render)
-			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"error": "Something went wrong.",
-					"details": rec,
-				})
 			}
 		}
 	}(c)
