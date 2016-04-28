@@ -9,6 +9,7 @@ import (
 	"strings"
 	"regexp"
 	"gopkg.in/mgo.v2"
+	"net/url"
 )
 
 func AdminCategoriesRender(c *gin.Context) {
@@ -126,12 +127,19 @@ func CategoryRender(c *gin.Context) {
 
 	db := getMongoDBInstance()
 	defer db.Session.Close()
-	collection := db.C(USERS)
-	user := User{}
-	collection.FindId(c.Param("id")).One(&user)
-	userJSON, _ := json.Marshal(user)
-	c.Set("Record", string(userJSON))
-	render, _ := TemplateStorage["/admin/users/details/"]
+	collection := db.C(CATEGORIES)
+	category := Category{}
+	collection.Find(bson.M{"_id": c.Param("id")}).One(&category)
+	json, _ := json.Marshal(category)
+
+	if XHR(c) {
+		c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
+		c.Data(http.StatusOK, "application/json; charset=utf-8", json)
+		return
+	}
+
+	c.Set("Record", template.JS(url.QueryEscape(string(json))))
+	render, _ := TemplateStorage["/admin/categories/details/"]
 	render.Data = c.Keys
 	c.Render(http.StatusOK, render)
 }

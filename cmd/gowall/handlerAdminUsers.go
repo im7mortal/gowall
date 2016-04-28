@@ -179,13 +179,20 @@ func UsersRender(c *gin.Context) {
 	collection := db.C(USERS)
 	user := User{}
 	collection.FindId(bson.ObjectIdHex(c.Param("id"))).One(&user)
-	userJSON, _ := json.Marshal(gin.H{
+	json, _ := json.Marshal(gin.H{
 		"_id": user.ID.Hex(),
 		"username": user.Username,
 		"email": user.Email,
 		"isActive": user.IsActive,
 	})
-	c.Set("Record", template.JS(url.QueryEscape(string(userJSON))))
+
+	if XHR(c) {
+		c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
+		c.Data(http.StatusOK, "application/json; charset=utf-8", json)
+		return
+	}
+
+	c.Set("Record", template.JS(url.QueryEscape(string(json))))
 	render, _ := TemplateStorage["/admin/users/details/"]
 	render.Data = c.Keys
 	c.Render(http.StatusOK, render)
