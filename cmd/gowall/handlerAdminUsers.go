@@ -12,7 +12,6 @@ import (
 	"gopkg.in/mgo.v2"
 	"net/url"
 	"golang.org/x/crypto/bcrypt"
-	"regexp"
 )
 
 func AdminUsersRender(c *gin.Context) {

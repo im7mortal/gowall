@@ -1,9 +1,13 @@
 {{define "head"}}
-<title>Manage Users</title>
+<title>Manage Categories</title>
 {{end}}
 
 {{define "neck"}}
-<link rel='stylesheet' href='/public/views/admin/users/index.min.css?{{.cacheBreaker}}'>
+<link rel='stylesheet' href='/public/views/admin/categories/index.min.css?{{.cacheBreaker}}'>
+{{end}}
+
+{{define "feet"}}
+<script src="/public/views/admin/categories/index.js?{{.CacheBreaker}}"></script>
 {{end}}
 
 {{define "body"}}
@@ -20,11 +24,12 @@
 	<div class="page-header">
 		<form class="form-inline pull-right">
 			<div class="input-group">
-				<input name="username" type="text" placeholder="enter a username" value="<%= username %>" class="form-control"/>
+				<input name="pivot" type="text" placeholder="pivot" value="<%= pivot %>" class="form-control"/>
+				<input name="name" type="text" placeholder="name" value="<%= name %>" class="form-control"/>
 				<button type="button" class="btn btn-primary btn-add">Add New</button>
 			</div>
 		</form>
-		<h1>Users</h1>
+		<h1>Categories</h1>
 	</div>
 </script>
 
@@ -32,37 +37,23 @@
 	<form class="filters">
 		<div class="row">
 			<div class="col-sm-3">
-				<label>Username Search</label>
-				<input name="username" type="text" class="form-control"/>
+				<label>Pivot Search</label>
+				<input name="pivot" type="text" class="form-control"/>
 			</div>
 			<div class="col-sm-3">
-				<label>Can Play Role</label>
-				<select name="roles" class="form-control">
-					<option value="">any</option>
-					<option value="admin">admin</option>
-					<option value="account">account</option>
-				</select>
+				<label>Name Search</label>
+				<input name="name" type="text" class="form-control"/>
 			</div>
-			<div class="col-sm-2">
-				<label>Is Active</label>
-				<select name="isActive" class="form-control">
-					<option value="">either</option>
-					<option value="yes">yes</option>
-					<option value="no">no</option>
-				</select>
-			</div>
-			<div class="col-sm-2">
+			<div class="col-sm-3">
 				<label>Sort By</label>
 				<select name="sort" class="form-control">
 					<option value="_id">id &#9650;</option>
 					<option value="-_id">id &#9660;</option>
-					<option value="username">username &#9650;</option>
-					<option value="-username">username &#9660;</option>
-					<option value="email">email &#9650;</option>
-					<option value="-email">email &#9660;</option>
+					<option value="name">name &#9650;</option>
+					<option value="-name">name &#9660;</option>
 				</select>
 			</div>
-			<div class="col-sm-2">
+			<div class="col-sm-3">
 				<label>Limit</label>
 				<select name="limit" class="form-control">
 					<option value="10">10 items</option>
@@ -80,9 +71,8 @@
 		<thead>
 		<tr>
 			<th></th>
-			<th>username</th>
-			<th class="stretch">email</th>
-			<th>active</th>
+			<th>pivot</th>
+			<th class="stretch">name</th>
 			<th>id</th>
 		</tr>
 		</thead>
@@ -94,15 +84,14 @@
 	<td>
 		<input type="button" value="Edit" class="btn btn-default btn-sm btn-details"/>
 	</td>
-	<td><%= username %></td>
-	<td><%= email %></td>
-	<td><%= isActive %></td>
-	<td><%= _id %></td>
+	<td><%- pivot %></td>
+	<td><%- name %></td>
+	<td class="nowrap"><%= _id %></td>
 </script>
 
 <script type="text/template" id="tmpl-results-empty-row">
 	<tr>
-		<td colspan="5">no documents matched</td>
+		<td colspan="4">no documents matched</td>
 	</tr>
 </script>
 
@@ -121,8 +110,5 @@
 </script>
 
 <script type="text/template" id="data-results">{{.Results}}</script>
-{{end}}
 
-{{define "feet"}}
-<script src="/public/views/admin/users/index.js?{{.CacheBreaker}}"></script>
 {{end}}

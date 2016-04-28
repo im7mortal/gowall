@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"encoding/json"
 	"gopkg.in/mgo.v2/bson"
-	"strconv"
 	"html/template"
 )
 
@@ -14,49 +13,33 @@ func AdminCategoriesRender(c *gin.Context) {
 
 	name, ok := c.GetQuery("name")
 	if ok && len(name) != 0 {
-		query["name"] = bson.M{
-			"$regex": "/^.*?" + name + ".*$/i",
+		query["name"] = bson.RegEx{
+			Pattern: `^.*?` + name + `.*$`,
+			Options: "i",
 		}
 	}
 
 	pivot, ok := c.GetQuery("pivot")
 	if ok && len(pivot) != 0 {
-		query["pivot"] = bson.M{
-			"$regex": "/^.*?" + pivot + ".*$/i",
+		query["pivot"] = bson.RegEx{
+			Pattern: `^.*?` + pivot + `.*$`,
+			Options: "i",
 		}
 	}
 
-	limit_ := c.DefaultQuery("limit", "20")
-	limit, _ := strconv.ParseInt(limit_, 0, 0)
-	if limit > 100 {
-		limit = 100
+	type _category struct {
+		ID bson.ObjectId `bson:"_id" json:"_id"`
+		Name string `bson:"name" json:"name"`
+		Pivot string `bson:"pivot" json:"pivot"`
 	}
 
-	page_ := c.DefaultQuery("page", "0")
-	page, _ := strconv.ParseInt(page_, 0, 0)
-
-	sort := c.DefaultQuery("sort", "_id")
-
-	var results []Category
+	var results []_category
 
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(CATEGORIES)
-	collection.Find(query).Skip(int(limit * page)).Sort(sort).Limit(int(limit)).All(&results)
 
-	categoies := []gin.H{}
-
-	for _, adminGroup := range results {
-		categoies = append(categoies, gin.H{
-			"_id": adminGroup.ID.Hex(),
-			"name": adminGroup.Name,
-			"pivot": adminGroup.Pivot,
-		})
-	}
-
-	Result := gin.H{
-		"data": categoies,
-	}
+	Result := getData(c, collection.Find(query), &results)
 
 	Results, _ := json.Marshal(Result)
 
