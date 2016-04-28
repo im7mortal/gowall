@@ -123,6 +123,78 @@ func CreateCategory(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+func updateCategory(c *gin.Context) {
+	response := Response{} // todo sync.Pool
+	defer response.Recover(c)
+
+	admin, ok := getAdmin(c)
+	if !ok {// todo extra
+		panic("not authorised")
+	}
+
+	// validate
+	ok = admin.IsMemberOf("root")
+	if !ok {
+		response.Errors = append(response.Errors, "You may not create categories")
+		response.Fail(c)
+		return
+	}
+
+	category := Category{}
+
+	decoder := json.NewDecoder(c.Request.Body)
+	err := decoder.Decode(&category)
+	if err != nil {
+		panic(err)
+		return
+	}
+	// clean errors from client
+	response.CleanErrors()
+
+	if len(category.Name) == 0 {
+		response.Errors = append(response.Errors, "A name is required")
+	}
+
+	if len(category.Pivot) == 0 {
+		response.Errors = append(response.Errors, "A pivot is required")
+	}
+
+	if response.HasErrors() {
+		response.Fail(c)
+		return
+	}
+
+	//duplicateCategoryCheck
+	_id := slugify(category.Pivot + " " + category.Name)
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+	collection := db.C(CATEGORIES)
+	category_ := Category{}
+	err = collection.FindId(_id).One(&category_)
+	// we expect err == mgo.ErrNotFound for success
+	if err == nil {
+		response.Errors = append(response.Errors, "That category+pivot is already taken.")
+		response.Fail(c)
+		return
+	} else if err != mgo.ErrNotFound {
+		panic(err)
+	}
+
+	// patchCategory
+	category.ID = _id
+	err = collection.RemoveId(c.Param("id"))
+	//println(err.Error())
+	err = collection.Insert(category)
+	//println(err.Error())
+	if err != nil {
+		panic(err)
+		return
+	}
+
+	response.Success = true
+	c.JSON(http.StatusOK, response)
+}
+
 func CategoryRender(c *gin.Context) {
 
 	db := getMongoDBInstance()
@@ -144,6 +216,38 @@ func CategoryRender(c *gin.Context) {
 	c.Render(http.StatusOK, render)
 }
 
+func deleteCategory(c *gin.Context) {
+	admin, ok := getAdmin(c)
+	if !ok {// todo extra
+		panic("not authorised")
+	}
+
+	response := Response{} // todo sync.Pool
+	defer response.Recover(c)
+
+	// validate
+	ok = admin.IsMemberOf("root")
+	if !ok {
+		response.Errors = append(response.Errors, "You may not delete categories.")
+		response.Fail(c)
+		return
+	}
+
+	// deleteUser
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+	collection := db.C(CATEGORIES)
+	err := collection.RemoveId(c.Param("id"))
+	if err != nil {
+		response.Errors = append(response.Errors, err.Error())
+		response.Fail(c)
+		return
+	}
+
+	response.Success = true
+	c.JSON(http.StatusOK, response)
+}
+
 // TODO add g greedy
 var r1, _ = regexp.Compile(`[^\w ]+`)
 var r2, _ = regexp.Compile(` +`)
@@ -154,3 +258,4 @@ func slugify(str string) string {
 	str_ = r1.ReplaceAll(str_, []byte(""))
 	return string(r2.ReplaceAll(str_, []byte("-")))
 }
+
