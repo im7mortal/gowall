@@ -30,13 +30,7 @@ func AdminCategoriesRender(c *gin.Context) {
 		}
 	}
 
-	type _category struct {
-		ID bson.ObjectId `bson:"_id" json:"_id"`
-		Name string `bson:"name" json:"name"`
-		Pivot string `bson:"pivot" json:"pivot"`
-	}
-
-	var results []_category
+	var results []Category
 
 	db := getMongoDBInstance()
 	defer db.Session.Close()
@@ -109,7 +103,7 @@ func CreateCategory(c *gin.Context) {
 	err = collection.Find(bson.M{"_id": _id}).One(&category_)
 	// we expect err == mgo.ErrNotFound for success
 	if err == nil {
-		response.Errors = append(response.Errors, "A pivot is required")
+		response.Errors = append(response.Errors, "That category+pivot is already taken.")
 		response.Fail(c)
 		return
 	} else if err != mgo.ErrNotFound {
