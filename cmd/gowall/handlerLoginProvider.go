@@ -24,7 +24,6 @@ func loginProvider(c *gin.Context, userGoth goth.User) {
 	err := collection.Find(bson.M{userGoth.Provider + ".id": userGoth.UserID}).One(&user)
 	// we expect err == mgo.ErrNotFound for success
 	if err != nil {
-		println("here")
 		if err == mgo.ErrNotFound {
 			session := sessions.Default(c)
 			session.Set("oauthMessage", "No users found linked to your " + userGoth.Provider + " account. You may need to create an account first.")

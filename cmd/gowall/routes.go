@@ -94,7 +94,7 @@ func BindRoutes(router *gin.Engine) {
 
 		//admin > categories
 		admin.GET("/categories/", AdminCategoriesRender)
-		admin.POST("/categories/", Index)
+		admin.POST("/categories/", CreateCategory)
 		admin.GET("/categories/:id/", CategoryRender)
 		admin.PUT("/categories/:id/", Index)
 		admin.DELETE("/categories/:id/", Index)

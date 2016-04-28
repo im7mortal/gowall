@@ -168,6 +168,8 @@ func CreateUser(c *gin.Context) {
 		panic(err)
 		return
 	}
+	response.Success = true
+	c.JSON(http.StatusOK, response)
 }
 
 func UsersRender(c *gin.Context) {
