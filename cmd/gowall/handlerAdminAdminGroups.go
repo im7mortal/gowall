@@ -8,6 +8,7 @@ import (
 	"html/template"
 	"gopkg.in/mgo.v2"
 	"net/url"
+	"strings"
 )
 
 func renderAdminGroups(c *gin.Context) {
@@ -63,12 +64,7 @@ func createAdminGroup(c *gin.Context) {
 		return
 	}
 
-	err := json.NewDecoder(c.Request.Body).Decode(&response)
-	if err != nil {
-		panic(err)
-	}
-	// clean errors from client
-	response.CleanErrors()
+	response.AdminGroup.DecodeRequest(c)
 
 	if len(response.Name) == 0 {
 		response.Errors = append(response.Errors, "A name is required")
@@ -80,11 +76,12 @@ func createAdminGroup(c *gin.Context) {
 	}
 
 	//duplicateAdminGroupCheck
+	response.Name = slugifyName(response.Name)
 	response.ID = slugify(response.Name)
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(ADMINGROUPS)
-	err = collection.Find(bson.M{"_id": response.ID}).One(nil)
+	err := collection.FindId(response.ID).One(nil)
 	// we expect err == mgo.ErrNotFound for success
 	if err == nil {
 		response.Errors = append(response.Errors, "That group already exists.")
@@ -126,10 +123,17 @@ func readAdminGroup(c *gin.Context) {
 		return
 	}
 
-	c.Set("Record", template.JS(url.QueryEscape(string(json))))
+	c.Set("Record", template.JS(getEscapedString(string(json))))
 	render := getRender("/admin/admin-groups/details/")
 	render.Data = c.Keys
 	c.Render(http.StatusOK, render)
+}
+
+/**
+	TODO can be problem
+ */
+func getEscapedString(str string) string {
+	return strings.Replace(url.QueryEscape(str), "+", "%20", -1)
 }
 
 func updateAdminGroup(c *gin.Context) {
@@ -205,12 +209,7 @@ func updateAdminGroupPermissions(c *gin.Context) {
 		return
 	}
 
-	err := json.NewDecoder(c.Request.Body).Decode(&response)
-	if err != nil {
-		panic(err)
-	}
-	// clean errors from client
-	response.CleanErrors()
+	response.AdminGroup.DecodeRequest(c)
 
 	if len(response.Permissions) == 0 {
 		response.Errors = append(response.Errors, "required")
@@ -226,13 +225,12 @@ func updateAdminGroupPermissions(c *gin.Context) {
 	defer db.Session.Close()
 	collection := db.C(ADMINGROUPS)
 
-	err = collection.UpdateId(c.Param("id"), response.AdminGroup)
+	err := collection.UpdateId(c.Param("id"), response.AdminGroup)
 	if err != nil {
 		panic(err)
 	}
 
-	response.Success = true
-	c.JSON(http.StatusOK, response)
+	response.Finish(c)
 }
 
 func deleteAdminGroup(c *gin.Context) {

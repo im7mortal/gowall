@@ -104,3 +104,8 @@ func (r *Response) DecodeRequest(c *gin.Context) {
 	r.CleanErrors()
 	return
 }
+
+func (r *Response) Finish(c *gin.Context) {
+	r.Success = true
+	c.JSON(http.StatusOK, r)
+}

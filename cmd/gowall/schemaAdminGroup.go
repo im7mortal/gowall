@@ -2,6 +2,8 @@ package main
 
 import (
 	"gopkg.in/mgo.v2"
+	"github.com/gin-gonic/gin"
+	"encoding/json"
 )
 
 type Permission struct {
@@ -19,6 +21,13 @@ func (u *AdminGroup) Flow()  {
 
 }
 
+func (a *AdminGroup) DecodeRequest(c *gin.Context) {
+	err := json.NewDecoder(c.Request.Body).Decode(a)
+	if err != nil {
+		panic(err)
+	}
+	return
+}
 
 
 var AdminGroupIndex mgo.Index = mgo.Index{

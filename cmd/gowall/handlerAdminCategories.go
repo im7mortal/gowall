@@ -244,9 +244,16 @@ var r1, _ = regexp.Compile(`[^\w ]+`)
 var r2, _ = regexp.Compile(` +`)
 
 func slugify(str string) string {
+	str = strings.Trim(str, " ")
 	str = strings.ToLower(str)
 	str_ := []byte(str)
 	str_ = r1.ReplaceAll(str_, []byte(""))
 	return string(r2.ReplaceAll(str_, []byte("-")))
+}
+
+func slugifyName(str string) string {
+	str = strings.TrimSpace(str)
+	str_ := []byte(str)
+	return string(r2.ReplaceAll(str_, []byte(" ")))
 }
 
