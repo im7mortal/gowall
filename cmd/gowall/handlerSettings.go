@@ -18,10 +18,7 @@ import (
 func AccountSettingsRender(c *gin.Context) {
 	sess := sessions.Default(c)
 
-	user, ok := getUser(c)
-	if !ok {// todo extra
-		panic("not authorised")
-	}
+	user := getUser(c)
 	injectSocials(c)
 	doUserHasSocials(c, user)
 
@@ -68,7 +65,7 @@ func AccountSettingsRender(c *gin.Context) {
 }
 
 func SetSettings (c *gin.Context) {
-	account, _ := getAccount(c)
+	account := getAccount(c)
 	response := Response{} // todo sync.Pool
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
@@ -127,7 +124,7 @@ func SetSettings (c *gin.Context) {
 }
 
 func ChangePassword (c *gin.Context) {
-	user, _ := getUser(c)
+	user := getUser(c)
 	response := Response{} // todo sync.Pool
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
@@ -178,7 +175,7 @@ func ChangePassword (c *gin.Context) {
 }
 
 func ChangeIdentity (c *gin.Context) {
-	user, _ := getUser(c)
+	user := getUser(c)
 	response := Response{} // todo sync.Pool
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
@@ -272,10 +269,7 @@ func settingsProvider (c *gin.Context, userGoth goth.User) {
 		panic(err)
 	}
 
-	user, ok := getUser(c)
-	if !ok {
-		panic("not authorised")
-	}
+	user = getUser(c)
 
 	user.updateProvider(userGoth)
 	err = collection.UpdateId(user.ID, user)
@@ -288,10 +282,7 @@ func settingsProvider (c *gin.Context, userGoth goth.User) {
 }
 
 func disconnectProvider (c *gin.Context) {
-	user, ok := getUser(c)
-	if !ok {
-		panic("not authorised")
-	}
+	user := getUser(c)
 	user.disconnectProviderDB(c.Param("provider"))
 	db := getMongoDBInstance()
 	defer db.Session.Close()

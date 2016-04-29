@@ -6,6 +6,10 @@
 <link rel='stylesheet' href='/public/views/admin/admin-groups/index.min.css?{{.cacheBreaker}}'>
 {{end}}
 
+{{define "feet"}}
+<script src="/public/views/admin/admin-groups/index.js?{{.CacheBreaker}}"></script>
+{{end}}
+
 {{define "body"}}
 <div class="row">
 	<div class="col-xs-12">
@@ -15,38 +19,50 @@
 		<div id="results-paging"></div>
 	</div>
 </div>
+
 <script type="text/template" id="tmpl-header">
 	<div class="page-header">
 		<form class="form-inline pull-right">
-			<div class="input-group"><input name="name" type="text" placeholder="enter a name" value="<%= name %>"
-											class="form-control">
+			<div class="input-group">
+				<input name="name" type="text" placeholder="enter a name" value="<%= name %>" class="form-control"/>
 				<button type="button" class="btn btn-primary btn-add">Add New</button>
 			</div>
 		</form>
-		<h1>Admin Groups</h1></div></script>
+		<h1>Admin Groups</h1>
+	</div>
+</script>
+
 <script type="text/template" id="tmpl-filters">
-	<form
-			class="filters">
+	<form class="filters">
 		<div class="row">
-			<div class="col-sm-3"><label>Name Search</label><input name="name" type="text" class="form-control">
+			<div class="col-sm-3">
+				<label>Name Search</label>
+				<input name="name" type="text" class="form-control"/>
 			</div>
-			<div class="col-sm-3"><label>Sort By</label><select name="sort" class="form-control">
-				<option value="_id">id &#9650;</option>
-				<option value="-_id">id &#9660;</option>
-				<option value="name">name &#9650;</option>
-				<option value="-name">name &#9660;</option>
-			</select></div>
-			<div class="col-sm-3"><label>Limit</label><select name="limit" class="form-control">
-				<option value="10">10 items</option>
-				<option value="20" selected="selected">20 items</option>
-				<option value="50">50 items</option>
-				<option value="100">100 items</option>
-			</select></div>
+			<div class="col-sm-3">
+				<label>Sort By</label>
+				<select name="sort" class="form-control">
+					<option value="_id">id &#9650;</option>
+					<option value="-_id">id &#9660;</option>
+					<option value="name">name &#9650;</option>
+					<option value="-name">name &#9660;</option>
+				</select>
+			</div>
+			<div class="col-sm-3">
+				<label>Limit</label>
+				<select name="limit" class="form-control">
+					<option value="10">10 items</option>
+					<option value="20" selected="selected">20 items</option>
+					<option value="50">50 items</option>
+					<option value="100">100 items</option>
+				</select>
+			</div>
 		</div>
-	</form></script>
+	</form>
+</script>
+
 <script type="text/template" id="tmpl-results-table">
-	<table
-			class="table table-striped">
+	<table class="table table-striped">
 		<thead>
 		<tr>
 			<th></th>
@@ -55,37 +71,37 @@
 		</tr>
 		</thead>
 		<tbody id="results-rows"></tbody>
-	</table></script>
+	</table>
+</script>
+
 <script type="text/template" id="tmpl-results-row">
-	<td><input type="button" value="Edit" class="btn btn-default btn-sm btn-details"></td>
+	<td>
+		<input type="button" value="Edit" class="btn btn-default btn-sm btn-details"/>
+	</td>
 	<td><%- name %></td>
 	<td class="nowrap"><%= _id %></td>
 </script>
+
 <script type="text/template" id="tmpl-results-empty-row">
 	<tr>
-		<td
-				colspan="3">no documents matched
-		</td>
+		<td colspan="3">no documents matched</td>
 	</tr>
 </script>
+
 <script type="text/template" id="tmpl-results-paging">
-	<div
-			class="well">
+	<div class="well">
 		<div class="btn-group pull-left">
-			<button disabled class="btn btn-default">Page <%= pages.current %> of <%= pages.total %></button>
-			<button disabled class="btn btn-default">Rows <%= items.begin %> - <%= items.end %> of <%= items.total
-				%>
-			</button>
+			<button disabled="disabled" class="btn btn-default">Page <%= pages.current %> of <%= pages.total %></button>
+			<button disabled="disabled" class="btn btn-default">Rows <%= items.begin %> - <%= items.end %> of <%= items.total %></button>
 		</div>
 		<div class="btn-group pull-right">
 			<button data-page="<%= pages.prev %>" class="btn btn-default btn-page btn-prev">Prev</button>
 			<button data-page="<%= pages.next %>" class="btn btn-default btn-page btn-next"> Next</button>
 		</div>
 		<div class="clearfix"></div>
-	</div></script>
-<script type="text/template" id="data-results">{{.Results}}</script>
-{{end}}
+	</div>
+</script>
 
-{{define "feet"}}
-<script src="/public/views/admin/admin-groups/index.js?{{.CacheBreaker}}"></script>
+<script type="text/template" id="data-results">{{.Results}}</script>
+
 {{end}}

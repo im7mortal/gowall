@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"strings"
 	"regexp"
+	"encoding/json"
 )
 
 var TemplateStorage map[string]*render.HTML = make(map[string]*render.HTML)
@@ -20,10 +21,18 @@ func InitTemplate(base, name string, paths... string) {
 	}
 }
 
+func getRender(name string) (render *render.HTML) {
+	render, ok := TemplateStorage[name]
+	if !ok {
+		panic("template isn't defined: " + name)
+	}
+	return
+}
+
 type Response struct {
-	Success bool `json:"success"`
-	Errors  []string `json:"errors"`
-	ErrFor  map[string]string `json:"errfor"`
+	Success bool `json:"success" bson:"-"`
+	Errors  []string `json:"errors" bson:"-"`
+	ErrFor  map[string]string `json:"errfor" bson:"-"`
 
 	Username    string  `json:"username"`
 	Email   string  `json:"email"`
@@ -84,4 +93,14 @@ func (r *Response) ValidatePassword() {
 func (r *Response) CleanErrors() {
 	r.Errors = []string{}
 	r.ErrFor = make(map[string]string)
+}
+
+func (r *Response) DecodeRequest(c *gin.Context) {
+	err := json.NewDecoder(c.Request.Body).Decode(r)
+	if err != nil {
+		panic(err)
+	}
+	// clean errors from client
+	r.CleanErrors()
+	return
 }

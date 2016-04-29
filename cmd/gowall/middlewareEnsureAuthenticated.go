@@ -1,11 +1,11 @@
 package main
 
 import (
-"github.com/gin-gonic/contrib/sessions"
-"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/contrib/sessions"
+	"github.com/gin-gonic/gin"
 	"net/http"
 	"regexp"
-"gopkg.in/mgo.v2/bson"
+	"gopkg.in/mgo.v2/bson"
 )
 
 const USERS  = "users"
@@ -28,63 +28,78 @@ func EnsureAuthenticated(c *gin.Context) {
 	}
 }
 
-func getUser(c *gin.Context) (user *User, ok bool) {
-	if _user, _ok := c.Get("User"); _ok {
+func getUser(c *gin.Context) (user *User) {
+	if _user, ok := c.Get("User"); ok {
 		user, ok = _user.(*User)
+		if !ok {
+			panic("not authorised")
+		}
+	} else {
+		panic("not authorised")
 	}
 	return
 }
 
-func getAccount(c *gin.Context) (account *Account, ok bool) {
-	if _account, _ok := c.Get("Account"); _ok {
+func getAccount(c *gin.Context) (account *Account) {
+	if _account, ok := c.Get("Account"); ok {
 		account, ok = _account.(*Account)
+		if !ok {
+			panic("account wasn't found")
+		}
+	} else {
+		panic("account wasn't found")
 	}
 	return
 }
 
 func EnsureAccount(c *gin.Context) {
-	if user, ok := getUser(c); ok {
-		if ok = user.CanPlayRoleOf("account"); ok {
-			account := Account{}
-			db := getMongoDBInstance()
-			defer db.Session.Close()
-			collection := db.C(ACCOUNTS)
-			collection.Find(bson.M{"_id": user.Roles.Account}).One(&account)
-			c.Set("Account", &account)
-			if config.RequireAccountVerification {
-				if account.IsVerified != "yes" {
-					r, _ := regexp.MatchString(`^\/account\/verification\/`, c.Request.URL.Path)
-					if !r {
-						c.Redirect(http.StatusFound, "/account/verification/")
-					}
+	user := getUser(c)
+	if ok := user.CanPlayRoleOf("account"); ok {
+		account := Account{}
+		db := getMongoDBInstance()
+		defer db.Session.Close()
+		collection := db.C(ACCOUNTS)
+		collection.Find(bson.M{"_id": user.Roles.Account}).One(&account)
+		c.Set("Account", &account)
+		if config.RequireAccountVerification {
+			if account.IsVerified != "yes" {
+				r, _ := regexp.MatchString(`^\/account\/verification\/`, c.Request.URL.Path)
+				if !r {
+					c.Redirect(http.StatusFound, "/account/verification/")
+					return
 				}
 			}
-			c.Next()
-			return
 		}
+		c.Next()
+		return
 	}
 	c.Redirect(http.StatusFound, "/")
 }
 
-func getAdmin(c *gin.Context) (account *Admin, ok bool) {
-	if _account, _ok := c.Get("Admin"); _ok {
-		account, ok = _account.(*Admin)
+
+func getAdmin(c *gin.Context) (admin *Admin) {
+	if _admin, ok := c.Get("Admin"); ok {
+		admin, ok = _admin.(*Admin)
+		if !ok {
+			panic("user isn't admin")
+		}
+	} else {
+		panic("user isn't admin")
 	}
 	return
 }
 
 func EnsureAdmin(c *gin.Context) {
-	if user, ok := getUser(c); ok {
-		if ok = user.CanPlayRoleOf("admin"); ok {
-			admin := Admin{}
-			db := getMongoDBInstance()
-			defer db.Session.Close()
-			collection := db.C(ADMINS)
-			collection.Find(bson.M{"_id": user.Roles.Admin}).One(&admin)
-			c.Set("Admin", &admin)
-			c.Next()
-			return
-		}
+	user := getUser(c)
+	if ok := user.CanPlayRoleOf("admin"); ok {
+		admin := Admin{}
+		db := getMongoDBInstance()
+		defer db.Session.Close()
+		collection := db.C(ADMINS)
+		collection.Find(bson.M{"_id": user.Roles.Admin}).One(&admin)
+		c.Set("Admin", &admin)
+		c.Next()
+		return
 	}
 	c.Redirect(http.StatusFound, "/")
 }

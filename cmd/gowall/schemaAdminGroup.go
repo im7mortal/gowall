@@ -2,18 +2,17 @@ package main
 
 import (
 	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type Permission struct {
-	Name string `bson:"name"`
-	Permit bool `bson:"permit"`
+	Name string `bson:"name" json:"name"`
+	Permit bool `bson:"permit" json:"permit"`
 }
 
 type AdminGroup struct {
-	ID          bson.ObjectId `bson:"_id,omitempty"`
-	Name        string `bson:"name"`
-	Permissions []Permission `bson:"permissions"`
+	ID          string `bson:"_id,omitempty" json:"_id"`
+	Name        string `bson:"name" json:"name"`
+	Permissions []Permission `bson:"permissions" json:"permissions"`
 }
 
 func (u *AdminGroup) Flow()  {

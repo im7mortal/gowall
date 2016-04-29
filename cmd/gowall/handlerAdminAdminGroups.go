@@ -5,50 +5,29 @@ import (
 	"net/http"
 	"encoding/json"
 	"gopkg.in/mgo.v2/bson"
-	"strconv"
 	"html/template"
+	"gopkg.in/mgo.v2"
+	"net/url"
 )
 
-func AdminAdminGroupsRender(c *gin.Context) {
+func renderAdminGroups(c *gin.Context) {
 	query := bson.M{}
 
 	name, ok := c.GetQuery("name")
 	if ok && len(name) != 0 {
-		query["name"] = bson.M{
-			"$regex": "/^.*?" + name + ".*$/i",
+		query["name"] = bson.RegEx{
+			Pattern: `^.*?` + name + `.*$`,
+			Options: "i",
 		}
 	}
-
-	limit_ := c.DefaultQuery("limit", "20")
-	limit, _ := strconv.ParseInt(limit_, 0, 0)
-	if limit > 100 {
-		limit = 100
-	}
-
-	page_ := c.DefaultQuery("page", "0")
-	page, _ := strconv.ParseInt(page_, 0, 0)
-
-	sort := c.DefaultQuery("sort", "_id")
 
 	var results []AdminGroup
 
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(ADMINGROUPS)
-	collection.Find(query).Skip(int(limit * page)).Sort(sort).Limit(int(limit)).All(&results)
 
-	users := []gin.H{}
-
-	for _, adminGroup := range results {
-		users = append(users, gin.H{
-			"_id": adminGroup.ID.Hex(),
-			"name": adminGroup.Name,
-		})
-	}
-
-	Result := gin.H{
-		"data": users,
-	}
+	Result := getData(c, collection.Find(query), &results)
 
 	Results, _ := json.Marshal(Result)
 
@@ -65,16 +44,222 @@ func AdminAdminGroupsRender(c *gin.Context) {
 	c.Render(http.StatusOK, render)
 }
 
-func AdminGroupRender(c *gin.Context) {
+type responseAdminGroup struct {
+	Response
+	AdminGroup
+}
 
+func createAdminGroup(c *gin.Context) {
+	response := responseAdminGroup{}
+	defer response.Recover(c)
+
+	admin := getAdmin(c)
+
+	// validate
+	ok := admin.IsMemberOf("root")
+	if !ok {
+		response.Errors = append(response.Errors, "You may not create statuses")
+		response.Fail(c)
+		return
+	}
+
+	err := json.NewDecoder(c.Request.Body).Decode(&response)
+	if err != nil {
+		panic(err)
+	}
+	// clean errors from client
+	response.CleanErrors()
+
+	if len(response.Name) == 0 {
+		response.Errors = append(response.Errors, "A name is required")
+	}
+
+	if response.HasErrors() {
+		response.Fail(c)
+		return
+	}
+
+	//duplicateAdminGroupCheck
+	response.ID = slugify(response.Name)
 	db := getMongoDBInstance()
 	defer db.Session.Close()
-	collection := db.C(USERS)
-	user := User{}
-	collection.FindId(c.Param("id")).One(&user)
-	userJSON, _ := json.Marshal(user)
-	c.Set("Record", string(userJSON))
-	render, _ := TemplateStorage["/admin/users/details/"]
+	collection := db.C(ADMINGROUPS)
+	err = collection.Find(bson.M{"_id": response.ID}).One(nil)
+	// we expect err == mgo.ErrNotFound for success
+	if err == nil {
+		response.Errors = append(response.Errors, "That group already exists.")
+		response.Fail(c)
+		return
+	} else if err != mgo.ErrNotFound {
+		panic(err)
+	}
+	// createAdminGroup
+	err = collection.Insert(response.AdminGroup) // todo I think mgo's behavior isn't expected
+	if err != nil {
+		panic(err)
+		return
+	}
+	response.Success = true
+	c.JSON(http.StatusOK, response)
+}
+
+func readAdminGroup(c *gin.Context) {
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+	collection := db.C(ADMINGROUPS)
+	adminGroup := AdminGroup{}
+	err := collection.FindId(c.Param("id")).One(&adminGroup)
+	if err != nil {
+		if err == mgo.ErrNotFound {
+			Status404Render(c)
+			return
+		}
+		panic(err)
+	}
+	json, err := json.Marshal(adminGroup)
+	if err != nil {
+		panic(err)
+	}
+	if XHR(c) {
+		c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
+		c.Data(http.StatusOK, "application/json; charset=utf-8", json)
+		return
+	}
+
+	c.Set("Record", template.JS(url.QueryEscape(string(json))))
+	render := getRender("/admin/admin-groups/details/")
 	render.Data = c.Keys
 	c.Render(http.StatusOK, render)
+}
+
+func updateAdminGroup(c *gin.Context) {
+	response := responseAdminGroup{}
+	defer response.Recover(c)
+
+	admin := getAdmin(c)
+
+	// validate
+	ok := admin.IsMemberOf("root")
+	if !ok {
+		response.Errors = append(response.Errors, "You may not update admin groups.")
+		response.Fail(c)
+		return
+	}
+
+	err := json.NewDecoder(c.Request.Body).Decode(&response)
+	if err != nil {
+		panic(err)
+	}
+	// clean errors from client
+	response.CleanErrors()
+
+	if len(response.Name) == 0 {
+		response.Errors = append(response.Errors, "A name is required")
+	}
+
+	if response.HasErrors() {
+		response.Fail(c)
+		return
+	}
+
+	//duplicateAdminGroupCheck
+	response.ID = slugify(response.Name)
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+	collection := db.C(ADMINGROUPS)
+	err = collection.FindId(response.ID).One(nil)
+	// we expect err == mgo.ErrNotFound for success
+	if err == nil {
+		response.Errors = append(response.Errors, "That admin group is already taken.")
+		response.Fail(c)
+		return
+	} else if err != mgo.ErrNotFound {
+		panic(err)
+	}
+
+	// patchAdminGroup
+	err = collection.RemoveId(c.Param("id"))
+	if err != nil {
+		panic(err)
+	}
+	err = collection.Insert(response.AdminGroup)
+	if err != nil {
+		panic(err)
+	}
+
+	response.Success = true
+	c.JSON(http.StatusOK, response)
+}
+
+func updateAdminGroupPermissions(c *gin.Context) {
+	response := responseAdminGroup{}
+	defer response.Recover(c)
+
+	admin := getAdmin(c)
+
+	// validate
+	ok := admin.IsMemberOf("root")
+	if !ok {
+		response.Errors = append(response.Errors, "You may not change the permissions of admin groups.")
+		response.Fail(c)
+		return
+	}
+
+	err := json.NewDecoder(c.Request.Body).Decode(&response)
+	if err != nil {
+		panic(err)
+	}
+	// clean errors from client
+	response.CleanErrors()
+
+	if len(response.Permissions) == 0 {
+		response.Errors = append(response.Errors, "required")
+	}
+
+	if response.HasErrors() {
+		response.Fail(c)
+		return
+	}
+
+	//patchAdminGroup
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+	collection := db.C(ADMINGROUPS)
+
+	err = collection.UpdateId(c.Param("id"), response.AdminGroup)
+	if err != nil {
+		panic(err)
+	}
+
+	response.Success = true
+	c.JSON(http.StatusOK, response)
+}
+
+func deleteAdminGroup(c *gin.Context) {
+	response := Response{} // todo sync.Pool
+	defer response.Recover(c)
+
+	admin := getAdmin(c)
+
+	// validate
+	ok := admin.IsMemberOf("root")
+	if !ok {
+		response.Errors = append(response.Errors, "You may not delete admin groups.")
+		response.Fail(c)
+		return
+	}
+
+	// deleteUser
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+	collection := db.C(ADMINGROUPS)
+	err := collection.RemoveId(c.Param("id"))
+	if err != nil {
+		response.Errors = append(response.Errors, err.Error())
+		response.Fail(c)
+		return
+	}
+
+	response.Success = true
+	c.JSON(http.StatusOK, response)
 }

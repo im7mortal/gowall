@@ -78,7 +78,7 @@
         },{
           success: function(model, response) {
             if (response.success) {
-              model.id = response.record._id;
+              model.id = response._id;
               location.href = model.url();
             }
             else {

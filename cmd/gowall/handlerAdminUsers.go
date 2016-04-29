@@ -199,20 +199,14 @@ func UsersRender(c *gin.Context) {
 }
 
 func DeleteUser(c *gin.Context) {
-	admin, ok := getAdmin(c)
-	if !ok {// todo extra
-		panic("not authorised")
-	}
-	user, ok := getUser(c)
-	if !ok {// todo extra
-		panic("not authorised")
-	}
+	admin := getAdmin(c)
+	user := getUser(c)
 
 	response := Response{} // todo sync.Pool
 	defer response.Recover(c)
 
 	// validate
-	ok = admin.IsMemberOf("root")
+	ok := admin.IsMemberOf("root")
 	if !ok {
 		response.Errors = append(response.Errors, "You may not delete users.")
 		response.Fail(c)

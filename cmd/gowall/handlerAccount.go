@@ -31,8 +31,8 @@ func AccountRender(c *gin.Context) {
 }
 
 func AccountVerificationRender(c *gin.Context) {
-	account, _ := getAccount(c)
-	user, _ := getUser(c)
+	account := getAccount(c)
+	user := getUser(c)
 	if account.IsVerified == "yes" {
 		c.Redirect(http.StatusFound, user.DefaultReturnUrl())
 		return
@@ -78,8 +78,8 @@ func AccountVerificationRender(c *gin.Context) {
 
 func Verify (c *gin.Context) {
 
-	account, _ := getAccount(c)
-	user, _ := getUser(c)
+	account := getAccount(c)
+	user := getUser(c)
 	err := bcrypt.CompareHashAndPassword([]byte(account.VerificationToken), []byte(c.Param("token")))
 	if err == nil {
 		db := getMongoDBInstance()
@@ -93,8 +93,8 @@ func Verify (c *gin.Context) {
 }
 
 func ResendVerification (c *gin.Context) {
-	account, _ := getAccount(c)
-	user, _ := getUser(c)
+	account := getAccount(c)
+	user := getUser(c)
 	if account.IsVerified == "yes" {
 		c.HTML(http.StatusOK, user.DefaultReturnUrl(), c.Keys)
 		return

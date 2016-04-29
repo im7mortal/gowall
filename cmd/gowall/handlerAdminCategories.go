@@ -58,13 +58,10 @@ func CreateCategory(c *gin.Context) {
 	response := Response{} // todo sync.Pool
 	defer response.Recover(c)
 
-	admin, ok := getAdmin(c)
-	if !ok {// todo extra
-		panic("not authorised")
-	}
+	admin := getAdmin(c)
 
 	// validate
-	ok = admin.IsMemberOf("root")
+	ok := admin.IsMemberOf("root")
 	if !ok {
 		response.Errors = append(response.Errors, "You may not create categories")
 		response.Fail(c)
@@ -127,13 +124,10 @@ func updateCategory(c *gin.Context) {
 	response := Response{} // todo sync.Pool
 	defer response.Recover(c)
 
-	admin, ok := getAdmin(c)
-	if !ok {// todo extra
-		panic("not authorised")
-	}
+	admin := getAdmin(c)
 
 	// validate
-	ok = admin.IsMemberOf("root")
+	ok := admin.IsMemberOf("root")
 	if !ok {
 		response.Errors = append(response.Errors, "You may not create categories")
 		response.Fail(c)
@@ -217,16 +211,13 @@ func CategoryRender(c *gin.Context) {
 }
 
 func deleteCategory(c *gin.Context) {
-	admin, ok := getAdmin(c)
-	if !ok {// todo extra
-		panic("not authorised")
-	}
+	admin := getAdmin(c)
 
 	response := Response{} // todo sync.Pool
 	defer response.Recover(c)
 
 	// validate
-	ok = admin.IsMemberOf("root")
+	ok := admin.IsMemberOf("root")
 	if !ok {
 		response.Errors = append(response.Errors, "You may not delete categories.")
 		response.Fail(c)
