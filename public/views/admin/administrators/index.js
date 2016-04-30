@@ -74,7 +74,9 @@
       }
       else {
         this.model.save({
-          'name.full': this.$el.find('[name="name"]').val()
+          'name': {
+            'full': this.$el.find('[name="name"]').val()
+          }
         },{
           success: function(model, response) {
             if (response.success) {

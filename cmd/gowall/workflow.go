@@ -29,6 +29,17 @@ func getRender(name string) (render *render.HTML) {
 	return
 }
 
+func renderPage(c *gin.Context, path string) {
+	render := getRender(c.Request.URL.Path)
+	render.Data = c.Keys
+	c.Render(http.StatusOK, render)
+}
+
+func handleXHR(c *gin.Context, data []byte) {
+	c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
+	c.Data(http.StatusOK, "application/json; charset=utf-8", data)
+}
+
 type Response struct {
 	Success bool `json:"success" bson:"-"`
 	Errors  []string `json:"errors" bson:"-"`

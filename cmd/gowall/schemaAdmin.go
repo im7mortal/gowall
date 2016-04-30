@@ -4,28 +4,38 @@ import (
 	"gopkg.in/mgo.v2"
 	"time"
 	"gopkg.in/mgo.v2/bson"
+	"encoding/json"
+	"github.com/gin-gonic/gin"
 )
 
 type Admin struct {
-	ID bson.ObjectId `bson:"_id,omitempty"`
+	ID bson.ObjectId `bson:"_id,omitempty" json:"_id"`
 	User struct{
-		   ID mgo.DBRef `bson:"id"`
-		   Name string `bson:"name"`
-	   } `bson:"user"`
+		   ID bson.ObjectId `bson:"id,omitempty" json:"id"`
+		   Name string `bson:"name" json:"name"`
+	   } `bson:"user" json:"user"`
 	Name struct {
-		   First string  `bson:"first"`
-		   Middle string `bson:"middle"`
-		   Last string `bson:"last"`
-		   Full string `bson:"full"`
-	   } `bson:"name"`
-	Groups []string `bson:"groups"`
-	Permissions []Permission `bson:"permissions"`
-	TimeCreated time.Time `bson:"timeCreated"`
-	Search []string `bson:"search"`
+		   First string  `bson:"first" json:"first"`
+		   Middle string `bson:"middle" json:"middle"`
+		   Last string `bson:"last" json:"last"`
+		   Full string `bson:"full" json:"full"`
+	   } `bson:"name" json:"name"`
+	Groups []string `bson:"groups" json:"groups"`
+	Permissions []Permission `bson:"permissions" json:"permissions"`
+	TimeCreated time.Time `bson:"timeCreated" json:"timeCreated"`
+	Search []string `bson:"search" json:"search"`
 }
 
 func (u *Admin) Flow()  {
 
+}
+
+func (a *Admin) DecodeRequest(c *gin.Context) {
+	err := json.NewDecoder(c.Request.Body).Decode(a)
+	if err != nil {
+		panic(err)
+	}
+	return
 }
 
 func (admin *Admin) HasPermissionTo(requiredPermission string) (hasPermission bool) {
