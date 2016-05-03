@@ -1,6 +1,6 @@
 {
 	"ImportPath": "github.com/im7mortal/gowall",
-	"GoVersion": "go1.6",
+	"GoVersion": "go1.6.2",
 	"GodepVersion": "v60",
 	"Packages": [
 		"./..."
@@ -21,6 +21,10 @@
 		},
 		{
 			"ImportPath": "github.com/gin-gonic/contrib/gzip",
+			"Rev": "14f66d54cdb96059bafca98665bcc6d9df4951f2"
+		},
+		{
+			"ImportPath": "github.com/gin-gonic/contrib/renders/multitemplate",
 			"Rev": "14f66d54cdb96059bafca98665bcc6d9df4951f2"
 		},
 		{
