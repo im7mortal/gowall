@@ -152,6 +152,10 @@
 			"ImportPath": "gopkg.in/mgo.v2/internal/scram",
 			"Comment": "r2016.02.04-1-gb6e2fa3",
 			"Rev": "b6e2fa371e64216a45e61072a96d4e3859f169da"
+		},
+		{
+			"ImportPath": "github.com/xenolf/lego",
+			"Rev": "948483535f53c34d144419869ecbed86251a30f6"
 		}
 	]
 }
