@@ -17,9 +17,7 @@ func ForgotRender(c *gin.Context) {
 		defaultReturnUrl, _ := c.Get("DefaultReturnUrl")
 		c.Redirect(http.StatusFound, defaultReturnUrl.(string))
 	} else {
-		render, _ := TemplateStorage[c.Request.URL.Path]
-		render.Data = c.Keys
-		c.Render(http.StatusOK, render)
+		c.HTML(http.StatusOK, c.Request.URL.Path, c.Keys)
 	}
 }
 
@@ -115,9 +113,7 @@ func ResetRender(c *gin.Context) {
 		defaultReturnUrl, _ := c.Get("DefaultReturnUrl")
 		c.Redirect(http.StatusFound, defaultReturnUrl.(string))
 	} else {
-		render, _ := TemplateStorage["/login/reset/"] // can't handle /login/reset/:email:token
-		render.Data = c.Keys
-		c.Render(http.StatusOK, render)
+		c.HTML(http.StatusOK, "/login/reset/", c.Keys) // can't handle /login/reset/:email:token
 	}
 }
 

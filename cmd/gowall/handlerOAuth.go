@@ -45,9 +45,7 @@ func CompleteOAuth(c *gin.Context) {
 	session.Save()
 
 	if err != nil {
-		render, _ := TemplateStorage[action]
-		render.Data = c.Keys
-		c.Render(http.StatusOK, render)
+		c.HTML(http.StatusOK, action, c.Keys)
 		return
 	}
 

@@ -7,9 +7,7 @@ import (
 )
 
 func Status404Render(c *gin.Context) {
-	render, _ := TemplateStorage["404"]
-	render.Data = c.Keys
-	c.Render(http.StatusOK, render)
+	c.HTML(http.StatusOK, "404", c.Keys)
 }
 
 func checkRecover(c *gin.Context) {
@@ -21,11 +19,8 @@ func checkRecover(c *gin.Context) {
 					"details": rec,
 				})
 			} else {
-				render, _ := TemplateStorage["500"]
-				render.Data = gin.H{
-					"Stack": fmt.Sprintf("%v\n", rec),
-				}
-				c.Render(http.StatusInternalServerError, render)
+				c.Set("Stack", fmt.Sprintf("%v\n", rec))
+				c.HTML(http.StatusOK, "500", c.Keys)
 			}
 		}
 	}(c)

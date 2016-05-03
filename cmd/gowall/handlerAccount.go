@@ -25,9 +25,7 @@ func generateToken(n int) []byte {
 }
 
 func AccountRender(c *gin.Context) {
-	render, _ := TemplateStorage[c.Request.URL.Path]
-	render.Data = c.Keys
-	c.Render(http.StatusOK, render)
+	c.HTML(http.StatusOK, c.Request.URL.Path, c.Keys)
 }
 
 func AccountVerificationRender(c *gin.Context) {
@@ -71,9 +69,7 @@ func AccountVerificationRender(c *gin.Context) {
 
 	}
 
-	render, _ := TemplateStorage[c.Request.URL.Path]
-	render.Data = c.Keys
-	c.Render(http.StatusOK, render)
+	c.HTML(http.StatusOK, c.Request.URL.Path, c.Keys)
 }
 
 func Verify (c *gin.Context) {

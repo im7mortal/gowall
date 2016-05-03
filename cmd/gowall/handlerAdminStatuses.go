@@ -47,9 +47,7 @@ func renderStatuses(c *gin.Context) {
 
 	c.Set("Results", template.JS(string(Results)))
 
-	render, _ := TemplateStorage[c.Request.URL.Path]
-	render.Data = c.Keys
-	c.Render(http.StatusOK, render)
+	c.HTML(http.StatusOK, c.Request.URL.Path, c.Keys)
 }
 
 func createStatus(c *gin.Context) {
@@ -134,9 +132,7 @@ func readStatus(c *gin.Context) {
 	}
 
 	c.Set("Record", template.JS(url.QueryEscape(string(json))))
-	render, _ := TemplateStorage["/admin/statuses/details/"]
-	render.Data = c.Keys
-	c.Render(http.StatusOK, render)
+	c.HTML(http.StatusOK, "/admin/statuses/details/", c.Keys)
 }
 
 func updateStatus(c *gin.Context) {

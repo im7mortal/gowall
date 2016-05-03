@@ -47,9 +47,7 @@ func signupProvider(c *gin.Context, userGoth goth.User) {
 	session.Save()
 
 	c.Set("email", template.JS(userGoth.Email))
-	render, _ := TemplateStorage["/signup/social/"]
-	render.Data = c.Keys
-	c.Render(http.StatusOK, render)
+	c.HTML(http.StatusOK, "/signup/social/", c.Keys)
 }
 
 func SignUpSocial(c *gin.Context) {

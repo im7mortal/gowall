@@ -6,7 +6,5 @@ import (
 )
 
 func Index(c *gin.Context) {
-	render, _ := TemplateStorage["/"]
-	render.Data = c.Keys
-	c.Render(http.StatusOK, render)
+	c.HTML(http.StatusOK, "/", c.Keys)
 }

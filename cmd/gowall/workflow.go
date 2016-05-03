@@ -3,37 +3,10 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"github.com/gin-gonic/gin/render"
-	"html/template"
 	"strings"
 	"regexp"
 	"encoding/json"
 )
-
-var TemplateStorage map[string]*render.HTML = make(map[string]*render.HTML)
-
-func InitTemplate(base, name string, paths... string) {
-	// append base tmpl
-	paths = append(paths, "layouts/" + base)
-	TemplateStorage[name] = &render.HTML{
-		Template: template.Must(template.New(name).ParseFiles(paths...)),
-		Name:     base,
-	}
-}
-
-func getRender(name string) (render *render.HTML) {
-	render, ok := TemplateStorage[name]
-	if !ok {
-		panic("template isn't defined: " + name)
-	}
-	return
-}
-
-func renderPage(c *gin.Context, path string) {
-	render := getRender(c.Request.URL.Path)
-	render.Data = c.Keys
-	c.Render(http.StatusOK, render)
-}
 
 func handleXHR(c *gin.Context, data []byte) {
 	c.Header("Cache-Control", "no-cache, no-store, must-revalidate")

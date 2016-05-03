@@ -26,12 +26,8 @@ func LoginRender(c *gin.Context) {
 		}
 		c.Redirect(http.StatusFound, redirectURL)
 	} else {
-		render, _ := TemplateStorage[c.Request.URL.Path]
-
 		injectSocials(c)
-
-		render.Data = c.Keys
-		c.Render(http.StatusOK, render)
+		c.HTML(http.StatusOK, c.Request.URL.Path, c.Keys)
 	}
 }
 

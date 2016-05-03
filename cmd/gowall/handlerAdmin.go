@@ -27,30 +27,8 @@ func generateToken1(n int) []byte {
 }
 
 func AdminRender(c *gin.Context) {
-	render, _ := TemplateStorage[c.Request.URL.Path]
 
-/*	// TODO
-	db := getMongoDBInstance()
-	defer db.Session.Close()
-	collection := db.C(ACCOUNTS)
-	count, _ := collection.Count()
-	c.Set("CountAccount", count)
-	collection = db.C(USERS)
-	count, _ = collection.Count()
-	c.Set("CountUser", count)
-	collection = db.C(ADMINS)
-	count, _ = collection.Count()
-	c.Set("CountAdmin", count)
-	collection = db.C(ADMINGROUPS)
-	count, _ = collection.Count()
-	c.Set("CountAdminGroup", count)
-	collection = db.C(CATEGORIES)
-	count, _ = collection.Count()
-	c.Set("CountCategory", count)
-	collection = db.C(STATUS)
-	count, _ = collection.Count()
-	c.Set("CountStatus", count)*/
-
+	// todo has to be sync pkg
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 
@@ -75,8 +53,7 @@ func AdminRender(c *gin.Context) {
 	c.Set("CountCategory", <- CountCategoryChan)
 	c.Set("CountStatus", <- CountStatusChan)
 
-	render.Data = c.Keys
-	c.Render(http.StatusOK, render)
+	c.HTML(http.StatusOK, c.Request.URL.Path, c.Keys)
 }
 
 func AccountVerificationRender1(c *gin.Context) {
@@ -120,9 +97,7 @@ func AccountVerificationRender1(c *gin.Context) {
 
 	}
 
-	render, _ := TemplateStorage[c.Request.URL.Path]
-	render.Data = c.Keys
-	c.Render(http.StatusOK, render)
+	c.HTML(http.StatusOK, c.Request.URL.Path, c.Keys)
 }
 
 func Verify1 (c *gin.Context) {
@@ -261,7 +236,5 @@ func AccountSettingsRender1(c *gin.Context) {
 		})
 		c.Set("Account", url.QueryEscape(string(Account)))
 	}
-	render, _ := TemplateStorage[c.Request.URL.Path]
-	render.Data = c.Keys
-	c.Render(http.StatusOK, render)
+	c.HTML(http.StatusOK, c.Request.URL.Path, c.Keys)
 }

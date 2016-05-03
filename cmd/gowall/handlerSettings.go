@@ -59,9 +59,7 @@ func AccountSettingsRender(c *gin.Context) {
 		})
 		c.Set("Account", template.JS(url.QueryEscape(string(Account))))
 	}
-	render, _ := TemplateStorage[c.Request.URL.Path]
-	render.Data = c.Keys
-	c.Render(http.StatusOK, render)
+	c.HTML(http.StatusOK, c.Request.URL.Path, c.Keys)
 }
 
 func SetSettings (c *gin.Context) {

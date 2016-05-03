@@ -49,9 +49,7 @@ func AdminCategoriesRender(c *gin.Context) {
 
 	c.Set("Results", template.JS(string(Results)))
 
-	render, _ := TemplateStorage[c.Request.URL.Path]
-	render.Data = c.Keys
-	c.Render(http.StatusOK, render)
+	c.HTML(http.StatusOK, c.Request.URL.Path, c.Keys)
 }
 
 func CreateCategory(c *gin.Context) {
@@ -205,9 +203,7 @@ func CategoryRender(c *gin.Context) {
 	}
 
 	c.Set("Record", template.JS(url.QueryEscape(string(json))))
-	render, _ := TemplateStorage["/admin/categories/details/"]
-	render.Data = c.Keys
-	c.Render(http.StatusOK, render)
+	c.HTML(http.StatusOK, "/admin/categories/details/", c.Keys)
 }
 
 func deleteCategory(c *gin.Context) {

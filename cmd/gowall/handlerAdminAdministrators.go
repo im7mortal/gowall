@@ -44,8 +44,7 @@ func renderAdministrators(c *gin.Context) {
 	}
 
 	c.Set("Results", template.JS(string(Results)))
-
-	renderPage(c, c.Request.URL.Path)
+	c.HTML(http.StatusOK, c.Request.URL.Path, c.Keys)
 }
 
 func createAdministrator(c *gin.Context) {
@@ -133,10 +132,7 @@ func readAdministrator(c *gin.Context) {
 	}
 
 	c.Set("Record", template.JS(getEscapedString(string(json))))
-
-	render := getRender("/admin/administrators/details/")
-	render.Data = c.Keys
-	c.Render(http.StatusOK, render)
+	c.HTML(http.StatusOK, "/admin/administrators/details/", c.Keys)
 }
 
 

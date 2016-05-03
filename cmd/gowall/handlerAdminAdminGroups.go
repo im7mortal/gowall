@@ -40,9 +40,7 @@ func renderAdminGroups(c *gin.Context) {
 
 	c.Set("Results", template.JS(string(Results)))
 
-	render, _ := TemplateStorage[c.Request.URL.Path]
-	render.Data = c.Keys
-	c.Render(http.StatusOK, render)
+	c.HTML(http.StatusOK, c.Request.URL.Path, c.Keys)
 }
 
 type responseAdminGroup struct {
@@ -124,9 +122,7 @@ func readAdminGroup(c *gin.Context) {
 	}
 
 	c.Set("Record", template.JS(getEscapedString(string(json))))
-	render := getRender("/admin/admin-groups/details/")
-	render.Data = c.Keys
-	c.Render(http.StatusOK, render)
+	c.HTML(http.StatusOK, "/admin/admin-groups/details/", c.Keys)
 }
 
 /**
