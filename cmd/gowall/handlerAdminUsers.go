@@ -112,9 +112,13 @@ func getData (c *gin.Context, query *mgo.Query, results interface{}) (data gin.H
 	}
 }
 
+type responseUser struct {
+	Response
+	User
+}
 
 func CreateUser(c *gin.Context) {
-	response := Response{} // todo sync.Pool
+	response := responseUser{} // todo sync.Pool
 	defer response.Recover(c)
 
 	decoder := json.NewDecoder(c.Request.Body)
@@ -127,7 +131,7 @@ func CreateUser(c *gin.Context) {
 	response.CleanErrors()
 
 	// validate
-	response.ValidateUsername()
+	response.ValidateUsername(&response.Response)
 
 	if response.HasErrors() {
 		response.Fail(c)

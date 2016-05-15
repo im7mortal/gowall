@@ -51,7 +51,7 @@ func signupProvider(c *gin.Context, userGoth goth.User) {
 }
 
 func SignUpSocial(c *gin.Context) {
-	response := Response{}
+	response := responseUser{}
 	defer response.Recover(c)
 
 	decoder := json.NewDecoder(c.Request.Body)
@@ -63,7 +63,7 @@ func SignUpSocial(c *gin.Context) {
 	response.ErrFor = make(map[string]string)
 
 	// validate
-	response.ValidateEmail()
+	response.ValidateEmail(&response.Response)
 	if response.HasErrors() {
 		response.Fail(c)
 		return

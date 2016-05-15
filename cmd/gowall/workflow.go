@@ -3,8 +3,6 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"strings"
-	"regexp"
 	"encoding/json"
 )
 
@@ -17,10 +15,6 @@ type Response struct {
 	Success bool `json:"success" bson:"-"`
 	Errors  []string `json:"errors" bson:"-"`
 	ErrFor  map[string]string `json:"errfor" bson:"-"`
-
-	Username    string  `json:"username"`
-	Email   string  `json:"email"`
-	Password string  `json:"password"`
 }
 
 func (r *Response)HasErrors() bool {
@@ -34,45 +28,7 @@ func (r *Response)Fail(c *gin.Context) {
 
 func (r *Response) Recover(c *gin.Context) {}
 
-func (r *Response) ValidateUsername() {
-	r.Username = strings.ToLower(r.Username)
-	if len(r.Username) == 0 {
-		r.ErrFor["username"] = "required"
-	} else {
-		ok, err := regexp.MatchString(`^[a-zA-Z0-9\-\_]+$`, r.Username)
-		if err != nil {
-			println(err.Error())
-		}
-		if !ok {
-			r.ErrFor["username"] = `only use letters, numbers, \'-\', \'_\'`
-		}
-	}
-}
 
-func (r *Response) ValidateEmail() {
-	r.Email = strings.ToLower(r.Email)
-	if len(r.Email) == 0 {
-		r.ErrFor["email"] = "required"
-	} else {
-		ok, err := regexp.MatchString(`^[a-zA-Z0-9\-\_\.\+]+@[a-zA-Z0-9\-\_\.]+\.[a-zA-Z0-9\-\_]+$`, r.Email)
-		if err != nil {
-			println(err.Error())
-		}
-		if !ok {
-			r.ErrFor["email"] = `invalid email format`
-		}
-	}
-}
-
-func (r *Response) ValidatePassword() {
-	if len(r.Password) == 0 {
-		r.ErrFor["password"] = "required"
-	} else {
-		if len(r.Password) < 8 {
-			r.ErrFor["password"] = `too weak password`
-		}
-	}
-}
 
 func (r *Response) CleanErrors() {
 	r.Errors = []string{}

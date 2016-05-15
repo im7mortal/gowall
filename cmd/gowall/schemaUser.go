@@ -5,6 +5,8 @@ import (
 	"time"
 	"gopkg.in/mgo.v2/bson"
 	"sync"
+	"strings"
+	"regexp"
 )
 
 type vendorOauth struct {
@@ -74,7 +76,45 @@ func (user *User) DefaultReturnUrl() (returnUrl string) {
 
 }*/
 
+func (u *User) ValidateUsername(r *Response) {
+	u.Username = strings.ToLower(u.Username)
+	if len(u.Username) == 0 {
+		r.ErrFor["username"] = "required"
+	} else {
+		ok, err := regexp.MatchString(`^[a-zA-Z0-9\-\_]+$`, u.Username)
+		if err != nil {
+			println(err.Error())
+		}
+		if !ok {
+			r.ErrFor["username"] = `only use letters, numbers, \'-\', \'_\'`
+		}
+	}
+}
 
+func (u *User) ValidateEmail(r *Response) {
+	u.Email = strings.ToLower(u.Email)
+	if len(u.Email) == 0 {
+		r.ErrFor["email"] = "required"
+	} else {
+		ok, err := regexp.MatchString(`^[a-zA-Z0-9\-\_\.\+]+@[a-zA-Z0-9\-\_\.]+\.[a-zA-Z0-9\-\_]+$`, u.Email)
+		if err != nil {
+			println(err.Error())
+		}
+		if !ok {
+			r.ErrFor["email"] = `invalid email format`
+		}
+	}
+}
+
+func (u *User) ValidatePassword(r *Response) {
+	if len(u.Password) == 0 {
+		r.ErrFor["password"] = "required"
+	} else {
+		if len(u.Password) < 8 {
+			r.ErrFor["password"] = `too weak password`
+		}
+	}
+}
 
 var UserIndex mgo.Index = mgo.Index{
 	Key:        []string{"username", "email"},
