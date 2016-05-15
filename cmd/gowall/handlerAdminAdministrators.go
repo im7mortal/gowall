@@ -246,7 +246,7 @@ func deleteAdministrator(c *gin.Context) {
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(ADMINS)
-	err := collection.RemoveId(c.Param("id"))
+	err := collection.RemoveId(bson.ObjectIdHex(c.Param("id")))
 	if err != nil {
 		response.Errors = append(response.Errors, err.Error())
 		response.Fail(c)
