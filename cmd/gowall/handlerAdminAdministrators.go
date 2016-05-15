@@ -166,29 +166,18 @@ func updateAdministrator(c *gin.Context) {
 		return
 	}
 
-	//duplicateAdminGroupCheck
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(ADMINS)
-	err = collection.FindId(response.ID).One(nil)
-	// we expect err == mgo.ErrNotFound for success
-	if err == nil {
-		response.Errors = append(response.Errors, "That admin group is already taken.")
-		response.Fail(c)
-		return
-	} else if err != mgo.ErrNotFound {
-		panic(err)
-	}
 
 	// patchAdminGroup
-	err = collection.RemoveId(c.Param("id"))
+	err = collection.UpdateId(bson.ObjectIdHex(c.Param("id")), response.Admin)
 	if err != nil {
-		panic(err)
+		response.Errors = append(response.Errors, err.Error())
+		response.Fail(c)
+		return
 	}
-	err = collection.Insert(response.Admin)
-	if err != nil {
-		panic(err)
-	}
+
 
 	response.Success = true
 	c.JSON(http.StatusOK, response)
