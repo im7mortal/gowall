@@ -105,7 +105,7 @@ func createAdministrator(c *gin.Context) {
 		return
 	}
 	response.Success = true
-	c.JSON(http.StatusOK, response)
+	c.JSON(http.StatusOK, gin.H{"record": response, "success": true})
 }
 
 func readAdministrator(c *gin.Context) {
