@@ -13,6 +13,9 @@ import (
 type responseAdmin struct {
 	Response
 	Admin
+	First string `json:"first"`
+	Last string  `json:"last"`
+	Middle string  `json:"middle"`
 }
 
 func renderAdministrators(c *gin.Context) {
@@ -135,7 +138,6 @@ func readAdministrator(c *gin.Context) {
 	c.HTML(http.StatusOK, "/admin/administrators/details/", c.Keys)
 }
 
-
 func updateAdministrator(c *gin.Context) {
 	response := responseAdmin{}
 	response.BindContext(c)
@@ -147,9 +149,16 @@ func updateAdministrator(c *gin.Context) {
 	// clean errors from client
 	response.CleanErrors()
 
-	if len(response.Name.First) == 0 {
+	if len(response.First) == 0 {
 		response.Errors = append(response.Errors, "A name is required")
 	}
+	response.Name.First = response.First
+
+	if len(response.Last) == 0 {
+		response.Errors = append(response.Errors, "A lastname is required")
+	}
+	response.Name.Last = response.Last
+	response.Name.Middle = response.Middle
 
 	if response.HasErrors() {
 		response.Fail()
