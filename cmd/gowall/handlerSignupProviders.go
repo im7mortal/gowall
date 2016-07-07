@@ -52,7 +52,7 @@ func signupProvider(c *gin.Context, userGoth goth.User) {
 
 func SignUpSocial(c *gin.Context) {
 	response := responseUser{}
-	defer response.Recover(c)
+	defer response.Recover()
 
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&response)
@@ -65,7 +65,7 @@ func SignUpSocial(c *gin.Context) {
 	// validate
 	response.ValidateEmail(&response.Response)
 	if response.HasErrors() {
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -75,7 +75,7 @@ func SignUpSocial(c *gin.Context) {
 	socialProfile_, ok := session.Get("socialProfile").(string)
 	if !ok || len(socialProfile_) == 0 {
 		response.Errors = append(response.Errors, "something went wrong. Refresh please")
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 	socialProfile := goth.User{}
@@ -94,7 +94,7 @@ func SignUpSocial(c *gin.Context) {
 	// we expect err == mgo.ErrNotFound for success
 	if err == nil {
 		response.ErrFor["email"] = "email already registered"
-		response.Fail(c)
+		response.Fail()
 		return
 	} else if err != mgo.ErrNotFound {
 		panic(err)
@@ -114,7 +114,7 @@ func SignUpSocial(c *gin.Context) {
 	reg.ReplaceAll(usernameSrc, []byte(""))
 	username = string(usernameSrc)
 	if len(user.Username) != 0 {
-		response.Fail(c)
+		response.Fail()
 	}
 	err = collection.Find(bson.M{"username": username}).One(&user)
 	if err == nil {

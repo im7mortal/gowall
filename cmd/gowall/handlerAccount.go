@@ -98,7 +98,7 @@ func ResendVerification (c *gin.Context) {
 	response := Response{} // todo sync.Pool
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
-	defer response.Recover(c)
+	defer response.Recover()
 
 	var body struct {
 		Username    string  `json:"username"`
@@ -121,7 +121,7 @@ func ResendVerification (c *gin.Context) {
 		}
 	}
 	if response.HasErrors() {
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 	db := getMongoDBInstance()
@@ -135,7 +135,7 @@ func ResendVerification (c *gin.Context) {
 		}
 	}
 	if response.HasErrors() {
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 	user.Email = email

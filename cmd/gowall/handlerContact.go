@@ -15,7 +15,7 @@ func ContactSend(c *gin.Context) {
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
 
-	//defer response.Recover(c)
+	//defer response.Recover()
 
 	var body struct {
 		Name    string  `json:"name"`
@@ -38,7 +38,7 @@ func ContactSend(c *gin.Context) {
 		response.ErrFor["message"] = "required"
 	}
 	if response.HasErrors() {
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -59,7 +59,7 @@ func ContactSend(c *gin.Context) {
 
 	if err := mailConf.SendMail(); err != nil {
 		response.Errors = append(response.Errors, "Error Sending: " + err.Error())
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 

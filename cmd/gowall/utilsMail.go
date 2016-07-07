@@ -6,8 +6,6 @@ import (
 	"html/template"
 )
 
-//import "gopkg.in/gomail.v2"
-
 type MailConfig struct {
 	From     string
 	ReplyTo  string
@@ -22,7 +20,7 @@ func (conf *MailConfig)SendMail() (err error) {
 	m := gomail.NewMessage()
 
 	m.SetHeader("From", conf.From)
-	m.SetHeader("To", "im7mortal@gmail.com")
+	m.SetHeader("To", "im7mortal@gmail.com") // TODO
 	m.SetHeader("Subject", conf.Subject)
 	m.SetHeader("ReplyTo", conf.ReplyTo)
 

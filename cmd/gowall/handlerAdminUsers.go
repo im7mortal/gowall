@@ -119,7 +119,7 @@ type responseUser struct {
 
 func CreateUser(c *gin.Context) {
 	response := responseUser{} // todo sync.Pool
-	defer response.Recover(c)
+	defer response.Recover()
 
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&response)
@@ -134,7 +134,7 @@ func CreateUser(c *gin.Context) {
 	response.ValidateUsername(&response.Response)
 
 	if response.HasErrors() {
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -154,7 +154,7 @@ func CreateUser(c *gin.Context) {
 		}
 	}
 	if response.HasErrors() {
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -202,13 +202,13 @@ func DeleteUser(c *gin.Context) {
 	user := getUser(c)
 
 	response := Response{} // todo sync.Pool
-	defer response.Recover(c)
+	defer response.Recover()
 
 	// validate
 	ok := admin.IsMemberOf("root")
 	if !ok {
 		response.Errors = append(response.Errors, "You may not delete users.")
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -216,7 +216,7 @@ func DeleteUser(c *gin.Context) {
 
 	if deleteID == user.ID.Hex() {
 		response.Errors = append(response.Errors, "You may not delete yourself from user.")
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -227,7 +227,7 @@ func DeleteUser(c *gin.Context) {
 	err := collection.RemoveId(bson.ObjectIdHex(deleteID))
 	if err != nil {
 		response.Errors = append(response.Errors, err.Error())
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -243,7 +243,7 @@ func ChangeUserPassword (c *gin.Context) {
 	response := Response{} // todo sync.Pool
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
-	defer response.Recover(c)
+	defer response.Recover()
 	var body struct {
 		Confirm   string  `json:"confirm"`
 		Password string  `json:"newPassword"`
@@ -262,7 +262,7 @@ func ChangeUserPassword (c *gin.Context) {
 	}
 
 	if response.HasErrors() {
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -277,14 +277,14 @@ func ChangeUserPassword (c *gin.Context) {
 			panic(err)
 		}
 		response.Errors = append(response.Errors, "User wasn't found.")
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
 	if err != nil {
 		response.Errors = append(response.Errors, err.Error()) // TODO don't like that this error goes to client
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -292,7 +292,7 @@ func ChangeUserPassword (c *gin.Context) {
 	err = collection.UpdateId(user.ID, user)
 	if err != nil {
 		response.Errors = append(response.Errors, err.Error())
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -305,7 +305,7 @@ func ChangeUserData (c *gin.Context) {
 	response := Response{} // todo sync.Pool
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
-	defer response.Recover(c)
+	defer response.Recover()
 	var body struct {
 		Username    string  `json:"username"`
 		Email   string  `json:"email"`
@@ -341,7 +341,7 @@ func ChangeUserData (c *gin.Context) {
 	}
 
 	if response.HasErrors() {
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -355,7 +355,7 @@ func ChangeUserData (c *gin.Context) {
 			panic(err)
 		}
 		response.Errors = append(response.Errors, "User wasn't found.")
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -371,7 +371,7 @@ func ChangeUserData (c *gin.Context) {
 		err = collection.Find(bson.M{"$or": []bson.M{bson.M{"username": username}, bson.M{"email": email}}}).One(&us)
 		if err != nil {
 			response.Errors = append(response.Errors, "username or email already exist")
-			response.Fail(c)
+			response.Fail()
 			return
 		}
 	}
@@ -382,7 +382,7 @@ func ChangeUserData (c *gin.Context) {
 	err = collection.UpdateId(user.ID, user)
 	if err != nil {
 		response.Errors = append(response.Errors, err.Error())
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 	// TODO  patch admin and account
@@ -396,7 +396,7 @@ func ChangeUserData (c *gin.Context) {
 	response := Response{} // todo sync.Pool
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
-	defer response.Recover(c)
+	defer response.Recover()
 	var body struct {
 		Confirm   string  `json:"confirm"`
 		Password string  `json:"newPassword"`
@@ -415,7 +415,7 @@ func ChangeUserData (c *gin.Context) {
 	}
 
 	if response.HasErrors() {
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -430,14 +430,14 @@ func ChangeUserData (c *gin.Context) {
 			panic(err)
 		}
 		response.Errors = append(response.Errors, "User wasn't found.")
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
 	if err != nil {
 		response.Errors = append(response.Errors, err.Error()) // TODO don't like that this error goes to client
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -445,7 +445,7 @@ func ChangeUserData (c *gin.Context) {
 	err = collection.UpdateId(user.ID, user)
 	if err != nil {
 		response.Errors = append(response.Errors, err.Error())
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 

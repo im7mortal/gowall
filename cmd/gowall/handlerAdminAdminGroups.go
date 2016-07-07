@@ -50,7 +50,7 @@ type responseAdminGroup struct {
 
 func createAdminGroup(c *gin.Context) {
 	response := responseAdminGroup{}
-	defer response.Recover(c)
+	defer response.Recover()
 
 	admin := getAdmin(c)
 
@@ -58,7 +58,7 @@ func createAdminGroup(c *gin.Context) {
 	ok := admin.IsMemberOf("root")
 	if !ok {
 		response.Errors = append(response.Errors, "You may not create statuses")
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -69,7 +69,7 @@ func createAdminGroup(c *gin.Context) {
 	}
 
 	if response.HasErrors() {
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -83,7 +83,7 @@ func createAdminGroup(c *gin.Context) {
 	// we expect err == mgo.ErrNotFound for success
 	if err == nil {
 		response.Errors = append(response.Errors, "That group already exists.")
-		response.Fail(c)
+		response.Fail()
 		return
 	} else if err != mgo.ErrNotFound {
 		panic(err)
@@ -134,7 +134,7 @@ func getEscapedString(str string) string {
 
 func updateAdminGroup(c *gin.Context) {
 	response := responseAdminGroup{}
-	defer response.Recover(c)
+	defer response.Recover()
 
 	admin := getAdmin(c)
 
@@ -142,7 +142,7 @@ func updateAdminGroup(c *gin.Context) {
 	ok := admin.IsMemberOf("root")
 	if !ok {
 		response.Errors = append(response.Errors, "You may not update admin groups.")
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -158,7 +158,7 @@ func updateAdminGroup(c *gin.Context) {
 	}
 
 	if response.HasErrors() {
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -171,7 +171,7 @@ func updateAdminGroup(c *gin.Context) {
 	// we expect err == mgo.ErrNotFound for success
 	if err == nil {
 		response.Errors = append(response.Errors, "That admin group is already taken.")
-		response.Fail(c)
+		response.Fail()
 		return
 	} else if err != mgo.ErrNotFound {
 		panic(err)
@@ -193,7 +193,7 @@ func updateAdminGroup(c *gin.Context) {
 
 func updateAdminGroupPermissions(c *gin.Context) {
 	response := responseAdminGroup{}
-	defer response.Recover(c)
+	defer response.Recover()
 
 	admin := getAdmin(c)
 
@@ -201,7 +201,7 @@ func updateAdminGroupPermissions(c *gin.Context) {
 	ok := admin.IsMemberOf("root")
 	if !ok {
 		response.Errors = append(response.Errors, "You may not change the permissions of admin groups.")
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -212,7 +212,7 @@ func updateAdminGroupPermissions(c *gin.Context) {
 	}
 
 	if response.HasErrors() {
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -226,12 +226,12 @@ func updateAdminGroupPermissions(c *gin.Context) {
 		panic(err)
 	}
 
-	response.Finish(c)
+	response.Finish()
 }
 
 func deleteAdminGroup(c *gin.Context) {
 	response := Response{} // todo sync.Pool
-	defer response.Recover(c)
+	defer response.Recover()
 
 	admin := getAdmin(c)
 
@@ -239,7 +239,7 @@ func deleteAdminGroup(c *gin.Context) {
 	ok := admin.IsMemberOf("root")
 	if !ok {
 		response.Errors = append(response.Errors, "You may not delete admin groups.")
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -250,7 +250,7 @@ func deleteAdminGroup(c *gin.Context) {
 	err := collection.RemoveId(c.Param("id"))
 	if err != nil {
 		response.Errors = append(response.Errors, err.Error())
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 

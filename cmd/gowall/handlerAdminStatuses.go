@@ -52,7 +52,7 @@ func renderStatuses(c *gin.Context) {
 
 func createStatus(c *gin.Context) {
 	response := Response{} // todo sync.Pool
-	defer response.Recover(c)
+	defer response.Recover()
 
 	admin := getAdmin(c)
 
@@ -60,7 +60,7 @@ func createStatus(c *gin.Context) {
 	ok := admin.IsMemberOf("root")
 	if !ok {
 		response.Errors = append(response.Errors, "You may not create statuses")
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -84,7 +84,7 @@ func createStatus(c *gin.Context) {
 	}
 
 	if response.HasErrors() {
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -98,7 +98,7 @@ func createStatus(c *gin.Context) {
 	// we expect err == mgo.ErrNotFound for success
 	if err == nil {
 		response.Errors = append(response.Errors, "That status+pivot is already taken.")
-		response.Fail(c)
+		response.Fail()
 		return
 	} else if err != mgo.ErrNotFound {
 		panic(err)
@@ -137,7 +137,7 @@ func readStatus(c *gin.Context) {
 
 func updateStatus(c *gin.Context) {
 	response := Response{} // todo sync.Pool
-	defer response.Recover(c)
+	defer response.Recover()
 
 	admin := getAdmin(c)
 
@@ -145,7 +145,7 @@ func updateStatus(c *gin.Context) {
 	ok := admin.IsMemberOf("root")
 	if !ok {
 		response.Errors = append(response.Errors, "You may not create statuses")
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -169,7 +169,7 @@ func updateStatus(c *gin.Context) {
 	}
 
 	if response.HasErrors() {
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -183,7 +183,7 @@ func updateStatus(c *gin.Context) {
 	// we expect err == mgo.ErrNotFound for success
 	if err == nil {
 		response.Errors = append(response.Errors, "That status+pivot is already taken.")
-		response.Fail(c)
+		response.Fail()
 		return
 	} else if err != mgo.ErrNotFound {
 		panic(err)
@@ -206,7 +206,7 @@ func updateStatus(c *gin.Context) {
 
 func deleteStatus(c *gin.Context) {
 	response := Response{} // todo sync.Pool
-	defer response.Recover(c)
+	defer response.Recover()
 
 	admin := getAdmin(c)
 
@@ -214,7 +214,7 @@ func deleteStatus(c *gin.Context) {
 	ok := admin.IsMemberOf("root")
 	if !ok {
 		response.Errors = append(response.Errors, "You may not delete statuses.")
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -225,7 +225,7 @@ func deleteStatus(c *gin.Context) {
 	err := collection.RemoveId(c.Param("id"))
 	if err != nil {
 		response.Errors = append(response.Errors, err.Error())
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 

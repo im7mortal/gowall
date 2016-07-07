@@ -33,13 +33,13 @@ func LoginRender(c *gin.Context) {
 
 func Login(c *gin.Context) {
 	response := responseUser{} // todo sync.Pool
-	defer response.Recover(c)
+	defer response.Recover()
 
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&response)
 	if err != nil {
 		response.Errors = append(response.Errors, err.Error())
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 	// clean errors from client
@@ -54,7 +54,7 @@ func Login(c *gin.Context) {
 		response.ErrFor["password"] = "required"
 	}
 	if response.HasErrors() {
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -77,7 +77,7 @@ func Login(c *gin.Context) {
 	IpUserCount := <- IpUserCountChan
 	if IpCount > config.LoginAttempts.ForIp || IpUserCount > config.LoginAttempts.ForIpAndUser {
 		response.Errors = append(response.Errors, "You've reached the maximum number of login attempts. Please try again later.")
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -91,7 +91,7 @@ func Login(c *gin.Context) {
 	if err != nil {
 		if err == mgo.ErrNotFound {
 			response.Errors = append(response.Errors, "check username and password")
-			response.Fail(c)
+			response.Fail()
 			return
 		}
 		panic(err)
@@ -108,7 +108,7 @@ func Login(c *gin.Context) {
 			panic(err)
 		}
 		response.Errors = append(response.Errors, "check username and password")
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 

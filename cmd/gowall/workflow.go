@@ -15,18 +15,23 @@ type Response struct {
 	Success bool `json:"success" bson:"-"`
 	Errors  []string `json:"errors" bson:"-"`
 	ErrFor  map[string]string `json:"errfor" bson:"-"`
+	c  *gin.Context
 }
 
 func (r *Response)HasErrors() bool {
 	return len(r.ErrFor) != 0 || len(r.Errors) != 0
 }
 
-func (r *Response)Fail(c *gin.Context) {
+func (r *Response)Fail() {
 	r.Success = false
-	c.JSON(http.StatusOK, r)
+	r.c.JSON(http.StatusOK, r)
 }
 
-func (r *Response) Recover(c *gin.Context) {}
+func (r *Response)BindContext(c *gin.Context) {
+	r.c = c
+}
+
+func (r *Response) Recover() {}
 
 
 
@@ -35,8 +40,8 @@ func (r *Response) CleanErrors() {
 	r.ErrFor = make(map[string]string)
 }
 
-func (r *Response) DecodeRequest(c *gin.Context) {
-	err := json.NewDecoder(c.Request.Body).Decode(r)
+func (r *Response) DecodeRequest() {
+	err := json.NewDecoder(r.c.Request.Body).Decode(r)
 	if err != nil {
 		panic(err)
 	}
@@ -45,7 +50,7 @@ func (r *Response) DecodeRequest(c *gin.Context) {
 	return
 }
 
-func (r *Response) Finish(c *gin.Context) {
+func (r *Response) Finish() {
 	r.Success = true
-	c.JSON(http.StatusOK, r)
+	r.c.JSON(http.StatusOK, r)
 }

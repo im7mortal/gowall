@@ -26,7 +26,7 @@ func SendReset(c *gin.Context) {
 	response := Response{} // todo sync.Pool
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
-	defer response.Recover(c)
+	defer response.Recover()
 
 	var body struct {
 		Username    string  `json:"username"`
@@ -50,7 +50,7 @@ func SendReset(c *gin.Context) {
 		}
 	}
 	if response.HasErrors() {
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -74,7 +74,7 @@ func SendReset(c *gin.Context) {
 		response.ErrFor["email"] = "email doesn't exist"
 	}
 	if response.HasErrors() {
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -130,7 +130,7 @@ func ResetPassword (c *gin.Context) {
 	response := Response{} // todo sync.Pool
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
-	defer response.Recover(c)
+	defer response.Recover()
 
 
 	password := strings.ToLower(body.Password)
@@ -145,7 +145,7 @@ func ResetPassword (c *gin.Context) {
 		response.Errors = append(response.Errors,"Passwords do not match.")
 	}
 	if response.HasErrors() {
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -157,7 +157,7 @@ func ResetPassword (c *gin.Context) {
 
 	if err != nil {
 		println(err.Error())
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -167,7 +167,7 @@ func ResetPassword (c *gin.Context) {
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 		if err != nil {
 			response.Errors = append(response.Errors, err.Error())
-			response.Fail(c)
+			response.Fail()
 			return
 		}
 		us.Password = string(hashedPassword)

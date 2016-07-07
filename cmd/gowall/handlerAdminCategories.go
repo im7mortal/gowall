@@ -54,7 +54,7 @@ func AdminCategoriesRender(c *gin.Context) {
 
 func CreateCategory(c *gin.Context) {
 	response := Response{} // todo sync.Pool
-	defer response.Recover(c)
+	defer response.Recover()
 
 	admin := getAdmin(c)
 
@@ -62,7 +62,7 @@ func CreateCategory(c *gin.Context) {
 	ok := admin.IsMemberOf("root")
 	if !ok {
 		response.Errors = append(response.Errors, "You may not create categories")
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -86,7 +86,7 @@ func CreateCategory(c *gin.Context) {
 	}
 
 	if response.HasErrors() {
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -100,7 +100,7 @@ func CreateCategory(c *gin.Context) {
 	// we expect err == mgo.ErrNotFound for success
 	if err == nil {
 		response.Errors = append(response.Errors, "That category+pivot is already taken.")
-		response.Fail(c)
+		response.Fail()
 		return
 	} else if err != mgo.ErrNotFound {
 		panic(err)
@@ -120,7 +120,7 @@ func CreateCategory(c *gin.Context) {
 
 func updateCategory(c *gin.Context) {
 	response := Response{} // todo sync.Pool
-	defer response.Recover(c)
+	defer response.Recover()
 
 	admin := getAdmin(c)
 
@@ -128,7 +128,7 @@ func updateCategory(c *gin.Context) {
 	ok := admin.IsMemberOf("root")
 	if !ok {
 		response.Errors = append(response.Errors, "You may not create categories")
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -152,7 +152,7 @@ func updateCategory(c *gin.Context) {
 	}
 
 	if response.HasErrors() {
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -166,7 +166,7 @@ func updateCategory(c *gin.Context) {
 	// we expect err == mgo.ErrNotFound for success
 	if err == nil {
 		response.Errors = append(response.Errors, "That category+pivot is already taken.")
-		response.Fail(c)
+		response.Fail()
 		return
 	} else if err != mgo.ErrNotFound {
 		panic(err)
@@ -210,13 +210,13 @@ func deleteCategory(c *gin.Context) {
 	admin := getAdmin(c)
 
 	response := Response{} // todo sync.Pool
-	defer response.Recover(c)
+	defer response.Recover()
 
 	// validate
 	ok := admin.IsMemberOf("root")
 	if !ok {
 		response.Errors = append(response.Errors, "You may not delete categories.")
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -227,7 +227,7 @@ func deleteCategory(c *gin.Context) {
 	err := collection.RemoveId(c.Param("id"))
 	if err != nil {
 		response.Errors = append(response.Errors, err.Error())
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 

@@ -67,7 +67,7 @@ func SetSettings (c *gin.Context) {
 	response := Response{} // todo sync.Pool
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
-	defer response.Recover(c)
+	defer response.Recover()
 	var body struct {
 		First   string  `json:"first"`
 		Middle  string  `json:"middle"`
@@ -87,7 +87,7 @@ func SetSettings (c *gin.Context) {
 	}
 
 	if response.HasErrors() {
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 	db := getMongoDBInstance()
@@ -113,7 +113,7 @@ func SetSettings (c *gin.Context) {
 	collection := db.C(ACCOUNTS)
 	err = collection.UpdateId(account.ID, account)
 	if err != nil {
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -126,7 +126,7 @@ func ChangePassword (c *gin.Context) {
 	response := Response{} // todo sync.Pool
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
-	defer response.Recover(c)
+	defer response.Recover()
 	var body struct {
 		Confirm   string  `json:"confirm"`
 		Password string  `json:"newPassword"`
@@ -145,7 +145,7 @@ func ChangePassword (c *gin.Context) {
 	}
 
 	if response.HasErrors() {
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 	db := getMongoDBInstance()
@@ -155,7 +155,7 @@ func ChangePassword (c *gin.Context) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
 	if err != nil {
 		response.Errors = append(response.Errors, err.Error()) // TODO don't like that this error goes to client
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -164,7 +164,7 @@ func ChangePassword (c *gin.Context) {
 	err = collection.UpdateId(user.ID, user)
 	if err != nil {
 		response.Errors = append(response.Errors, err.Error())
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -177,7 +177,7 @@ func ChangeIdentity (c *gin.Context) {
 	response := Response{} // todo sync.Pool
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
-	defer response.Recover(c)
+	defer response.Recover()
 	var body struct {
 		Username    string  `json:"username"`
 		Email   string  `json:"email"`
@@ -212,7 +212,7 @@ func ChangeIdentity (c *gin.Context) {
 	}
 
 	if response.HasErrors() {
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 	db := getMongoDBInstance()
@@ -224,7 +224,7 @@ func ChangeIdentity (c *gin.Context) {
 		err = collection.Find(bson.M{"$or": []bson.M{bson.M{"username": username}, bson.M{"email": email}}}).One(&us)
 		if err != nil {
 			response.Errors = append(response.Errors, "username or email already exist")
-			response.Fail(c)
+			response.Fail()
 			return
 		}
 	}
@@ -235,7 +235,7 @@ func ChangeIdentity (c *gin.Context) {
 	err = collection.UpdateId(user.ID, user)
 	if err != nil {
 		response.Errors = append(response.Errors, err.Error())
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 	// TODO  patch admin and account

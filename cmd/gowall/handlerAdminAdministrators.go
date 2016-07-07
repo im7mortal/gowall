@@ -49,14 +49,14 @@ func renderAdministrators(c *gin.Context) {
 
 func createAdministrator(c *gin.Context) {
 	response := responseAdmin{}
-
+	response.BindContext(c)
 	admin := getAdmin(c)
 
 	// validate
 	ok := admin.IsMemberOf("root")
 	if !ok {
 		response.Errors = append(response.Errors, "You may not create administrators")
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -66,7 +66,7 @@ func createAdministrator(c *gin.Context) {
 	}
 
 	if response.HasErrors() {
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -81,7 +81,7 @@ func createAdministrator(c *gin.Context) {
 	// we expect err == mgo.ErrNotFound for success
 	if err == nil {
 		response.Errors = append(response.Errors, "That administrator already exists.")
-		response.Fail(c)
+		response.Fail()
 		return
 	} else if err != mgo.ErrNotFound {
 		panic(err)
@@ -138,7 +138,7 @@ func readAdministrator(c *gin.Context) {
 
 func updateAdministrator(c *gin.Context) {
 	response := responseAdmin{}
-	defer response.Recover(c)
+	defer response.Recover()
 
 	admin := getAdmin(c)
 
@@ -146,7 +146,7 @@ func updateAdministrator(c *gin.Context) {
 	ok := admin.IsMemberOf("root")
 	if !ok {
 		response.Errors = append(response.Errors, "You may not update admin groups.")
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -162,7 +162,7 @@ func updateAdministrator(c *gin.Context) {
 	}*/
 
 	if response.HasErrors() {
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -174,7 +174,7 @@ func updateAdministrator(c *gin.Context) {
 	err = collection.UpdateId(bson.ObjectIdHex(c.Param("id")), response.Admin)
 	if err != nil {
 		response.Errors = append(response.Errors, err.Error())
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -185,7 +185,7 @@ func updateAdministrator(c *gin.Context) {
 
 func updateAdministratorPermissions(c *gin.Context) {
 	response := responseAdmin{}
-	defer response.Recover(c)
+	defer response.Recover()
 
 	admin := getAdmin(c)
 
@@ -193,7 +193,7 @@ func updateAdministratorPermissions(c *gin.Context) {
 	ok := admin.IsMemberOf("root")
 	if !ok {
 		response.Errors = append(response.Errors, "You may not change the permissions of admin groups.")
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -204,7 +204,7 @@ func updateAdministratorPermissions(c *gin.Context) {
 	}
 
 	if response.HasErrors() {
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -218,7 +218,7 @@ func updateAdministratorPermissions(c *gin.Context) {
 		panic(err)
 	}
 
-	response.Finish(c)
+	response.Finish()
 }
 
 func deleteAdministrator(c *gin.Context) {
@@ -227,7 +227,7 @@ func deleteAdministrator(c *gin.Context) {
 	// validate
 	if ok := getAdmin(c).IsMemberOf("root"); !ok {
 		response.Errors = append(response.Errors, "You may not delete administrators.")
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -238,9 +238,9 @@ func deleteAdministrator(c *gin.Context) {
 	err := collection.RemoveId(bson.ObjectIdHex(c.Param("id")))
 	if err != nil {
 		response.Errors = append(response.Errors, err.Error())
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
-	response.Finish(c)
+	response.Finish()
 }

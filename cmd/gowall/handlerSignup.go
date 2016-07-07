@@ -23,7 +23,7 @@ func SignupRender(c *gin.Context) {
 
 func Signup(c *gin.Context) {
 	response := responseUser{} // todo sync.Pool
-	defer response.Recover(c)
+	defer response.Recover()
 
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&response)
@@ -40,7 +40,7 @@ func Signup(c *gin.Context) {
 	response.ValidatePassword(&response.Response)
 
 	if response.HasErrors() {
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
@@ -64,7 +64,7 @@ func Signup(c *gin.Context) {
 		}
 	}
 	if response.HasErrors() {
-		response.Fail(c)
+		response.Fail()
 		return
 	}
 
