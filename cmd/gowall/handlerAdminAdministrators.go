@@ -8,7 +8,6 @@ import (
 	"html/template"
 	"gopkg.in/mgo.v2"
 	"strings"
-	"fmt"
 )
 
 type responseAdmin struct {
@@ -178,7 +177,8 @@ func updateAdministrator(c *gin.Context) {
 func updateAdministratorPermissions(c *gin.Context) {
 	response := responseAdmin{}
 	response.BindContext(c)
-
+	//TODO here is js bug
+	//TODO there are not clear logic with populate of groups
 	admin := getAdmin(c)
 
 	// validate
@@ -190,7 +190,7 @@ func updateAdministratorPermissions(c *gin.Context) {
 	}
 
 	response.Admin.DecodeRequest(c)
-	fmt.Printf("%v\n", response)
+
 	if len(response.Permissions) == 0 {
 		response.Errors = append(response.Errors, "required")
 	}
@@ -205,8 +205,9 @@ func updateAdministratorPermissions(c *gin.Context) {
 	defer db.Session.Close()
 	collection := db.C(ADMINS)
 
-	err := collection.UpdateId(c.Param("id"), response.Admin)
+	err := collection.UpdateId(bson.ObjectIdHex(c.Param("id")), response.Admin)
 	if err != nil {
+		println(err.Error())
 		panic(err)
 	}
 
