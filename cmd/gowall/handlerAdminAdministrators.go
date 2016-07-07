@@ -214,6 +214,92 @@ func updateAdministratorPermissions(c *gin.Context) {
 	response.Finish()
 }
 
+func linkUser(c *gin.Context) {
+	response := responseAdmin{}
+	response.BindContext(c)
+
+	admin := getAdmin(c)
+
+	// validate
+	ok := admin.IsMemberOf("root")
+	if !ok {
+		response.Errors = append(response.Errors, "You may not change the permissions of admin groups.")
+		response.Fail()
+		return
+	}
+
+	var req struct {
+		NewUsername string `json:"newUsername"`
+	}
+
+	err := json.NewDecoder(c.Request.Body).Decode(&req)
+	if err != nil {
+		panic(err)
+	}
+
+	if len(req.NewUsername) == 0 {
+		response.Errors = append(response.Errors, "required")
+	}
+
+	if response.HasErrors() {
+		response.Fail()
+		return
+	}
+
+	//verifyUser
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+	collection := db.C(USERS)
+	user := User{}
+	err = collection.Find(bson.M{"username": req.NewUsername}).One(&user)
+	if err != nil {
+		if err != mgo.ErrNotFound {
+			panic(err)
+		}
+		response.Errors = append(response.Errors, "User not found.")
+		response.Fail()
+		return
+	}
+	id := c.Param("id")
+	if user.Roles.Admin.String() != id {
+		response.Errors = append(response.Errors, "User is already linked to a different admin.")
+		response.Fail()
+		return
+	}
+
+	// duplicateLinkCheck
+	collection = db.C(ADMINS)
+	err = collection.Find(
+		bson.M{
+			"user.id": id,
+			"_id": bson.M{
+				"user.id": id,
+			},
+		}).One(&admin)
+
+	if err == nil {
+		response.Errors = append(response.Errors, "Another admin is already linked to that user.")
+		response.Fail()
+		return
+	} else if err != mgo.ErrNotFound {
+		panic(err)
+	}
+
+	// patchUser
+	collection = db.C(USERS)
+	user.Roles.Admin = bson.ObjectIdHex(id)
+	err = collection.UpdateId(user.ID, user)
+	if err == nil {
+		panic(err)
+	}
+
+	// patchAdministrator
+	collection = db.C(ADMINS)
+	err = collection.Find(bson.M{"username": req.NewUsername}).One(&admin)
+
+	response.Finish()
+}
+
 func deleteAdministrator(c *gin.Context) {
 	response := Response{}
 	response.BindContext(c)
