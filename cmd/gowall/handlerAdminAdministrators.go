@@ -8,14 +8,12 @@ import (
 	"html/template"
 	"gopkg.in/mgo.v2"
 	"strings"
+	"fmt"
 )
 
 type responseAdmin struct {
 	Response
 	Admin
-	First string `json:"first"`
-	Last string  `json:"last"`
-	Middle string  `json:"middle"`
 }
 
 func renderAdministrators(c *gin.Context) {
@@ -142,23 +140,20 @@ func updateAdministrator(c *gin.Context) {
 	response := responseAdmin{}
 	response.BindContext(c)
 
-	err := json.NewDecoder(c.Request.Body).Decode(&response)
+	err := json.NewDecoder(c.Request.Body).Decode(&response.Admin.Name)
 	if err != nil {
 		panic(err)
 	}
 	// clean errors from client
 	response.CleanErrors()
 
-	if len(response.First) == 0 {
+	if len(response.Name.First) == 0 {
 		response.Errors = append(response.Errors, "A name is required")
 	}
-	response.Name.First = response.First
 
-	if len(response.Last) == 0 {
+	if len(response.Name.Last) == 0 {
 		response.Errors = append(response.Errors, "A lastname is required")
 	}
-	response.Name.Last = response.Last
-	response.Name.Middle = response.Middle
 
 	if response.HasErrors() {
 		response.Fail()
@@ -195,7 +190,7 @@ func updateAdministratorPermissions(c *gin.Context) {
 	}
 
 	response.Admin.DecodeRequest(c)
-
+	fmt.Printf("%v\n", response)
 	if len(response.Permissions) == 0 {
 		response.Errors = append(response.Errors, "required")
 	}
