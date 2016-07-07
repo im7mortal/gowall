@@ -23,7 +23,7 @@ func SignupRender(c *gin.Context) {
 
 func Signup(c *gin.Context) {
 	response := responseUser{} // todo sync.Pool
-	defer response.Recover()
+	response.BindContext(c)
 
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&response)

@@ -67,7 +67,7 @@ func SetSettings (c *gin.Context) {
 	response := Response{} // todo sync.Pool
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
-	defer response.Recover()
+	response.BindContext(c)
 	var body struct {
 		First   string  `json:"first"`
 		Middle  string  `json:"middle"`
@@ -126,7 +126,7 @@ func ChangePassword (c *gin.Context) {
 	response := Response{} // todo sync.Pool
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
-	defer response.Recover()
+	response.BindContext(c)
 	var body struct {
 		Confirm   string  `json:"confirm"`
 		Password string  `json:"newPassword"`
@@ -177,7 +177,7 @@ func ChangeIdentity (c *gin.Context) {
 	response := Response{} // todo sync.Pool
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
-	defer response.Recover()
+	response.BindContext(c)
 	var body struct {
 		Username    string  `json:"username"`
 		Email   string  `json:"email"`

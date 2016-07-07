@@ -98,7 +98,7 @@ func ResendVerification (c *gin.Context) {
 	response := Response{} // todo sync.Pool
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
-	defer response.Recover()
+	response.BindContext(c)
 
 	var body struct {
 		Username    string  `json:"username"`

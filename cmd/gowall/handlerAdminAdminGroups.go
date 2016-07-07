@@ -50,7 +50,7 @@ type responseAdminGroup struct {
 
 func createAdminGroup(c *gin.Context) {
 	response := responseAdminGroup{}
-	defer response.Recover()
+	response.BindContext(c)
 
 	admin := getAdmin(c)
 
@@ -134,7 +134,7 @@ func getEscapedString(str string) string {
 
 func updateAdminGroup(c *gin.Context) {
 	response := responseAdminGroup{}
-	defer response.Recover()
+	response.BindContext(c)
 
 	admin := getAdmin(c)
 
@@ -193,7 +193,7 @@ func updateAdminGroup(c *gin.Context) {
 
 func updateAdminGroupPermissions(c *gin.Context) {
 	response := responseAdminGroup{}
-	defer response.Recover()
+	response.BindContext(c)
 
 	admin := getAdmin(c)
 
@@ -231,7 +231,7 @@ func updateAdminGroupPermissions(c *gin.Context) {
 
 func deleteAdminGroup(c *gin.Context) {
 	response := Response{} // todo sync.Pool
-	defer response.Recover()
+	response.BindContext(c)
 
 	admin := getAdmin(c)
 

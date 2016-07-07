@@ -15,7 +15,7 @@ func ContactSend(c *gin.Context) {
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
 
-	//defer response.Recover()
+	//response.BindContext(c)
 
 	var body struct {
 		Name    string  `json:"name"`

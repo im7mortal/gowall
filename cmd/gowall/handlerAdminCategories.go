@@ -54,7 +54,7 @@ func AdminCategoriesRender(c *gin.Context) {
 
 func CreateCategory(c *gin.Context) {
 	response := Response{} // todo sync.Pool
-	defer response.Recover()
+	response.BindContext(c)
 
 	admin := getAdmin(c)
 
@@ -120,7 +120,7 @@ func CreateCategory(c *gin.Context) {
 
 func updateCategory(c *gin.Context) {
 	response := Response{} // todo sync.Pool
-	defer response.Recover()
+	response.BindContext(c)
 
 	admin := getAdmin(c)
 
@@ -210,7 +210,7 @@ func deleteCategory(c *gin.Context) {
 	admin := getAdmin(c)
 
 	response := Response{} // todo sync.Pool
-	defer response.Recover()
+	response.BindContext(c)
 
 	// validate
 	ok := admin.IsMemberOf("root")

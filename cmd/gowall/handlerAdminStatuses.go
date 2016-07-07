@@ -52,7 +52,7 @@ func renderStatuses(c *gin.Context) {
 
 func createStatus(c *gin.Context) {
 	response := Response{} // todo sync.Pool
-	defer response.Recover()
+	response.BindContext(c)
 
 	admin := getAdmin(c)
 
@@ -137,7 +137,7 @@ func readStatus(c *gin.Context) {
 
 func updateStatus(c *gin.Context) {
 	response := Response{} // todo sync.Pool
-	defer response.Recover()
+	response.BindContext(c)
 
 	admin := getAdmin(c)
 
@@ -206,7 +206,7 @@ func updateStatus(c *gin.Context) {
 
 func deleteStatus(c *gin.Context) {
 	response := Response{} // todo sync.Pool
-	defer response.Recover()
+	response.BindContext(c)
 
 	admin := getAdmin(c)
 

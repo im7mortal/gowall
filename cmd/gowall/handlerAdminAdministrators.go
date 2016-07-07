@@ -138,17 +138,7 @@ func readAdministrator(c *gin.Context) {
 
 func updateAdministrator(c *gin.Context) {
 	response := responseAdmin{}
-	defer response.Recover()
-
-	admin := getAdmin(c)
-
-	// validate
-	ok := admin.IsMemberOf("root")
-	if !ok {
-		response.Errors = append(response.Errors, "You may not update admin groups.")
-		response.Fail()
-		return
-	}
+	response.BindContext(c)
 
 	err := json.NewDecoder(c.Request.Body).Decode(&response)
 	if err != nil {
@@ -157,9 +147,9 @@ func updateAdministrator(c *gin.Context) {
 	// clean errors from client
 	response.CleanErrors()
 
-/*	if len(response.Name) == 0 {
+	if len(response.Name.First) == 0 {
 		response.Errors = append(response.Errors, "A name is required")
-	}*/
+	}
 
 	if response.HasErrors() {
 		response.Fail()
@@ -170,7 +160,7 @@ func updateAdministrator(c *gin.Context) {
 	defer db.Session.Close()
 	collection := db.C(ADMINS)
 
-	// patchAdminGroup
+	// patchAdministrator
 	err = collection.UpdateId(bson.ObjectIdHex(c.Param("id")), response.Admin)
 	if err != nil {
 		response.Errors = append(response.Errors, err.Error())
@@ -178,14 +168,12 @@ func updateAdministrator(c *gin.Context) {
 		return
 	}
 
-
-	response.Success = true
-	c.JSON(http.StatusOK, response)
+	response.Finish()
 }
 
 func updateAdministratorPermissions(c *gin.Context) {
 	response := responseAdmin{}
-	defer response.Recover()
+	response.BindContext(c)
 
 	admin := getAdmin(c)
 
@@ -222,7 +210,8 @@ func updateAdministratorPermissions(c *gin.Context) {
 }
 
 func deleteAdministrator(c *gin.Context) {
-	response := Response{} // todo sync.Pool
+	response := Response{}
+	response.BindContext(c)
 
 	// validate
 	if ok := getAdmin(c).IsMemberOf("root"); !ok {

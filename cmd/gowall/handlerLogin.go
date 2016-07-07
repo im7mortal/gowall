@@ -33,7 +33,7 @@ func LoginRender(c *gin.Context) {
 
 func Login(c *gin.Context) {
 	response := responseUser{} // todo sync.Pool
-	defer response.Recover()
+	response.BindContext(c)
 
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&response)
