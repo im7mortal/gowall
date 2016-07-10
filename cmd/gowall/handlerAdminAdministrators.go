@@ -229,6 +229,47 @@ func updateAdministratorPermissions(c *gin.Context) {
 	response.Finish()
 }
 
+func updateAdministratorGroups(c *gin.Context) {
+	response := responseAdmin{}
+	response.Init(c)
+	//TODO there are not clear logic with populate of groups
+	admin := getAdmin(c)
+
+	// validate
+	ok := admin.IsMemberOf("root")
+	if !ok {
+		response.Errors = append(response.Errors, "You may not change the group memberships of admins.")
+		response.Fail()
+		return
+	}
+
+	response.Admin.DecodeRequest(c)
+	response.ErrFor = map[string]string{} // in that handler it required (non standard behavior from node)
+	if len(response.Groups) == 0 {
+		response.ErrFor["groups"] = "required"
+		response.Fail()
+		return
+	}
+
+
+	//patchAdmin
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+	collection := db.C(ADMINS)
+
+	err := collection.UpdateId(bson.ObjectIdHex(c.Param("id")), bson.M{
+		"$set": bson.M{
+			"groups": response.Admin.Groups,
+		},
+	})
+	if err != nil {
+		println(err.Error())
+		panic(err)
+	}
+
+	response.Finish()
+}
+
 func linkUser(c *gin.Context) {
 	response := responseAdmin{}
 	response.Init(c)
