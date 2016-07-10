@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"gopkg.in/mgo.v2/bson"
 	"html/template"
-	//"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2"
 	//"strings"
 )
 
@@ -69,6 +69,47 @@ func renderAccounts(c *gin.Context) {
 	}
 	c.Set("Statuses", template.JS(statusesS))
 	c.HTML(http.StatusOK, c.Request.URL.Path, c.Keys)
+}
+
+func readAccount(c *gin.Context) {
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+	collection := db.C(ACCOUNTS)
+	account := Account{}
+	err := collection.FindId(bson.ObjectIdHex(c.Param("id"))).One(&account)
+	if err != nil {
+		if err == mgo.ErrNotFound {
+			Status404Render(c)
+			return
+		}
+		panic(err)
+	}
+	json, err := json.Marshal(account)
+	if err != nil {
+		panic(err)
+	}
+	if XHR(c) {
+		c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
+		c.Data(http.StatusOK, "application/json; charset=utf-8", json)
+		return
+	}
+
+	c.Set("Record", template.JS(getEscapedString(string(json))))
+
+	var statuses []Status
+	collection = db.C(STATUSES)
+	err = collection.Find(nil).All(&statuses)
+
+	// preparing for js.  Don't like it.
+	// https://groups.google.com/forum/#!topic/golang-nuts/0HJoROz2TMo
+	// https://play.golang.org/p/M_AoMQwtFt
+	// 10 july 2016 wasn't expected
+	var statusesS string = `<option value="">-- any --</option>`
+	for _, status := range statuses {
+		statusesS += `<option value="` + status.ID + `">` + status.Name + `</option>`
+	}
+	c.Set("Statuses", template.JS(statusesS))
+	c.HTML(http.StatusOK, "/admin/accounts/details/", c.Keys)
 }
 
 /*

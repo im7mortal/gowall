@@ -27,7 +27,7 @@ type Account struct {
 		   ID Status `bson:"id" json:"id"`
 		   Name string `bson:"name" json:"name"`
 		   UserCreated struct {
-				 ID mgo.DBRef `bson:"id" json:"id"`
+				 ID bson.ObjectId `bson:"id" json:"id"`
 				 Name string `bson:"name" json:"name"`
 				 Time time.Time `bson:"time" json:"time"`
 			 } `bson:"userCreated" json:"userCreated"`
@@ -35,7 +35,7 @@ type Account struct {
 	StatusLog []StatusLog `bson:"statusLog" json:"statusLog"`
 	Notes []Note `bson:"notes" json:"notes"`
 	UserCreated struct{
-		   ID mgo.DBRef `bson:"id" json:"id"`
+		   ID bson.ObjectId `bson:"id" json:"id"`
 		   Name string `bson:"name" json:"name"`
 		   Time time.Time `bson:"time" json:"time"`
 	   } `bson:"userCreated" json:"userCreated"`

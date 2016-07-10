@@ -127,17 +127,17 @@ func readAdministrator(c *gin.Context) {
 		}
 		panic(err)
 	}
-	json, err := json.Marshal(admin)
+	results, err := json.Marshal(admin)
 	if err != nil {
 		panic(err)
 	}
 	if XHR(c) {
 		c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
-		c.Data(http.StatusOK, "application/json; charset=utf-8", json)
+		c.Data(http.StatusOK, "application/json; charset=utf-8", results)
 		return
 	}
 
-	c.Set("Record", template.JS(getEscapedString(string(json))))
+	c.Set("Record", template.JS(getEscapedString(string(results))))
 	c.HTML(http.StatusOK, "/admin/administrators/details/", c.Keys)
 }
 
