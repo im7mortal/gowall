@@ -1,3 +1,9 @@
+1. for admins 'VM1764:12 Uncaught TypeError: Cannot read property 'newUsername' of null'. If set errFor it's ok
+
+2. i change response to map because of people have to have ability
+
+
+
 # Drywall  ( ca35c06  I forked)
 
 A website and user system starter. Implemented with Express and Backbone.

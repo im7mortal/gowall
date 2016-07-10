@@ -98,7 +98,7 @@ func ResendVerification (c *gin.Context) {
 	response := Response{} // todo sync.Pool
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
-	response.BindContext(c)
+	response.Init(c)
 
 	var body struct {
 		Username    string  `json:"username"`
@@ -164,6 +164,5 @@ func ResendVerification (c *gin.Context) {
 		//todo it's serious
 	}
 
-	response.Success = true
-	c.JSON(http.StatusOK, response)
+	response.Finish()
 }

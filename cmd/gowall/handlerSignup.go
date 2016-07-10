@@ -23,7 +23,7 @@ func SignupRender(c *gin.Context) {
 
 func Signup(c *gin.Context) {
 	response := responseUser{} // todo sync.Pool
-	response.BindContext(c)
+	response.Init(c)
 
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&response)
@@ -140,8 +140,7 @@ func Signup(c *gin.Context) {
 	// logUserIn
 	user.login(c)
 
-	response.Success = true
-	c.JSON(http.StatusOK, response)
+	response.Finish()
 }
 
 func (user *User)login(c *gin.Context) {

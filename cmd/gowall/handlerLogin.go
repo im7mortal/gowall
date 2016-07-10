@@ -33,7 +33,7 @@ func LoginRender(c *gin.Context) {
 
 func Login(c *gin.Context) {
 	response := responseUser{} // todo sync.Pool
-	response.BindContext(c)
+	response.Init(c)
 
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&response)
@@ -120,6 +120,5 @@ func Login(c *gin.Context) {
 	session.Delete("returnURL")
 	session.Save()
 
-	response.Success = true
-	c.JSON(http.StatusOK, response)
+	response.Finish()
 }

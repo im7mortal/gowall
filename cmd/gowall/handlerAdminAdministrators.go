@@ -49,7 +49,7 @@ func renderAdministrators(c *gin.Context) {
 
 func createAdministrator(c *gin.Context) {
 	response := responseAdmin{}
-	response.BindContext(c)
+	response.Init(c)
 	admin := getAdmin(c)
 
 	// validate
@@ -109,8 +109,9 @@ func createAdministrator(c *gin.Context) {
 		panic(err)
 		return
 	}
-	response.Success = true
-	c.JSON(http.StatusOK, gin.H{"record": response, "success": true})
+	response.Data["record"] = response
+	response.Finish()
+	//c.JSON(http.StatusOK, gin.H{"record": response, "success": true}) // todo necessary check
 }
 
 func readAdministrator(c *gin.Context) {
@@ -142,7 +143,7 @@ func readAdministrator(c *gin.Context) {
 
 func updateAdministrator(c *gin.Context) {
 	response := responseAdmin{}
-	response.BindContext(c)
+	response.Init(c)
 
 	err := json.NewDecoder(c.Request.Body).Decode(&response.Admin.Name)
 	if err != nil {
@@ -187,7 +188,7 @@ func updateAdministrator(c *gin.Context) {
 
 func updateAdministratorPermissions(c *gin.Context) {
 	response := responseAdmin{}
-	response.BindContext(c)
+	response.Init(c)
 	//TODO there are not clear logic with populate of groups
 	admin := getAdmin(c)
 
@@ -230,7 +231,7 @@ func updateAdministratorPermissions(c *gin.Context) {
 
 func linkUser(c *gin.Context) {
 	response := responseAdmin{}
-	response.BindContext(c)
+	response.Init(c)
 
 	admin := getAdmin(c)
 
@@ -291,7 +292,7 @@ func linkUser(c *gin.Context) {
 			"_id": bson.M{
 				"user.id": id,
 			},
-		}).One(&admin)
+		}).One(&admin) // reuse admin. If it will be used it mean that user already linked.
 
 	if err == nil {
 		response.Errors = append(response.Errors, "Another admin is already linked to that user.")
@@ -319,12 +320,24 @@ func linkUser(c *gin.Context) {
 		}},
 	})
 
+	if err != nil {
+		panic(err)
+	}
+
+	// getAdminForResponse  drywall require it // todo maybe bulk?
+	err = collection.FindId(bson.ObjectIdHex(id)).One(&response.Admin)
+
+	if err != nil {
+		panic(err)
+	}
+
+	response.Data["admin"] = response.Admin
 	response.Finish()
 }
 
 func unlinkUser(c *gin.Context) {
 	response := responseAdmin{}
-	response.BindContext(c)
+	response.Init(c)
 
 	admin := getAdmin(c)
 
@@ -340,14 +353,16 @@ func unlinkUser(c *gin.Context) {
 		response.Errors = append(response.Errors, "You may not unlink yourself from admin.")
 		response.Fail()
 		return
-	}
+	} // todo  here is func for errors
+	response.ErrFor = map[string]string{} // in that handler it required (non standard behavior from node)
 
-	// patchAdministrator
+	// patchUser
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(USERS)
-	user := User{}
-	err := collection.Find(bson.M{"username.": ""}).One(&user)
+	err := collection.Update(bson.M{"roles.admin": bson.ObjectIdHex(id)}, bson.M{
+		"$set": bson.M{"roles.admin": ""},
+	})
 	if err != nil {
 		if err != mgo.ErrNotFound {
 			panic(err)
@@ -357,31 +372,23 @@ func unlinkUser(c *gin.Context) {
 		return
 	}
 
-	var req struct {
-		NewUsername string `json:"newUsername"`
-	}
+	// patchAdministrator
+	collection = db.C(ADMINS)
+	err = collection.UpdateId(bson.ObjectIdHex(id), bson.M{
+		"$set": bson.M{"user": bson.M{}},
+	})
 
-	err = json.NewDecoder(c.Request.Body).Decode(&req)
 	if err != nil {
 		panic(err)
 	}
 
-	if len(req.NewUsername) == 0 {
-		response.Errors = append(response.Errors, "required")
-	}
-
-	if response.HasErrors() {
-		response.Fail()
-		return
-	}
-
-
+	response.Data["admin"] = response.Admin
 	response.Finish()
 }
 
 func deleteAdministrator(c *gin.Context) {
 	response := Response{}
-	response.BindContext(c)
+	response.Init(c)
 
 	// validate
 	if ok := getAdmin(c).IsMemberOf("root"); !ok {

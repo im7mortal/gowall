@@ -63,8 +63,7 @@ func ContactSend(c *gin.Context) {
 		return
 	}
 
-	response.Success = true
-	c.JSON(http.StatusOK, response)
+	response.Finish()
 }
 
 

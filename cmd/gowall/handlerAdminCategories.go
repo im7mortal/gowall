@@ -54,7 +54,7 @@ func AdminCategoriesRender(c *gin.Context) {
 
 func CreateCategory(c *gin.Context) {
 	response := Response{} // todo sync.Pool
-	response.BindContext(c)
+	response.Init(c)
 
 	admin := getAdmin(c)
 
@@ -114,13 +114,12 @@ func CreateCategory(c *gin.Context) {
 		panic(err)
 		return
 	}
-	response.Success = true
-	c.JSON(http.StatusOK, response)
+	response.Finish()
 }
 
 func updateCategory(c *gin.Context) {
 	response := Response{} // todo sync.Pool
-	response.BindContext(c)
+	response.Init(c)
 
 	admin := getAdmin(c)
 
@@ -183,8 +182,7 @@ func updateCategory(c *gin.Context) {
 		return
 	}
 
-	response.Success = true
-	c.JSON(http.StatusOK, response)
+	response.Finish()
 }
 
 func CategoryRender(c *gin.Context) {
@@ -210,7 +208,7 @@ func deleteCategory(c *gin.Context) {
 	admin := getAdmin(c)
 
 	response := Response{} // todo sync.Pool
-	response.BindContext(c)
+	response.Init(c)
 
 	// validate
 	ok := admin.IsMemberOf("root")
@@ -231,8 +229,7 @@ func deleteCategory(c *gin.Context) {
 		return
 	}
 
-	response.Success = true
-	c.JSON(http.StatusOK, response)
+	response.Finish()
 }
 
 // TODO add g greedy

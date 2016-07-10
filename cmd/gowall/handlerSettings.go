@@ -67,7 +67,7 @@ func SetSettings (c *gin.Context) {
 	response := Response{} // todo sync.Pool
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
-	response.BindContext(c)
+	response.Init(c)
 	var body struct {
 		First   string  `json:"first"`
 		Middle  string  `json:"middle"`
@@ -117,8 +117,7 @@ func SetSettings (c *gin.Context) {
 		return
 	}
 
-	response.Success = true
-	c.JSON(http.StatusOK, response)
+	response.Finish()
 }
 
 func ChangePassword (c *gin.Context) {
@@ -126,7 +125,7 @@ func ChangePassword (c *gin.Context) {
 	response := Response{} // todo sync.Pool
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
-	response.BindContext(c)
+	response.Init(c)
 	var body struct {
 		Confirm   string  `json:"confirm"`
 		Password string  `json:"newPassword"`
@@ -168,8 +167,7 @@ func ChangePassword (c *gin.Context) {
 		return
 	}
 
-	response.Success = true
-	c.JSON(http.StatusOK, response)
+	response.Finish()
 }
 
 func ChangeIdentity (c *gin.Context) {
@@ -177,7 +175,7 @@ func ChangeIdentity (c *gin.Context) {
 	response := Response{} // todo sync.Pool
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
-	response.BindContext(c)
+	response.Init(c)
 	var body struct {
 		Username    string  `json:"username"`
 		Email   string  `json:"email"`
@@ -239,8 +237,7 @@ func ChangeIdentity (c *gin.Context) {
 		return
 	}
 	// TODO  patch admin and account
-	response.Success = true
-	c.JSON(http.StatusOK, response)
+	response.Finish()
 }
 
 func providerSettings (c *gin.Context) {

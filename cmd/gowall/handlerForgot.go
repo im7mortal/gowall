@@ -26,7 +26,7 @@ func SendReset(c *gin.Context) {
 	response := Response{} // todo sync.Pool
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
-	response.BindContext(c)
+	response.Init(c)
 
 	var body struct {
 		Username    string  `json:"username"`
@@ -98,8 +98,7 @@ func SendReset(c *gin.Context) {
 	if err := mailConf.SendMail(); err != nil {
 		//todo it's not serious
 	}
-	response.Success = true
-	c.JSON(http.StatusOK, response)
+	response.Finish()
 }
 
 
@@ -130,7 +129,7 @@ func ResetPassword (c *gin.Context) {
 	response := Response{} // todo sync.Pool
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
-	response.BindContext(c)
+	response.Init(c)
 
 
 	password := strings.ToLower(body.Password)
@@ -173,6 +172,5 @@ func ResetPassword (c *gin.Context) {
 		us.Password = string(hashedPassword)
 		collection.UpdateId(us.ID, us)
 	}
-	response.Success = true
-	c.JSON(http.StatusOK, response)
+	response.Finish()
 }

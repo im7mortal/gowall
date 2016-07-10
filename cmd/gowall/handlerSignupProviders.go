@@ -52,7 +52,7 @@ func signupProvider(c *gin.Context, userGoth goth.User) {
 
 func SignUpSocial(c *gin.Context) {
 	response := responseUser{}
-	response.BindContext(c)
+	response.Init(c)
 
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&response)
@@ -188,6 +188,5 @@ func SignUpSocial(c *gin.Context) {
 	// logUserIn
 	user.login(c)
 
-	response.Success = true
-	c.JSON(http.StatusOK, response)
+	response.Finish()
 }

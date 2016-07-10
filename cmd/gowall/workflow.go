@@ -1,3 +1,22 @@
+/** Response object was a struct but i change it to map because of in drywall often some
+	data was in response. I mean every response has mandatory fields but sometimes also
+	custom data like "newUsername". I don't like it. I think in response type has to be
+	field data map[string]interface{}. But my principe is "don't touch client code". And I
+	decided do response object as map. It will be flexible for users from node.js.
+
+	type Response struct {
+	Success bool `json:"success" bson:"-"`
+	Errors  []string `json:"errors" bson:"-"`
+	ErrFor  map[string]string `json:"errfor" bson:"-"`
+	c  *gin.Context
+	Data map[string]interface{} `json:"data" bson:"-"`
+}
+
+	I thought leave struct realization.
+	I thought do setters and getters. But it will complicate code. Go is not about
+	complexity.
+*/
+
 package main
 
 import (
@@ -16,6 +35,7 @@ type Response struct {
 	Errors  []string `json:"errors" bson:"-"`
 	ErrFor  map[string]string `json:"errfor" bson:"-"`
 	c  *gin.Context
+	Data map[string]interface{} `json:"data" bson:"-"`
 }
 
 func (r *Response)HasErrors() bool {
@@ -24,11 +44,12 @@ func (r *Response)HasErrors() bool {
 
 func (r *Response)Fail() {
 	r.Success = false
-	r.c.JSON(http.StatusOK, r)
+	r.Response()
 }
 
-func (r *Response)BindContext(c *gin.Context) {
+func (r *Response)Init(c *gin.Context) {
 	r.c = c
+	r.Data = map[string]interface{}{}
 }
 
 func (r *Response) Recover() {}
@@ -52,5 +73,12 @@ func (r *Response) DecodeRequest() {
 
 func (r *Response) Finish() {
 	r.Success = true
-	r.c.JSON(http.StatusOK, r)
+	r.Response()
+}
+
+func (r *Response) Response() {
+	r.Data["success"] = r.Success
+	r.Data["errfor"] = r.ErrFor
+	r.Data["errors"] = r.Errors
+	r.c.JSON(http.StatusOK, r.Data)
 }

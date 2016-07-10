@@ -119,7 +119,7 @@ type responseUser struct {
 
 func CreateUser(c *gin.Context) {
 	response := responseUser{} // todo sync.Pool
-	response.BindContext(c)
+	response.Init(c)
 
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&response)
@@ -169,8 +169,7 @@ func CreateUser(c *gin.Context) {
 		panic(err)
 		return
 	}
-	response.Success = true
-	c.JSON(http.StatusOK, response)
+	response.Finish()
 }
 
 func UsersRender(c *gin.Context) {
@@ -202,7 +201,7 @@ func DeleteUser(c *gin.Context) {
 	user := getUser(c)
 
 	response := Response{} // todo sync.Pool
-	response.BindContext(c)
+	response.Init(c)
 
 	// validate
 	ok := admin.IsMemberOf("root")
@@ -231,8 +230,7 @@ func DeleteUser(c *gin.Context) {
 		return
 	}
 
-	response.Success = true
-	c.JSON(http.StatusOK, response)
+	response.Finish()
 }
 
 func XHR(c *gin.Context) bool {
@@ -243,7 +241,7 @@ func ChangeUserPassword (c *gin.Context) {
 	response := Response{} // todo sync.Pool
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
-	response.BindContext(c)
+	response.Init(c)
 	var body struct {
 		Confirm   string  `json:"confirm"`
 		Password string  `json:"newPassword"`
@@ -296,8 +294,7 @@ func ChangeUserPassword (c *gin.Context) {
 		return
 	}
 
-	response.Success = true
-	c.JSON(http.StatusOK, response)
+	response.Finish()
 }
 
 /*
