@@ -34,10 +34,8 @@
 	</div>
 </div>
 <script type="text/template" id="tmpl-header">
-	<div class="page-header">
-		<h1><a href="/admin/accounts/">Accounts</a> / <%- name.full %></h1>
-	</div>
-</script>
+	<div
+	class="page-header"><h1><a href="/admin/accounts/">Accounts</a> / <%- name.full %></h1></div></script>
 <script type="text/template" id="tmpl-details">
 	<fieldset>
 		<legend>Contact Info</legend>
@@ -51,42 +49,39 @@
 			</div>
 			<% } %>
 		</div>
-		<div class="form-group <%- errfor.first ? " has-error
-		" : "" %>">
-		<label>First Name:</label>
-		<input type="text" name="first" value="<%- first %>" class="form-control"/><span class="help-block"><%- errfor.first %></span>
-		</div>
-		<div class="form-group <%- errfor.middle ? " has-error
-		" : "" %>">
-		<label>Middle Name:</label>
-		<input type="text" name="middle" value="<%- middle %>" class="form-control"/><span class="help-block"><%- errfor.middle %></span>
-		</div>
-		<div class="form-group <%- errfor.last ? " has-error
-		" : "" %>">
-		<label>Last Name:</label>
-		<input type="text" name="last" value="<%- last %>" class="form-control"/><span class="help-block"><%- errfor['last'] %></span>
-		</div>
-		<div class="form-group <%- errfor.company ? " has-error
-		" : "" %>">
-		<label>Company Name:</label>
-		<input type="text" name="company" value="<%- company %>" class="form-control"/><span class="help-block"><%- errfor.company %></span>
-		</div>
-		<div class="form-group <%- errfor.phone ? " has-error
-		" : "" %>">
-		<label>Phone:</label>
-		<input type="text" name="phone" value="<%- phone %>" class="form-control"/><span class="help-block"><%- errfor.phone %></span>
-		</div>
-		<div class="form-group <%- errfor.zip ? " has-error
-		" : "" %>">
-		<label>Zip:</label>
-		<input type="text" name="zip" value="<%- zip %>" class="form-control"/><span class="help-block"><%- errfor.zip %></span>
-		</div>
+		<div class="form-group <%- errfor.first ? " has-error" : "" %>"><label>First Name:</label><input type="text"
+																										 name="first"
+																										 value="<%- first %>"
+																										 class="form-control">
+		<span class="help-block"><%- errfor.first %></span></div>
+		<div class="form-group <%- errfor.middle ? " has-error" : "" %>"><label>Middle Name:</label><input type="text"
+																										   name="middle"
+																										   value="<%- middle %>"
+																										   class="form-control">
+		<span class="help-block"><%- errfor.middle %></span></div>
+		<div class="form-group <%- errfor.last ? " has-error" : "" %>"><label>Last Name:</label><input type="text"
+																									   name="last"
+																									   value="<%- last %>"
+																									   class="form-control">
+		<span class="help-block"><%- errfor['last'] %></span></div>
+		<div class="form-group <%- errfor.company ? " has-error" : "" %>"><label>Company Name:</label><input type="text"
+																											 name="company"
+																											 value="<%- company %>"
+																											 class="form-control">
+		<span class="help-block"><%- errfor.company %></span></div>
+		<div class="form-group <%- errfor.phone ? " has-error" : "" %>"><label>Phone:</label><input type="text"
+																									name="phone"
+																									value="<%- phone %>"
+																									class="form-control">
+		<span class="help-block"><%- errfor.phone %></span></div>
+		<div class="form-group <%- errfor.zip ? " has-error" : "" %>"><label>Zip:</label><input type="text" name="zip"
+																								value="<%- zip %>"
+																								class="form-control">
+		<span class="help-block"><%- errfor.zip %></span></div>
 		<div class="form-group">
 			<button type="button" class="btn btn-primary btn-update">Update</button>
-		</div>
-	</fieldset>
+		</div></fieldset>
 </script>
-
 <script type="text/template" id="tmpl-login">
 	<fieldset>
 		<legend>Login</legend>
@@ -97,27 +92,19 @@
 			</div>
 			<% }); %>
 		</div>
-		<div class="form-group <%- errfor.newUsername ? " has-error
-		" : "" %>">
-		<label>Username:</label>
-		<div class="input-group"><% if (name) { %>
-			<input disabled="disabled" value="<%= name %>" class="form-control"/>
+		<div class="form-group <%- errfor.newUsername ? " has-error" : "" %>"><label>Username:</label>
+		<div class="input-group"><% if (name) { %><input disabled value="<%= name %>" class="form-control">
 			<div class="input-group-btn">
 				<button type="button" class="btn btn-warning btn-user-unlink">Unlink</button>
 				<button type="button" class="btn btn-default btn-user-open">Open</button>
 			</div>
-			<% } else { %>
-			<input name="newUsername" type="text" placeholder="enter a username" class="form-control"/>
+			<% } else { %><input name="newUsername" type="text" placeholder="enter a username" class="form-control">
 			<div class="input-group-btn">
 				<button type="button" class="btn btn-success btn-user-link">Link</button>
 			</div>
 			<% } %>
-		</div>
-		<span class="help-block"><%- errfor.newUsername %></span>
-		</div>
-	</fieldset>
+		</div><span class="help-block"><%- errfor.newUsername %></span></div></fieldset>
 </script>
-
 <script type="text/template" id="tmpl-status-new">
 	<legend>Status</legend>
 	<div class="alerts"><% _.each(errors, function(err) { %>
@@ -128,31 +115,23 @@
 		<% }); %>
 	</div>
 	<div class="input-group">
-		<select name="status" class="form-control">
-			<option value="">-- choose --</option>
-			{{range $status := .Statuses}}
-			<option value="{{$status.ID}}">{{$status.Name}}</option>
-			{{end}}
-		</select>
+				<select name="status" class="form-control">
+					{{.Statuses}}
+				</select>
 		<div class="input-group-btn">
 			<button class="btn btn-default btn-add">Change</button>
 		</div>
 	</div>
 </script>
-
 <script type="text/template" id="tmpl-status-collection">
-	<div id="status-items" class="status-items"></div>
-</script>
-
+	<div
+	id="status-items" class="status-items"></div></script>
 <script type="text/template" id="tmpl-status-item">
-	<div class="pull-right badge author">
-		<%= userCreated.name %>
-		-&nbsp;<span class="timeago"><%= userCreated.time %></span>
-	</div>
+	<div
+	class="pull-right badge author"><%= userCreated.name %>
+	-&nbsp;<span class="timeago"><%= userCreated.time %></span></div>
 	<div><%- name %></div>
-	<div class="clearfix"></div>
-</script>
-
+	<div class="clearfix"></div></script>
 <script type="text/template" id="tmpl-notes-new">
 	<legend>Notes</legend>
 	<div class="alerts"><% _.each(errors, function(err) { %>
@@ -161,28 +140,21 @@
 			<%- err %>
 		</div>
 		<% }); %>
-	</div>
-	<textarea rows="3" name="data" placeholder="enter notes" class="form-control"></textarea>
+	</div><textarea rows="3" name="data" placeholder="enter notes" class="form-control"></textarea>
 	<button class="btn btn-default btn-block btn-add">Add New Note</button>
 </script>
-
 <script type="text/template" id="tmpl-notes-collection">
-	<div id="notes-items" class="notes-items"></div>
-</script>
-
+	<div
+	id="notes-items" class="notes-items"></div></script>
 <script type="text/template" id="tmpl-notes-item">
-	<div class="force-wrap"><%- data %></div>
-	<div class="pull-right badge author">
-		<%= userCreated.name %>
-		-&nbsp;<span class="timeago"><%= userCreated.time %></span>
-	</div>
-	<div class="clearfix"></div>
-</script>
-
+	<div
+	class="force-wrap"><%- data %></div>
+	<div class="pull-right badge author"><%= userCreated.name %>
+		-&nbsp;<span class="timeago"><%= userCreated.time %></span></div>
+	<div class="clearfix"></div></script>
 <script type="text/template" id="tmpl-notes-none">
-	<div class="note text-muted">no notes found</div>
-</script>
-
+	<div
+	class="note text-muted">no notes found</div></script>
 <script type="text/template" id="tmpl-delete">
 	<fieldset>
 		<legend>Danger Zone</legend>
@@ -200,6 +172,6 @@
 		</div>
 	</fieldset>
 </script>
-
-<script type="text/template" id="data-record">{{.Results}}</script>
+<script type="text/template"
+		id="data-record">{{.Record}}</script>
 {{end}}
