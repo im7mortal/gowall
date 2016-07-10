@@ -29,6 +29,8 @@ func initTemplates(router *gin.Engine) (r multitemplate.Render) {
 	account.addFromFiles("/account/settings/", "views/account/settings/index.html")
 
 	admin.addFromFiles("/admin/", "views/admin/index.html")
+	admin.addFromFiles("/admin/accounts/", "views/admin/accounts/index.html")
+	admin.addFromFiles("/admin/accounts/details/", "views/admin/accounts/details.html")
 	admin.addFromFiles("/admin/users/", "views/admin/users/index.html")
 	admin.addFromFiles("/admin/users/details/", "views/admin/users/details.html")
 	admin.addFromFiles("/admin/admin-groups/", "views/admin/admin-groups/index.html")
