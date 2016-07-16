@@ -137,7 +137,7 @@ func CreateUser(c *gin.Context) {
 	response.CleanErrors()
 
 	// validate
-	response.ValidateUsername(&response.Response)
+	response.User.ValidateUsername(&response.Response)
 
 	if response.HasErrors() {
 		response.Fail()

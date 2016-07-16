@@ -100,7 +100,7 @@ func createAdministrator(c *gin.Context) {
 	// todo maybe when we create first root user we lose it
 	response.Admin.Search = []string{response.Name.First, response.Name.Middle, response.Name.Last}
 	response.Admin.Permissions = []Permission{}
-	response.Admin.Groups = []string{}
+	response.Admin.Groups = []mgo.DBRef{}
 
 	// createAdministrator
 	response.Admin.ID = bson.NewObjectId()
@@ -319,7 +319,7 @@ func linkUser(c *gin.Context) {
 		return
 	}
 	id := c.Param("id")
-	if user.Roles.Admin.String() == id {
+	if id_, ok := user.Roles.Admin.Id.(bson.ObjectId); ok && id_.String() == id {
 		response.Errors = append(response.Errors, "User is already linked to a different admin.")
 		response.Fail()
 		return

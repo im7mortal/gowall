@@ -8,14 +8,6 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-const USERS  = "users"
-const LOGINATTEMPTS  = "loginattempts"
-const ACCOUNTS  = "accounts"
-const ADMINGROUPS  = "admingroups"
-const CATEGORIES  = "categories"
-const STATUSES = "status"
-const ADMINS  = "admins"
-
 func EnsureAuthenticated(c *gin.Context) {
 	isAuthenticated, _ := c.Get("isAuthenticated")
 	if is, ok := isAuthenticated.(bool); ok && is {

@@ -141,7 +141,7 @@ func SignUpSocial(c *gin.Context) {
 
 	account.ID = bson.NewObjectId()
 
-	user.Roles.Account = account.ID
+	user.Roles.Account.Id = account.ID
 
 	err = collection.UpdateId(user.ID, user)
 	if err != nil {
@@ -155,7 +155,9 @@ func SignUpSocial(c *gin.Context) {
 		account.IsVerified = "yes"
 	}
 	account.Name.Full = username
-	account.User.ID = user.ID
+	account.User.ID = mgo.DBRef{}
+	account.User.ID.Id = user.ID
+	account.User.ID.Collection = "User"
 	account.User.Name = user.Username
 	account.Search = []string{username}
 

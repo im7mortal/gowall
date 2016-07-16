@@ -217,7 +217,7 @@ func AccountSettingsRender1(c *gin.Context) {
 	}
 	collection = db.C(ACCOUNTS)
 	ac := Account{} // todo pool
-	err = collection.FindId(bson.ObjectIdHex(us.Roles.Account.Hex())).One(&ac)
+	err = collection.FindId(us.Roles.Account.Id).One(&ac)
 	if err != nil {
 		println(err.Error())
 	}

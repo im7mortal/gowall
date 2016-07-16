@@ -4,7 +4,6 @@ import (
 	"gopkg.in/mgo.v2"
 	"time"
 	"gopkg.in/mgo.v2/bson"
-	"sync"
 	"strings"
 	"regexp"
 )
@@ -13,21 +12,15 @@ type vendorOauth struct {
 	ID string `bson:"id"`
 }
 
-var UsersPool = sync.Pool{
-	New: func() interface{} {
-		return &User{}
-	},
-}
-
-type User struct {// todo uniq
+type User struct {
 	ID                   bson.ObjectId `bson:"_id"`
 	Username             string `bson:"username"`
 	Password             string `bson:"password"`
 	Email                string `bson:"email"`
 	Roles                struct {
-						 Admin   bson.ObjectId `bson:"admin,omitempty"`
-						 Account bson.ObjectId `bson:"account,omitempty"`
-					 } `bson:"roles"`
+							 Admin   mgo.DBRef `bson:"admin,omitempty"`
+							 Account mgo.DBRef `bson:"account,omitempty"`
+						 } `bson:"roles"`
 
 	IsActive             string `bson:"isActive,omitempty"`
 	TimeCreated          time.Time `bson:"timeCreated"`
@@ -42,15 +35,13 @@ type User struct {// todo uniq
 	Search               []string `bson:"search"`
 }
 
-func (u *User) Flow()  {
-
-}
-
 func (user *User) CanPlayRoleOf(role string) bool {
-	if role == "admin" && len(user.Roles.Admin) > 0 {
+	if id_, ok := user.Roles.Account.Id.(bson.ObjectId);
+	role == "admin" && ok && len(id_.String()) > 0 {
 		return true;
 	}
-	if role == "account" && len(user.Roles.Account) > 0 {
+	if id_, ok := user.Roles.Account.Id.(bson.ObjectId);
+	role == "account" && ok && len(id_.String()) > 0 {
 		return true;
 	}
 	return false
@@ -66,15 +57,6 @@ func (user *User) DefaultReturnUrl() (returnUrl string) {
 	}
 	return
 }
-
-/*func (user *User) EncryptPassword(password string, done bool) (err error) {
-
-	hashedPassword, err := bcrypt.GenerateFromPassword(password, bcrypt.DefaultCost)
-	if err != nil {
-
-	}
-
-}*/
 
 func (u *User) ValidateUsername(r *Response) {
 	u.Username = strings.ToLower(u.Username)
@@ -116,11 +98,11 @@ func (u *User) ValidatePassword(r *Response) {
 	}
 }
 
-var UserIndex mgo.Index = mgo.Index{
+var UserUniqueIndex mgo.Index = mgo.Index{
 	Key:        []string{"username", "email"},
 	Unique:     true,
-	DropDups:   true,
-	Background: true,
-	Sparse:     true,
-	Name:     "userIndex",
+}
+
+var UserIndex mgo.Index = mgo.Index{
+	Key:        []string{"timeCreated", "twitter.id", "github.id", "facebook.id", "google.id", "search"},
 }

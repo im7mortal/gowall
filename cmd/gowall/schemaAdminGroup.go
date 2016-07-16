@@ -19,10 +19,6 @@ type AdminGroup struct {
 	Permissions []Permission `bson:"permissions" json:"permissions"`
 }
 
-func (u *AdminGroup) Flow()  {
-
-}
-
 func (a *AdminGroup) DecodeRequest(c *gin.Context) {
 	err := json.NewDecoder(c.Request.Body).Decode(a)
 	if err != nil {
@@ -31,12 +27,7 @@ func (a *AdminGroup) DecodeRequest(c *gin.Context) {
 	return
 }
 
-
 var AdminGroupIndex mgo.Index = mgo.Index{
 	Key:        []string{"name"},
 	Unique:     true,
-	DropDups:   true,
-	Background: true,
-	Sparse:     true,
-	Name:       "adminGroupIndex",
 }

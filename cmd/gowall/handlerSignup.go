@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"golang.org/x/crypto/bcrypt"
 	"github.com/gin-gonic/contrib/sessions"
+	"gopkg.in/mgo.v2"
 )
 
 func SignupRender(c *gin.Context) {
@@ -22,7 +23,7 @@ func SignupRender(c *gin.Context) {
 }
 
 func Signup(c *gin.Context) {
-	response := responseUser{} // todo sync.Pool
+	response := responseUser{}
 	response.Init(c)
 
 	decoder := json.NewDecoder(c.Request.Body)
@@ -35,9 +36,9 @@ func Signup(c *gin.Context) {
 	response.CleanErrors()
 
 	// validate
-	response.ValidateUsername(&response.Response)
-	response.ValidateEmail(&response.Response)
-	response.ValidatePassword(&response.Response)
+	response.User.ValidateUsername(&response.Response)
+	response.User.ValidateEmail(&response.Response)
+	response.User.ValidatePassword(&response.Response)
 
 	if response.HasErrors() {
 		response.Fail()
@@ -94,7 +95,7 @@ func Signup(c *gin.Context) {
 	account.ID = bson.NewObjectId()
 
 	//update user with account
-	user.Roles.Account = account.ID
+	user.Roles.Account.Id = account.ID
 	err = collection.UpdateId(user.ID, user)
 	if err != nil {
 		panic(err)
@@ -107,7 +108,9 @@ func Signup(c *gin.Context) {
 		account.IsVerified = "yes"
 	}
 	account.Name.Full = response.Username
-	account.User.ID = user.ID
+	account.User.ID = mgo.DBRef{}
+	account.User.ID.Id = user.ID
+	account.User.ID.Collection = "User"
 	account.User.Name = user.Username
 	account.Search = []string{response.Username}
 

@@ -10,11 +10,7 @@ type Status struct {
 	Pivot string `bson:"pivot" json:"pivot"`
 }
 
-var StatusIndex mgo.Index = mgo.Index{
-	//Key:        []string{"username", "email"},
+var StatusesIndex mgo.Index = mgo.Index{
+	Key:        []string{"name", "pivot"},
 	Unique:     true,
-	DropDups:   true,
-	Background: true,
-	Sparse:     true,
-	Name:       "statusIndex",
 }
