@@ -2,7 +2,7 @@
 
 2. i change response to map because of people have to have ability
 
-
+3) adminGroups has minor errors in update
 
 # Drywall  ( ca35c06  I forked)
 
