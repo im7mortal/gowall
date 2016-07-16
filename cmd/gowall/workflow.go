@@ -50,6 +50,7 @@ func (r *Response)Fail() {
 func (r *Response)Init(c *gin.Context) {
 	r.c = c
 	r.Data = map[string]interface{}{}
+	r.ErrFor = map[string]string{}
 }
 
 func (r *Response) Recover() {}

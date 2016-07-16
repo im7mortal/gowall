@@ -233,7 +233,7 @@ func deleteCategory(c *gin.Context) {
 }
 
 // TODO add g greedy
-var r1, _ = regexp.Compile(`[^\w ]+`)
+var r1, _ = regexp.Compile(`[^\w -]+`)
 var r2, _ = regexp.Compile(` +`)
 
 func slugify(str string) string {

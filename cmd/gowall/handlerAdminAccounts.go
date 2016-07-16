@@ -39,10 +39,9 @@ func renderAccounts(c *gin.Context) {
 
 	Result := getData(c, collection.Find(query), &results)
 
-	// don't like it. User and admin don't have it. [drywall bad]
 	filters := Result["filters"].(gin.H)
-	filters["search"] = c.Query("search")
-	filters["status"] = c.Query("status")
+	filters["search"] = search
+	filters["status"] = status
 
 	Results, err := json.Marshal(Result)
 	if err != nil {

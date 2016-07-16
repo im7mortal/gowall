@@ -4,11 +4,13 @@ import (
 	"gopkg.in/mgo.v2"
 	"github.com/gin-gonic/gin"
 	"encoding/json"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type Permission struct {
 	Name string `bson:"name" json:"name"`
 	Permit bool `bson:"permit" json:"permit"`
+	ID          bson.ObjectId `bson:"_id,omitempty" json:"_id"`
 }
 
 type AdminGroup struct {

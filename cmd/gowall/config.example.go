@@ -4,6 +4,7 @@ import "os"
 
 const defaultLocalMongoDBUrl  = "mongodb://localhost:27017/gowall"
 const defaultPORT  = "3000"
+const ROOTGROUP  = "root"
 
 
 var config struct {

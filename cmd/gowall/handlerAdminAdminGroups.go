@@ -7,9 +7,12 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"html/template"
 	"gopkg.in/mgo.v2"
-	"net/url"
-	"strings"
 )
+
+type responseAdminGroup struct {
+	Response
+	AdminGroup
+}
 
 func renderAdminGroups(c *gin.Context) {
 	query := bson.M{}
@@ -30,6 +33,9 @@ func renderAdminGroups(c *gin.Context) {
 
 	Result := getData(c, collection.Find(query), &results)
 
+	filters := Result["filters"].(gin.H)
+	filters["name"] = name
+
 	Results, _ := json.Marshal(Result)
 
 	if XHR(c) {
@@ -43,11 +49,6 @@ func renderAdminGroups(c *gin.Context) {
 	c.HTML(http.StatusOK, c.Request.URL.Path, c.Keys)
 }
 
-type responseAdminGroup struct {
-	Response
-	AdminGroup
-}
-
 func createAdminGroup(c *gin.Context) {
 	response := responseAdminGroup{}
 	response.Init(c)
@@ -55,7 +56,7 @@ func createAdminGroup(c *gin.Context) {
 	admin := getAdmin(c)
 
 	// validate
-	ok := admin.IsMemberOf("root")
+	ok := admin.IsMemberOf(ROOTGROUP)
 	if !ok {
 		response.Errors = append(response.Errors, "You may not create statuses")
 		response.Fail()
@@ -64,18 +65,15 @@ func createAdminGroup(c *gin.Context) {
 
 	response.AdminGroup.DecodeRequest(c)
 
-	if len(response.Name) == 0 {
+	if len(response.AdminGroup.Name) == 0 {
 		response.Errors = append(response.Errors, "A name is required")
-	}
-
-	if response.HasErrors() {
 		response.Fail()
 		return
 	}
 
 	//duplicateAdminGroupCheck
-	response.Name = slugifyName(response.Name)
-	response.ID = slugify(response.Name)
+	response.AdminGroup.Name = slugifyName(response.AdminGroup.Name)
+	response.AdminGroup.ID = slugify(response.AdminGroup.Name)
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(ADMINGROUPS)
@@ -88,8 +86,9 @@ func createAdminGroup(c *gin.Context) {
 	} else if err != mgo.ErrNotFound {
 		panic(err)
 	}
+
 	// createAdminGroup
-	err = collection.Insert(response.AdminGroup) // todo I think mgo's behavior isn't expected
+	err = collection.Insert(response.AdminGroup)
 	if err != nil {
 		panic(err)
 		return
@@ -124,13 +123,6 @@ func readAdminGroup(c *gin.Context) {
 	c.HTML(http.StatusOK, "/admin/admin-groups/details/", c.Keys)
 }
 
-/**
-	TODO can be problem
- */
-func getEscapedString(str string) string {
-	return strings.Replace(url.QueryEscape(str), "+", "%20", -1)
-}
-
 func updateAdminGroup(c *gin.Context) {
 	response := responseAdminGroup{}
 	response.Init(c)
@@ -138,35 +130,28 @@ func updateAdminGroup(c *gin.Context) {
 	admin := getAdmin(c)
 
 	// validate
-	ok := admin.IsMemberOf("root")
+	ok := admin.IsMemberOf(ROOTGROUP)
 	if !ok {
 		response.Errors = append(response.Errors, "You may not update admin groups.")
 		response.Fail()
 		return
 	}
 
-	err := json.NewDecoder(c.Request.Body).Decode(&response)
-	if err != nil {
-		panic(err)
-	}
-	// clean errors from client
-	response.CleanErrors()
+	response.AdminGroup.DecodeRequest(c)
 
-	if len(response.Name) == 0 {
-		response.Errors = append(response.Errors, "A name is required")
-	}
-
-	if response.HasErrors() {
+	if len(response.AdminGroup.Name) == 0 {
+		response.ErrFor["name"] = "required"
 		response.Fail()
 		return
 	}
 
 	//duplicateAdminGroupCheck
-	response.ID = slugify(response.Name)
+	response.AdminGroup.ID = slugify(response.AdminGroup.Name)
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(ADMINGROUPS)
-	err = collection.FindId(response.ID).One(nil)
+	adm := AdminGroup{}
+	err := collection.FindId(response.AdminGroup.ID).One(&adm)
 	// we expect err == mgo.ErrNotFound for success
 	if err == nil {
 		response.Errors = append(response.Errors, "That admin group is already taken.")
@@ -177,9 +162,11 @@ func updateAdminGroup(c *gin.Context) {
 	}
 
 	// patchAdminGroup
+	// _id is slugified name so first delete second insert // todo http://stackoverflow.com/questions/24166615/update-an-item-in-an-array-that-is-in-an-array
 	err = collection.RemoveId(c.Param("id"))
 	if err != nil {
-		panic(err)
+		panic(err)	// todo: bug: it updateAdminGroup doesn't update id in url. and if user will update AdminGroup 2 time
+					// todo: it will not find AdminGroup in second time
 	}
 	err = collection.Insert(response.AdminGroup)
 	if err != nil {
@@ -196,7 +183,7 @@ func updateAdminGroupPermissions(c *gin.Context) {
 	admin := getAdmin(c)
 
 	// validate
-	ok := admin.IsMemberOf("root")
+	ok := admin.IsMemberOf(ROOTGROUP)
 	if !ok {
 		response.Errors = append(response.Errors, "You may not change the permissions of admin groups.")
 		response.Fail()
@@ -205,11 +192,8 @@ func updateAdminGroupPermissions(c *gin.Context) {
 
 	response.AdminGroup.DecodeRequest(c)
 
-	if len(response.Permissions) == 0 {
-		response.Errors = append(response.Errors, "required")
-	}
-
-	if response.HasErrors() {
+	if len(response.AdminGroup.Permissions) == 0 {
+		response.ErrFor["permissions"] = "required"
 		response.Fail()
 		return
 	}
@@ -228,13 +212,13 @@ func updateAdminGroupPermissions(c *gin.Context) {
 }
 
 func deleteAdminGroup(c *gin.Context) {
-	response := Response{} // todo sync.Pool
+	response := Response{}
 	response.Init(c)
 
 	admin := getAdmin(c)
 
 	// validate
-	ok := admin.IsMemberOf("root")
+	ok := admin.IsMemberOf(ROOTGROUP)
 	if !ok {
 		response.Errors = append(response.Errors, "You may not delete admin groups.")
 		response.Fail()

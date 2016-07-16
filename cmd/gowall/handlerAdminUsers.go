@@ -105,7 +105,6 @@ func getData (c *gin.Context, query *mgo.Query, results interface{}) (data gin.H
 		"total": count,
 	}
 
-	// it's required only here [drywall bad]
 	filters := gin.H{
 		"limit": limit,
 		"page": page,
