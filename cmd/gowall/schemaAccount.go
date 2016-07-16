@@ -4,6 +4,8 @@ import (
 	"gopkg.in/mgo.v2"
 	"time"
 	"gopkg.in/mgo.v2/bson"
+	"github.com/gin-gonic/gin"
+	"encoding/json"
 )
 
 type Account struct {
@@ -46,7 +48,13 @@ func (u *Account) Flow()  {
 
 }
 
-
+func (a *Account) DecodeRequest(c *gin.Context) {
+	err := json.NewDecoder(c.Request.Body).Decode(a)
+	if err != nil {
+		panic(err)
+	}
+	return
+}
 
 var AccountIndex mgo.Index = mgo.Index{
 	Key:        []string{"username", "email"},

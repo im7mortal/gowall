@@ -76,14 +76,14 @@ func BindRoutes(router *gin.Engine) {
 
 		//admin > accounts
 		admin.GET("/accounts/", renderAccounts)
-		admin.POST("/accounts/", Index)
+		admin.POST("/accounts/", createAccount)
 		admin.GET("/accounts/:id/", readAccount)
 		admin.PUT("/accounts/:id/", Index)
 		admin.PUT("/accounts/:id/user/", Index)
 		admin.DELETE("/accounts/:id/user/", Index)
 		admin.POST("/accounts/:id/notes/", Index)
 		admin.POST("/accounts/:id/status/", Index)
-		admin.DELETE("/accounts/:id/", Index)
+		admin.DELETE("/accounts/:id/", deleteAccount)
 
 		//admin > statuses
 		admin.GET("/statuses/", renderStatuses)

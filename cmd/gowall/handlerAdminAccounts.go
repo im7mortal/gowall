@@ -7,7 +7,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"html/template"
 	"gopkg.in/mgo.v2"
-	//"strings"
+	"strings"
 )
 
 type responseAccount struct {
@@ -71,6 +71,76 @@ func renderAccounts(c *gin.Context) {
 	c.HTML(http.StatusOK, c.Request.URL.Path, c.Keys)
 }
 
+func createAccount(c *gin.Context) {
+	response := responseAccount{}
+	response.Init(c)
+
+	var name_ struct {
+		Name string `json:"name.full"`
+	}
+	err := json.NewDecoder(c.Request.Body).Decode(&name_)
+	if err != nil {
+		panic(err)
+	}
+	response.Account.Name.Full = name_.Name
+	// clean errors from client
+
+	if len(response.Account.Name.Full) == 0 {
+		response.Errors = append(response.Errors, "A name is required")
+	}
+
+	if response.HasErrors() {
+		response.Fail()
+		return
+	}
+
+	// handleName
+	response.Name.Full = slugifyName(response.Name.Full)
+
+	// duplicateAdministrator
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+	collection := db.C(ADMINS)
+	err = collection.Find(bson.M{"name.full": response.Name.Full}).One(nil)
+	// we expect err == mgo.ErrNotFound for success
+	if err == nil {
+		response.Errors = append(response.Errors, "That account already exists.")
+		response.Fail()
+		return
+	} else if err != mgo.ErrNotFound {
+		panic(err)
+	}
+	// handleName
+	name := strings.Split(response.Name.Full, " ")
+	response.Name.First = name[0]
+	if len(name) > 1 {
+		if len(name) == 2 {
+			response.Name.Last = name[1]
+			response.Account.Name.Middle = ""
+		}
+		if len(name) == 3 {
+			response.Name.Middle = name[2]
+		}
+	}
+
+	// todo maybe when we create first root user we lose it
+	response.Account.Search = []string{response.Name.First, response.Name.Middle, response.Name.Last}
+
+	// createAdministrator
+	response.Account.ID = bson.NewObjectId()
+	println(response.Account.ID.String())
+	err = collection.Insert(response.Account) // todo I think mgo's behavior isn't expected
+
+	if err != nil {
+		println(err.Error())
+		panic(err)
+		return
+	}
+	response.Data["record"] = response
+	response.Finish()
+	//c.JSON(http.StatusOK, gin.H{"record": response, "success": true}) // todo necessary check
+}
+
 func readAccount(c *gin.Context) {
 	db := getMongoDBInstance()
 	defer db.Session.Close()
@@ -115,72 +185,6 @@ func readAccount(c *gin.Context) {
 /*
 
 
-func createAdministrator(c *gin.Context) {
-	response := responseAdmin{}
-	response.Init(c)
-	admin := getAdmin(c)
-
-	// validate
-	ok := admin.IsMemberOf("root")
-	if !ok {
-		response.Errors = append(response.Errors, "You may not create administrators")
-		response.Fail()
-		return
-	}
-
-	response.Admin.DecodeRequest(c)
-	if len(response.Name.Full) == 0 {
-		response.Errors = append(response.Errors, "A name is required")
-	}
-
-	if response.HasErrors() {
-		response.Fail()
-		return
-	}
-
-	// handleName
-	response.Name.Full = slugifyName(response.Name.Full)
-
-	// duplicateAdministrator
-	db := getMongoDBInstance()
-	defer db.Session.Close()
-	collection := db.C(ADMINS)
-	err := collection.Find(bson.M{"name.full": response.Name.Full}).One(nil)
-	// we expect err == mgo.ErrNotFound for success
-	if err == nil {
-		response.Errors = append(response.Errors, "That administrator already exists.")
-		response.Fail()
-		return
-	} else if err != mgo.ErrNotFound {
-		panic(err)
-	}
-
-	// handleName
-	name := strings.Split(response.Name.Full, " ")
-	response.Name.First = name[0]
-	if len(name) == 2 {
-		response.Name.Last = name[1]
-		response.Admin.Name.Middle = ""
-	}
-	if len(name) == 3 {
-		response.Name.Middle = name[2]
-	}
-	// todo maybe when we create first root user we lose it
-	response.Admin.Search = []string{response.Name.First, response.Name.Middle, response.Name.Last}
-	response.Admin.Permissions = []Permission{}
-	response.Admin.Groups = []string{}
-
-	// createAdministrator
-	response.Admin.ID = bson.NewObjectId()
-	err = collection.Insert(response.Admin) // todo I think mgo's behavior isn't expected
-	if err != nil {
-		panic(err)
-		return
-	}
-	response.Data["record"] = response
-	response.Finish()
-	//c.JSON(http.StatusOK, gin.H{"record": response, "success": true}) // todo necessary check
-}
 
 func readAdministrator(c *gin.Context) {
 	db := getMongoDBInstance()
@@ -495,13 +499,16 @@ func unlinkUser(c *gin.Context) {
 	response.Finish()
 }
 
-func deleteAdministrator(c *gin.Context) {
+
+*/
+
+func deleteAccount(c *gin.Context) {
 	response := Response{}
 	response.Init(c)
 
 	// validate
 	if ok := getAdmin(c).IsMemberOf("root"); !ok {
-		response.Errors = append(response.Errors, "You may not delete administrators.")
+		response.Errors = append(response.Errors, "You may not delete accounts.")
 		response.Fail()
 		return
 	}
@@ -509,7 +516,7 @@ func deleteAdministrator(c *gin.Context) {
 	// deleteUser
 	db := getMongoDBInstance()
 	defer db.Session.Close()
-	collection := db.C(ADMINS)
+	collection := db.C(ACCOUNTS)
 	err := collection.RemoveId(bson.ObjectIdHex(c.Param("id")))
 	if err != nil {
 		response.Errors = append(response.Errors, err.Error())
@@ -519,4 +526,3 @@ func deleteAdministrator(c *gin.Context) {
 
 	response.Finish()
 }
-*/
