@@ -5,16 +5,20 @@ import (
 	"net/http"
 	"encoding/json"
 	"gopkg.in/mgo.v2/bson"
-	"strconv"
 	"html/template"
 	"strings"
-
 	"gopkg.in/mgo.v2"
 	"net/url"
 	"golang.org/x/crypto/bcrypt"
+	"regexp"
 )
 
-func AdminUsersRender(c *gin.Context) {
+type responseUser struct {
+	Response
+	User
+}
+
+func renderUsers(c *gin.Context) {
 	query := bson.M{}
 
 	username, ok := c.GetQuery("username")
@@ -44,18 +48,25 @@ func AdminUsersRender(c *gin.Context) {
 		IsActive string `bson:"isActive" json:"isActive"`
 		Email string `bson:"email" json:"email"`
 	}
+
 	var results []_user
 
 	db := getMongoDBInstance()
 	defer db.Session.Close()
-	// TODO keys
+
 	collection := db.C(USERS)
 
 	Result := getData(c, collection.Find(query), &results)
 
+	filters := Result["filters"].(gin.H)
+	filters["username"] = username
+	filters["isActive"] = isActive
+	filters["roles"] = roles
 
-
-	Results, _ := json.Marshal(Result)
+	Results, err := json.Marshal(Result)
+	if err != nil {
+		panic(err.Error())
+	}
 
 	if XHR(c) {
 		c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
@@ -67,64 +78,8 @@ func AdminUsersRender(c *gin.Context) {
 	c.HTML(http.StatusOK, c.Request.URL.Path, c.Keys)
 }
 
-func getData (c *gin.Context, query *mgo.Query, results interface{}) (data gin.H) {
-	limitS := c.DefaultQuery("limit", "20")
-	limit_, _ := strconv.ParseInt(limitS, 0, 0)
-	limit := int(limit_)
-	if limit > 100 {
-		limit = 100
-	}
-
-	pageS := c.DefaultQuery("page", "0")
-	page_, _ := strconv.ParseInt(pageS, 0, 0)
-	page := int(page_)
-	sort := c.DefaultQuery("sort", "_id")
-
-	count, _ := query.Count()
-	query.Skip(page * limit).Sort(sort).Limit(limit).All(results)
-
-	page += 1
-	count_ := page * limit
-	pages := gin.H{
-		"current": page,
-		"prev": page - 1,
-		"hasPrev": page - 1 != 0,
-		"next": page + 1,
-		"hasNext": float64(count) / float64(count_) > 1,
-		"total": count,
-	}
-
-	end := count_
-	if count_ > count {
-		end = count
-	}
-
-	items := gin.H{
-		"begin": (page - 1) * limit,
-		"end": end,
-		"total": count,
-	}
-
-	filters := gin.H{
-		"limit": limit,
-		"page": page,
-		"sort": sort,
-	}
-	return gin.H{
-		"data": results,
-		"pages": pages,
-		"items": items,
-		"filters": filters,
-	}
-}
-
-type responseUser struct {
-	Response
-	User
-}
-
-func CreateUser(c *gin.Context) {
-	response := responseUser{} // todo sync.Pool
+func createUser(c *gin.Context) {
+	response := responseUser{}
 	response.Init(c)
 
 	decoder := json.NewDecoder(c.Request.Body)
@@ -142,28 +97,22 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
+	// duplicateUsernameCheck
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(USERS)
 	user := User{}
 	err = collection.Find(bson.M{"username": response.Username}).One(&user)
-	if err != nil {
-		println(err.Error())
-	}
-
-	// duplicateUsernameCheck
-	if len(user.Username) != 0 {
-		if user.Username == response.Username {
-			response.Errors = append(response.Errors, "That username is already taken.")
-		}
-	}
-	if response.HasErrors() {
+	// we expect err == mgo.ErrNotFound for success
+	if err == nil {
+		response.Errors = append(response.Errors, "That username is already taken.")
 		response.Fail()
 		return
+	} else if err != mgo.ErrNotFound {
+		panic(err)
 	}
 
 	// createUser
-
 	user.ID = bson.NewObjectId()
 	user.Username = response.Username
 	user.Search = []string{response.Username}
@@ -176,19 +125,22 @@ func CreateUser(c *gin.Context) {
 	response.Finish()
 }
 
-func UsersRender(c *gin.Context) {
+func readUser(c *gin.Context) {
 
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(USERS)
 	user := User{}
 	collection.FindId(bson.ObjectIdHex(c.Param("id"))).One(&user)
-	json, _ := json.Marshal(gin.H{
+	json, err := json.Marshal(gin.H{
 		"_id": user.ID.Hex(),
 		"username": user.Username,
 		"email": user.Email,
 		"isActive": user.IsActive,
 	})
+	if err != nil {
+		panic(err.Error())
+	}
 
 	if XHR(c) {
 		c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
@@ -200,113 +152,9 @@ func UsersRender(c *gin.Context) {
 	c.HTML(http.StatusOK, "/admin/users/details/", c.Keys)
 }
 
-func DeleteUser(c *gin.Context) {
-	admin := getAdmin(c)
-	user := getUser(c)
+func changeUserData(c *gin.Context) {
+	response := Response{}
 
-	response := Response{} // todo sync.Pool
-	response.Init(c)
-
-	// validate
-	ok := admin.IsMemberOf("root")
-	if !ok {
-		response.Errors = append(response.Errors, "You may not delete users.")
-		response.Fail()
-		return
-	}
-
-	deleteID := c.Param("id")
-
-	if deleteID == user.ID.Hex() {
-		response.Errors = append(response.Errors, "You may not delete yourself from user.")
-		response.Fail()
-		return
-	}
-
-	// deleteUser
-	db := getMongoDBInstance()
-	defer db.Session.Close()
-	collection := db.C(USERS)
-	err := collection.RemoveId(bson.ObjectIdHex(deleteID))
-	if err != nil {
-		response.Errors = append(response.Errors, err.Error())
-		response.Fail()
-		return
-	}
-
-	response.Finish()
-}
-
-func XHR(c *gin.Context) bool {
-	return strings.ToLower(c.Request.Header.Get("X-Requested-With")) == "xmlhttprequest"
-}
-
-func ChangeUserPassword (c *gin.Context) {
-	response := Response{} // todo sync.Pool
-	response.Errors = []string{}
-	response.ErrFor = make(map[string]string)
-	response.Init(c)
-	var body struct {
-		Confirm   string  `json:"confirm"`
-		Password string  `json:"newPassword"`
-	}
-	decoder := json.NewDecoder(c.Request.Body)
-	err := decoder.Decode(&body)
-
-	// validate
-	if len(body.Password) == 0 {
-		response.ErrFor["newPassword"] = "required"
-	}
-	if len(body.Confirm) == 0 {
-		response.ErrFor["confirm"] = "required"
-	} else if body.Password != body.Confirm {
-		response.Errors = append(response.Errors, "Passwords do not match.")
-	}
-
-	if response.HasErrors() {
-		response.Fail()
-		return
-	}
-
-	// patchUser
-	db := getMongoDBInstance()
-	defer db.Session.Close()
-	collection := db.C(USERS)
-	user := User{}
-	err = collection.FindId(bson.ObjectIdHex(c.Param("id"))).One(&user)
-	if err != nil {
-		if err != mgo.ErrNotFound {
-			panic(err)
-		}
-		response.Errors = append(response.Errors, "User wasn't found.")
-		response.Fail()
-		return
-	}
-
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
-	if err != nil {
-		response.Errors = append(response.Errors, err.Error()) // TODO don't like that this error goes to client
-		response.Fail()
-		return
-	}
-
-	user.Password = string(hashedPassword)
-	err = collection.UpdateId(user.ID, user)
-	if err != nil {
-		response.Errors = append(response.Errors, err.Error())
-		response.Fail()
-		return
-	}
-
-	response.Finish()
-}
-
-/*
-func ChangeUserData (c *gin.Context) {
-	response := Response{} // todo sync.Pool
-	response.Errors = []string{}
-	response.ErrFor = make(map[string]string)
-	response.BindContext(c)
 	var body struct {
 		Username    string  `json:"username"`
 		Email   string  `json:"email"`
@@ -368,7 +216,7 @@ func ChangeUserData (c *gin.Context) {
 	// duplicateUsernameCheck
 	// duplicateEmailCheck
 	{
-		us := User{} // todo pool
+		us := User{}
 		err = collection.Find(bson.M{"$or": []bson.M{bson.M{"username": username}, bson.M{"email": email}}}).One(&us)
 		if err != nil {
 			response.Errors = append(response.Errors, "username or email already exist")
@@ -394,14 +242,21 @@ func ChangeUserData (c *gin.Context) {
 
 
 
-	response := Response{} // todo sync.Pool
-	response.Errors = []string{}
-	response.ErrFor = make(map[string]string)
-	response.BindContext(c)
+	response.Success = true
+	c.JSON(http.StatusOK, response)
+}
+
+func changeUserPassword(c *gin.Context) {
+	response := Response{}
+	response.Init(c)
+
+
 	var body struct {
 		Confirm   string  `json:"confirm"`
 		Password string  `json:"newPassword"`
 	}
+
+
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&body)
 
@@ -437,9 +292,7 @@ func ChangeUserData (c *gin.Context) {
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
 	if err != nil {
-		response.Errors = append(response.Errors, err.Error()) // TODO don't like that this error goes to client
-		response.Fail()
-		return
+		panic(err)
 	}
 
 	user.Password = string(hashedPassword)
@@ -450,8 +303,42 @@ func ChangeUserData (c *gin.Context) {
 		return
 	}
 
-	response.Success = true
-	c.JSON(http.StatusOK, response)
+	response.Finish()
 }
-*/
 
+func deleteUser(c *gin.Context) {
+	admin := getAdmin(c)
+	user := getUser(c)
+
+	response := Response{}
+	response.Init(c)
+
+	// validate
+	ok := admin.IsMemberOf(ROOTGROUP)
+	if !ok {
+		response.Errors = append(response.Errors, "You may not delete users.")
+		response.Fail()
+		return
+	}
+
+	deleteID := c.Param("id")
+
+	if deleteID == user.ID.Hex() {
+		response.Errors = append(response.Errors, "You may not delete yourself from user.")
+		response.Fail()
+		return
+	}
+
+	// deleteUser
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+	collection := db.C(USERS)
+	err := collection.RemoveId(bson.ObjectIdHex(deleteID))
+	if err != nil {
+		response.Errors = append(response.Errors, err.Error())
+		response.Fail()
+		return
+	}
+
+	response.Finish()
+}
