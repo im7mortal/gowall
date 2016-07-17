@@ -36,7 +36,10 @@ func renderAdminGroups(c *gin.Context) {
 	filters := Result["filters"].(gin.H)
 	filters["name"] = name
 
-	Results, _ := json.Marshal(Result)
+	Results, err := json.Marshal(Result)
+	if err != nil {
+		panic(err.Error())
+	}
 
 	if XHR(c) {
 		c.Header("Cache-Control", "no-cache, no-store, must-revalidate")

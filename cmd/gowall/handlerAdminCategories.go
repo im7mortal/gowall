@@ -41,7 +41,10 @@ func renderCategories(c *gin.Context) {
 	filters["name"] = name
 	filters["pivot"] = pivot
 
-	Results, _ := json.Marshal(Result)
+	Results, err := json.Marshal(Result)
+	if err != nil {
+		panic(err.Error())
+	}
 
 	if XHR(c) {
 		c.Header("Cache-Control", "no-cache, no-store, must-revalidate")

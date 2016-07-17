@@ -37,7 +37,14 @@ func renderStatuses(c *gin.Context) {
 
 	Result := getData(c, collection.Find(query), &results)
 
-	Results, _ := json.Marshal(Result)
+	filters := Result["filters"].(gin.H)
+	filters["name"] = name
+	filters["pivot"] = pivot
+
+	Results, err := json.Marshal(Result)
+	if err != nil {
+		panic(err.Error())
+	}
 
 	if XHR(c) {
 		c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
@@ -51,13 +58,12 @@ func renderStatuses(c *gin.Context) {
 }
 
 func createStatus(c *gin.Context) {
-	response := Response{} // todo sync.Pool
+	response := Response{}
 	response.Init(c)
-
 	admin := getAdmin(c)
 
 	// validate
-	ok := admin.IsMemberOf("root")
+	ok := admin.IsMemberOf(ROOTGROUP)
 	if !ok {
 		response.Errors = append(response.Errors, "You may not create statuses")
 		response.Fail()
@@ -74,11 +80,11 @@ func createStatus(c *gin.Context) {
 	}
 
 	if len(status.Name) == 0 {
-		response.Errors = append(response.Errors, "A name is required")
+		response.ErrFor["name"] = "required"
 	}
 
 	if len(status.Pivot) == 0 {
-		response.Errors = append(response.Errors, "A pivot is required")
+		response.ErrFor["pivot"] = "required"
 	}
 
 	if response.HasErrors() {
@@ -91,8 +97,7 @@ func createStatus(c *gin.Context) {
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(STATUSES)
-	status_ := Status{}
-	err = collection.Find(bson.M{"_id": _id}).One(&status_)
+	err = collection.FindId(_id).One(nil)
 	// we expect err == mgo.ErrNotFound for success
 	if err == nil {
 		response.Errors = append(response.Errors, "That status+pivot is already taken.")
@@ -119,8 +124,11 @@ func readStatus(c *gin.Context) {
 	defer db.Session.Close()
 	collection := db.C(STATUSES)
 	status := Status{}
-	collection.Find(bson.M{"_id": c.Param("id")}).One(&status)
-	json, _ := json.Marshal(status)
+	collection.FindId(c.Param("id")).One(&status)
+	json, err := json.Marshal(status)
+	if err != nil {
+		panic(err.Error())
+	}
 
 	if XHR(c) {
 		c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
@@ -133,13 +141,13 @@ func readStatus(c *gin.Context) {
 }
 
 func updateStatus(c *gin.Context) {
-	response := Response{} // todo sync.Pool
+	response := Response{}
 	response.Init(c)
 
 	admin := getAdmin(c)
 
 	// validate
-	ok := admin.IsMemberOf("root")
+	ok := admin.IsMemberOf(ROOTGROUP)
 	if !ok {
 		response.Errors = append(response.Errors, "You may not create statuses")
 		response.Fail()
@@ -156,11 +164,11 @@ func updateStatus(c *gin.Context) {
 	}
 
 	if len(status.Name) == 0 {
-		response.Errors = append(response.Errors, "A name is required")
+		response.ErrFor["name"] = "required"
 	}
 
 	if len(status.Pivot) == 0 {
-		response.Errors = append(response.Errors, "A pivot is required")
+		response.ErrFor["pivot"] = "required"
 	}
 
 	if response.HasErrors() {
@@ -173,8 +181,7 @@ func updateStatus(c *gin.Context) {
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(STATUSES)
-	status_ := Status{}
-	err = collection.FindId(_id).One(&status_)
+	err = collection.FindId(_id).One(nil)
 	// we expect err == mgo.ErrNotFound for success
 	if err == nil {
 		response.Errors = append(response.Errors, "That status+pivot is already taken.")
@@ -199,13 +206,13 @@ func updateStatus(c *gin.Context) {
 }
 
 func deleteStatus(c *gin.Context) {
-	response := Response{} // todo sync.Pool
+	response := Response{}
 	response.Init(c)
 
 	admin := getAdmin(c)
 
 	// validate
-	ok := admin.IsMemberOf("root")
+	ok := admin.IsMemberOf(ROOTGROUP)
 	if !ok {
 		response.Errors = append(response.Errors, "You may not delete statuses.")
 		response.Fail()
