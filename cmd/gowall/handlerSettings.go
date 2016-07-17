@@ -41,7 +41,7 @@ func AccountSettingsRender(c *gin.Context) {
 	}
 	collection = db.C(ACCOUNTS)
 	ac := Account{} // todo pool
-	err = collection.FindId(user.Roles.Account.Id).One(&ac)
+	err = collection.FindId(user.Roles.Account).One(&ac)
 	if err != nil {
 		println(err.Error())
 	}

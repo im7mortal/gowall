@@ -8,14 +8,17 @@ import (
 	"encoding/json"
 	"golang.org/x/crypto/bcrypt"
 	"github.com/gin-gonic/contrib/sessions"
-	"gopkg.in/mgo.v2"
 )
 
 func SignupRender(c *gin.Context) {
 	isAuthenticated, _ := c.Get("isAuthenticated")
 	if is, ok := isAuthenticated.(bool); ok && is {
-		defaultReturnUrl, _ := c.Get("DefaultReturnUrl")
-		c.Redirect(http.StatusFound, defaultReturnUrl.(string))
+		defaultReturnUrl, exist := c.Get("DefaultReturnUrl")
+		var url string
+		if url, ok = defaultReturnUrl.(string); !exist || !ok { // if not exist or not string
+			url = "/"
+		}
+		c.Redirect(http.StatusFound, url)
 	} else {
 		injectSocials(c)
 		c.HTML(http.StatusOK, c.Request.URL.Path, c.Keys)
@@ -95,7 +98,7 @@ func Signup(c *gin.Context) {
 	account.ID = bson.NewObjectId()
 
 	//update user with account
-	user.Roles.Account.Id = account.ID
+	user.Roles.Account = account.ID
 	err = collection.UpdateId(user.ID, user)
 	if err != nil {
 		panic(err)
@@ -108,9 +111,7 @@ func Signup(c *gin.Context) {
 		account.IsVerified = "yes"
 	}
 	account.Name.Full = response.Username
-	account.User.ID = mgo.DBRef{}
-	account.User.ID.Id = user.ID
-	account.User.ID.Collection = "User"
+	account.User.ID  = user.ID
 	account.User.Name = user.Username
 	account.Search = []string{response.Username}
 

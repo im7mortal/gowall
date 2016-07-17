@@ -1,14 +1,14 @@
 package main
 
 import (
-	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type StatusLog struct {
-	ID mgo.DBRef `bson:"id"`
+	ID bson.ObjectId `bson:"id"`
 	Name string `bson:"name"`
 	UserCreated struct{
-		   ID mgo.DBRef `bson:"id"`
+		   ID bson.ObjectId `bson:"id"`
 		   Name string `bson:"name"`
 		   Time string `bson:"time"`
 	   } `bson:"userCreated"`

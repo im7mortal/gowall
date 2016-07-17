@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"regexp"
 	"gopkg.in/mgo.v2/bson"
+	"gopkg.in/mgo.v2"
 )
 
 func EnsureAuthenticated(c *gin.Context) {
@@ -110,6 +111,9 @@ func IsAuthenticated(c *gin.Context) {
 		us := User{}
 		err := collection.Find(bson.M{"_id": bson.ObjectIdHex(public_)}).One(&us)
 		if err != nil {
+			if err != mgo.ErrNotFound {
+			panic(err)
+			}
 			println(err.Error())
 		}
 		if len(us.Username) > 0 {

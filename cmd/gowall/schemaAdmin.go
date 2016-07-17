@@ -11,7 +11,7 @@ import (
 type Admin struct {
 	ID bson.ObjectId `bson:"_id,omitempty" json:"_id"`
 	User struct{
-		   ID mgo.DBRef `bson:"id,omitempty" json:"id"`
+		   ID bson.ObjectId `bson:"id,omitempty" json:"id"`
 		   Name string `bson:"name" json:"name"`
 	   } `bson:"user" json:"user"`
 	Name struct {
@@ -20,7 +20,7 @@ type Admin struct {
 		   Last string `bson:"last" json:"last"`
 		   Full string `bson:"full" json:"full"`
 	   } `bson:"name" json:"name"`
-	Groups []mgo.DBRef `bson:"groups" json:"groups"`
+	Groups []string `bson:"groups" json:"groups"`
 	Permissions []Permission `bson:"permissions" json:"permissions"`
 	TimeCreated time.Time `bson:"timeCreated" json:"timeCreated"`
 	Search []string `bson:"search" json:"search"`
@@ -69,7 +69,7 @@ func (admin *Admin) HasPermissionTo(requiredPermission string) (hasPermission bo
 
 func (admin *Admin) IsMemberOf(groupName string) bool {
 	for _, group := range admin.Groups{
-		if id_, ok := group.Id.(string); ok && id_ == groupName {
+		if group == groupName {
 			return true
 		}
 	}

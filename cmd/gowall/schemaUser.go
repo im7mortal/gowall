@@ -18,8 +18,8 @@ type User struct {
 	Password             string `bson:"password"`
 	Email                string `bson:"email"`
 	Roles                struct {
-							 Admin   mgo.DBRef `bson:"admin,omitempty"`
-							 Account mgo.DBRef `bson:"account,omitempty"`
+							 Admin   bson.ObjectId `bson:"admin,omitempty"`
+							 Account bson.ObjectId `bson:"account,omitempty"`
 						 } `bson:"roles"`
 
 	IsActive             string `bson:"isActive,omitempty"`
@@ -36,12 +36,10 @@ type User struct {
 }
 
 func (user *User) CanPlayRoleOf(role string) bool {
-	if id_, ok := user.Roles.Account.Id.(bson.ObjectId);
-	role == "admin" && ok && len(id_.String()) > 0 {
+	if role == "admin" && len(user.Roles.Account.String()) > 0 {
 		return true;
 	}
-	if id_, ok := user.Roles.Account.Id.(bson.ObjectId);
-	role == "account" && ok && len(id_.String()) > 0 {
+	if role == "account" && len(user.Roles.Account.String()) > 0 {
 		return true;
 	}
 	return false
