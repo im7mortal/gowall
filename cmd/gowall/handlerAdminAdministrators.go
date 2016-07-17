@@ -149,8 +149,6 @@ func updateAdministrator(c *gin.Context) {
 	if err != nil {
 		panic(err)
 	}
-	// clean errors from client
-	response.CleanErrors()
 
 	if len(response.Name.First) == 0 {
 		response.Errors = append(response.Errors, "A name is required")

@@ -128,13 +128,11 @@ func CreateUser(c *gin.Context) {
 	response.Init(c)
 
 	decoder := json.NewDecoder(c.Request.Body)
-	err := decoder.Decode(&response)
+	err := decoder.Decode(&response.User)
 	if err != nil {
 		panic(err)
 		return
 	}
-	// clean errors from client
-	response.CleanErrors()
 
 	// validate
 	response.User.ValidateUsername(&response.Response)

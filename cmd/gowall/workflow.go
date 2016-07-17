@@ -68,7 +68,8 @@ func (r *Response) DecodeRequest() {
 		panic(err)
 	}
 	// clean errors from client
-	r.CleanErrors()
+	r.Errors = []string{}
+	r.ErrFor = make(map[string]string)
 	return
 }
 

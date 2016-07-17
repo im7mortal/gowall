@@ -72,8 +72,6 @@ func createStatus(c *gin.Context) {
 		panic(err)
 		return
 	}
-	// clean errors from client
-	response.CleanErrors()
 
 	if len(status.Name) == 0 {
 		response.Errors = append(response.Errors, "A name is required")
@@ -156,8 +154,6 @@ func updateStatus(c *gin.Context) {
 		panic(err)
 		return
 	}
-	// clean errors from client
-	response.CleanErrors()
 
 	if len(status.Name) == 0 {
 		response.Errors = append(response.Errors, "A name is required")

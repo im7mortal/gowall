@@ -6,13 +6,11 @@ import (
 	"encoding/json"
 	"gopkg.in/mgo.v2/bson"
 	"html/template"
-	"strings"
-	"regexp"
 	"gopkg.in/mgo.v2"
 	"net/url"
 )
 
-func AdminCategoriesRender(c *gin.Context) {
+func renderCategories(c *gin.Context) {
 	query := bson.M{}
 
 	name, ok := c.GetQuery("name")
@@ -39,6 +37,10 @@ func AdminCategoriesRender(c *gin.Context) {
 
 	Result := getData(c, collection.Find(query), &results)
 
+	filters := Result["filters"].(gin.H)
+	filters["name"] = name
+	filters["pivot"] = pivot
+
 	Results, _ := json.Marshal(Result)
 
 	if XHR(c) {
@@ -52,14 +54,14 @@ func AdminCategoriesRender(c *gin.Context) {
 	c.HTML(http.StatusOK, c.Request.URL.Path, c.Keys)
 }
 
-func CreateCategory(c *gin.Context) {
-	response := Response{} // todo sync.Pool
+func createCategory(c *gin.Context) {
+	response := Response{}
 	response.Init(c)
 
 	admin := getAdmin(c)
 
 	// validate
-	ok := admin.IsMemberOf("root")
+	ok := admin.IsMemberOf(ROOTGROUP)
 	if !ok {
 		response.Errors = append(response.Errors, "You may not create categories")
 		response.Fail()
@@ -74,8 +76,6 @@ func CreateCategory(c *gin.Context) {
 		panic(err)
 		return
 	}
-	// clean errors from client
-	response.CleanErrors()
 
 	if len(category.Name) == 0 {
 		response.Errors = append(response.Errors, "A name is required")
@@ -95,8 +95,7 @@ func CreateCategory(c *gin.Context) {
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(CATEGORIES)
-	category_ := Category{}
-	err = collection.Find(bson.M{"_id": _id}).One(&category_)
+	err = collection.FindId(_id).One(nil)
 	// we expect err == mgo.ErrNotFound for success
 	if err == nil {
 		response.Errors = append(response.Errors, "That category+pivot is already taken.")
@@ -118,13 +117,13 @@ func CreateCategory(c *gin.Context) {
 }
 
 func updateCategory(c *gin.Context) {
-	response := Response{} // todo sync.Pool
+	response := Response{}
 	response.Init(c)
 
 	admin := getAdmin(c)
 
 	// validate
-	ok := admin.IsMemberOf("root")
+	ok := admin.IsMemberOf(ROOTGROUP)
 	if !ok {
 		response.Errors = append(response.Errors, "You may not create categories")
 		response.Fail()
@@ -139,8 +138,6 @@ func updateCategory(c *gin.Context) {
 		panic(err)
 		return
 	}
-	// clean errors from client
-	response.CleanErrors()
 
 	if len(category.Name) == 0 {
 		response.Errors = append(response.Errors, "A name is required")
@@ -160,8 +157,7 @@ func updateCategory(c *gin.Context) {
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(CATEGORIES)
-	category_ := Category{}
-	err = collection.FindId(_id).One(&category_)
+	err = collection.FindId(_id).One(nil)
 	// we expect err == mgo.ErrNotFound for success
 	if err == nil {
 		response.Errors = append(response.Errors, "That category+pivot is already taken.")
@@ -174,9 +170,7 @@ func updateCategory(c *gin.Context) {
 	// patchCategory
 	category.ID = _id
 	err = collection.RemoveId(c.Param("id"))
-	//println(err.Error())
 	err = collection.Insert(category)
-	//println(err.Error())
 	if err != nil {
 		panic(err)
 		return
@@ -185,13 +179,21 @@ func updateCategory(c *gin.Context) {
 	response.Finish()
 }
 
-func CategoryRender(c *gin.Context) {
+func renderCategory(c *gin.Context) {
 
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(CATEGORIES)
 	category := Category{}
-	collection.Find(bson.M{"_id": c.Param("id")}).One(&category)
+	err := collection.FindId(c.Param("id")).One(&category)
+	if err != nil {
+		if err == mgo.ErrNotFound {
+			Status404Render(c)
+			return
+		}
+		panic(err)
+	}
+
 	json, _ := json.Marshal(category)
 
 	if XHR(c) {
@@ -207,11 +209,11 @@ func CategoryRender(c *gin.Context) {
 func deleteCategory(c *gin.Context) {
 	admin := getAdmin(c)
 
-	response := Response{} // todo sync.Pool
+	response := Response{}
 	response.Init(c)
 
 	// validate
-	ok := admin.IsMemberOf("root")
+	ok := admin.IsMemberOf(ROOTGROUP)
 	if !ok {
 		response.Errors = append(response.Errors, "You may not delete categories.")
 		response.Fail()
@@ -231,22 +233,3 @@ func deleteCategory(c *gin.Context) {
 
 	response.Finish()
 }
-
-// TODO add g greedy
-var r1, _ = regexp.Compile(`[^\w -]+`)
-var r2, _ = regexp.Compile(` +`)
-
-func slugify(str string) string {
-	str = strings.Trim(str, " ")
-	str = strings.ToLower(str)
-	str_ := []byte(str)
-	str_ = r1.ReplaceAll(str_, []byte(""))
-	return string(r2.ReplaceAll(str_, []byte("-")))
-}
-
-func slugifyName(str string) string {
-	str = strings.TrimSpace(str)
-	str_ := []byte(str)
-	return string(r2.ReplaceAll(str_, []byte(" ")))
-}
-
