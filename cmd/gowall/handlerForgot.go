@@ -128,8 +128,8 @@ func ResetPassword(c *gin.Context) {
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(USERS)
-	us := User{}
-	err = collection.Find(bson.M{"email": c.Param("email"), "resetPasswordExpires": bson.M{"$gt": time.Now()}}).One(&us)
+	user := User{}
+	err = collection.Find(bson.M{"email": c.Param("email"), "resetPasswordExpires": bson.M{"$gt": time.Now()}}).One(&user)
 
 	if err != nil {
 		println(err.Error())
@@ -137,17 +137,12 @@ func ResetPassword(c *gin.Context) {
 		return
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(us.ResetPasswordToken), []byte(c.Param("token")))
+	err = bcrypt.CompareHashAndPassword([]byte(user.ResetPasswordToken), []byte(c.Param("token")))
 
 	if err == nil {
-		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-		if err != nil {
-			response.Errors = append(response.Errors, err.Error())
-			response.Fail()
-			return
-		}
-		us.Password = string(hashedPassword)
-		collection.UpdateId(us.ID, us)
+
+		user.setPassword(password)
+		collection.UpdateId(user.ID, user)
 	}
 	response.Finish()
 }

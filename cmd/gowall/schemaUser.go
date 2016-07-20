@@ -6,6 +6,8 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"strings"
 	"time"
+	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/contrib/sessions"
 )
 
 type vendorOauth struct {
@@ -103,4 +105,10 @@ var UserUniqueIndex mgo.Index = mgo.Index{
 
 var UserIndex mgo.Index = mgo.Index{
 	Key: []string{"timeCreated", "twitter.id", "github.id", "facebook.id", "google.id", "search"},
+}
+
+func (user *User) login(c *gin.Context) {
+	sess := sessions.Default(c)
+	sess.Set("public", user.ID.Hex())
+	sess.Save()
 }

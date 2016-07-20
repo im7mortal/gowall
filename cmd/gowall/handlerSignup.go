@@ -2,9 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2/bson"
 	"net/http"
 	"strings"
@@ -73,17 +71,12 @@ func Signup(c *gin.Context) {
 	}
 
 	// createUser
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(response.Password), bcrypt.DefaultCost)
-	if err != nil {
-		panic(err)
-		return
-	}
+	user.setPassword(response.Password)
 
 	user.ID = bson.NewObjectId()
 	user.IsActive = "yes"
 	user.Username = response.Username
 	user.Email = strings.ToLower(response.Email)
-	user.Password = string(hashedPassword)
 	user.Search = []string{response.Username, response.Email}
 
 	err = collection.Insert(user)
@@ -145,10 +138,4 @@ func Signup(c *gin.Context) {
 	user.login(c)
 
 	response.Finish()
-}
-
-func (user *User) login(c *gin.Context) {
-	sess := sessions.Default(c)
-	sess.Set("public", user.ID.Hex())
-	sess.Save()
 }

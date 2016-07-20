@@ -5,7 +5,6 @@ import (
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/markbates/goth"
-	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"html/template"
@@ -148,14 +147,9 @@ func ChangePassword(c *gin.Context) {
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
-	if err != nil {
-		response.Errors = append(response.Errors, err.Error()) // TODO don't like that this error goes to client
-		response.Fail()
-		return
-	}
 
-	user.Password = string(hashedPassword)
+	user.setPassword(body.Password)
+
 	collection := db.C(USERS)
 	err = collection.UpdateId(user.ID, user)
 	if err != nil {
