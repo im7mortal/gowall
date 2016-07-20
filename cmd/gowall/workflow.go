@@ -20,9 +20,9 @@
 package main
 
 import (
+	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"encoding/json"
 )
 
 func handleXHR(c *gin.Context, data []byte) {
@@ -31,29 +31,29 @@ func handleXHR(c *gin.Context, data []byte) {
 }
 
 type Response struct {
-	Success bool `json:"success" bson:"-"`
-	Errors  []string `json:"errors" bson:"-"`
+	Success bool              `json:"success" bson:"-"`
+	Errors  []string          `json:"errors" bson:"-"`
 	ErrFor  map[string]string `json:"errfor" bson:"-"`
-	c  *gin.Context
-	Data map[string]interface{} `json:"data" bson:"-"`
+	c       *gin.Context
+	Data    map[string]interface{} `json:"data" bson:"-"`
 }
 
-func (r *Response)HasErrors() bool {
+func (r *Response) HasErrors() bool {
 	return len(r.ErrFor) != 0 || len(r.Errors) != 0
 }
 
-func (r *Response)Fail() {
+func (r *Response) Fail() {
 	r.Success = false
 	r.Response()
 }
 
-func (r *Response)Init(c *gin.Context) {
+func (r *Response) Init(c *gin.Context) {
 	r.c = c
 	r.Data = map[string]interface{}{}
 	r.ErrFor = map[string]string{}
 }
 
-func getResponseObj (c *gin.Context) (r *Response) {
+func getResponseObj(c *gin.Context) (r *Response) {
 	r = &Response{}
 	r.c = c
 	r.Data = map[string]interface{}{}
@@ -62,8 +62,6 @@ func getResponseObj (c *gin.Context) (r *Response) {
 }
 
 func (r *Response) Recover() {}
-
-
 
 func (r *Response) CleanErrors() {
 	r.Errors = []string{}

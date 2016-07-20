@@ -1,15 +1,15 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
-	"net/http"
-	"gopkg.in/mgo.v2/bson"
-	"github.com/gin-gonic/contrib/sessions"
 	"encoding/json"
-	"html/template"
+	"github.com/gin-gonic/contrib/sessions"
+	"github.com/gin-gonic/gin"
 	"github.com/markbates/goth"
-	"gopkg.in/mgo.v2"
 	"golang.org/x/crypto/bcrypt"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
+	"html/template"
+	"net/http"
 	"net/url"
 )
 
@@ -31,9 +31,9 @@ func AccountSettingsRender(c *gin.Context) {
 	}
 	if len(user.Username) != 0 {
 		User, _ := json.Marshal(gin.H{
-			"_id": user.ID.Hex(),
+			"_id":      user.ID.Hex(),
 			"username": user.Username,
-			"email": user.Email,
+			"email":    user.Email,
 		})
 		c.Set("User", template.JS(url.QueryEscape(string(User))))
 	}
@@ -47,32 +47,32 @@ func AccountSettingsRender(c *gin.Context) {
 		Account, _ := json.Marshal(gin.H{
 			"_id": ac.ID.Hex(),
 			"name": gin.H{
-				"first": ac.Name.First,
+				"first":  ac.Name.First,
 				"middle": ac.Name.Middle,
-				"last": ac.Name.Last,
+				"last":   ac.Name.Last,
 			},
 			"company": ac.Company,
-			"phone": ac.Phone,
-			"zip": ac.Zip,
+			"phone":   ac.Phone,
+			"zip":     ac.Zip,
 		})
 		c.Set("Account", template.JS(url.QueryEscape(string(Account))))
 	}
 	c.HTML(http.StatusOK, c.Request.URL.Path, c.Keys)
 }
 
-func SetSettings (c *gin.Context) {
+func SetSettings(c *gin.Context) {
 	account := getAccount(c)
 	response := Response{} // todo sync.Pool
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
 	response.Init(c)
 	var body struct {
-		First   string  `json:"first"`
-		Middle  string  `json:"middle"`
-		Last    string  `json:"last"`
-		Company string  `json:"company"`
-		Phone   string  `json:"phone"`
-		Zip     string  `json:"zip"`
+		First   string `json:"first"`
+		Middle  string `json:"middle"`
+		Last    string `json:"last"`
+		Company string `json:"company"`
+		Phone   string `json:"phone"`
+		Zip     string `json:"zip"`
 	}
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&body)
@@ -118,15 +118,15 @@ func SetSettings (c *gin.Context) {
 	response.Finish()
 }
 
-func ChangePassword (c *gin.Context) {
+func ChangePassword(c *gin.Context) {
 	user := getUser(c)
 	response := Response{} // todo sync.Pool
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
 	response.Init(c)
 	var body struct {
-		Confirm   string  `json:"confirm"`
-		Password string  `json:"newPassword"`
+		Confirm  string `json:"confirm"`
+		Password string `json:"newPassword"`
 	}
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&body)
@@ -148,7 +148,6 @@ func ChangePassword (c *gin.Context) {
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 
-
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
 	if err != nil {
 		response.Errors = append(response.Errors, err.Error()) // TODO don't like that this error goes to client
@@ -168,19 +167,18 @@ func ChangePassword (c *gin.Context) {
 	response.Finish()
 }
 
-func ChangeIdentity (c *gin.Context) {
+func ChangeIdentity(c *gin.Context) {
 	user := getUser(c)
 	response := Response{} // todo sync.Pool
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
 	response.Init(c)
 	var body struct {
-		Username    string  `json:"username"`
-		Email   string  `json:"email"`
+		Username string `json:"username"`
+		Email    string `json:"email"`
 	}
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&body)
-
 
 	validateUsername(&body.Username, &response)
 	validateEmail(&body.Email, &response)
@@ -216,14 +214,14 @@ func ChangeIdentity (c *gin.Context) {
 	response.Finish()
 }
 
-func providerSettings (c *gin.Context) {
+func providerSettings(c *gin.Context) {
 	session := sessions.Default(c)
 	session.Set("action", "/account/settings/")
 	session.Save()
 	startOAuth(c)
 }
 
-func settingsProvider (c *gin.Context, userGoth goth.User) {
+func settingsProvider(c *gin.Context, userGoth goth.User) {
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(USERS)
@@ -232,7 +230,7 @@ func settingsProvider (c *gin.Context, userGoth goth.User) {
 	// we expect err == mgo.ErrNotFound for success
 	if err == nil {
 		session := sessions.Default(c)
-		session.Set("oauthMessage", "Another user has already connected with that " + userGoth.Provider + " account")
+		session.Set("oauthMessage", "Another user has already connected with that "+userGoth.Provider+" account")
 		session.Save()
 		c.Redirect(http.StatusFound, "/account/settings/")
 		return
@@ -252,7 +250,7 @@ func settingsProvider (c *gin.Context, userGoth goth.User) {
 	c.Redirect(http.StatusFound, "/account/settings/")
 }
 
-func disconnectProvider (c *gin.Context) {
+func disconnectProvider(c *gin.Context) {
 	user := getUser(c)
 	user.disconnectProviderDB(c.Param("provider"))
 	db := getMongoDBInstance()

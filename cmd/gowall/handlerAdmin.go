@@ -1,15 +1,15 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
-	"net/http"
-	"gopkg.in/mgo.v2/bson"
-	"github.com/gin-gonic/contrib/sessions"
-	"encoding/json"
-	"net/url"
 	"crypto/rand"
 	"encoding/hex"
+	"encoding/json"
+	"github.com/gin-gonic/contrib/sessions"
+	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
+	"gopkg.in/mgo.v2/bson"
+	"net/http"
+	"net/url"
 )
 
 func generateToken1(n int) []byte {
@@ -19,7 +19,7 @@ func generateToken1(n int) []byte {
 		println(err.Error())
 		return b
 	}
-	token := make([]byte, n * 2)
+	token := make([]byte, n*2)
 	hex.Encode(token, b)
 	return token
 }
@@ -44,12 +44,12 @@ func renderAdministrator(c *gin.Context) {
 	go getCount(db.C(CATEGORIES), CountCategoryChan, bson.M{})
 	go getCount(db.C(STATUSES), CountStatusChan, bson.M{})
 
-	c.Set("CountAccount", <- CountAccountChan)
-	c.Set("CountUser", <- CountUserChan)
-	c.Set("CountAdmin", <- CountAdminChan)
-	c.Set("CountAdminGroup", <- CountAdminGroupChan)
-	c.Set("CountCategory", <- CountCategoryChan)
-	c.Set("CountStatus", <- CountStatusChan)
+	c.Set("CountAccount", <-CountAccountChan)
+	c.Set("CountUser", <-CountUserChan)
+	c.Set("CountAdmin", <-CountAdminChan)
+	c.Set("CountAdminGroup", <-CountAdminGroupChan)
+	c.Set("CountCategory", <-CountCategoryChan)
+	c.Set("CountStatus", <-CountStatusChan)
 
 	c.HTML(http.StatusOK, c.Request.URL.Path, c.Keys)
 }
@@ -75,8 +75,8 @@ func AccountVerificationRender1(c *gin.Context) {
 		defer db.Session.Close()
 		collection := db.C(ACCOUNTS)
 		account.VerificationToken = string(hash)
-		collection.UpdateId(account.ID, account)// todo how to update only part?
-		verifyURL := "http" +"://"+ c.Request.Host +"/account/verification/" + string(VerifyURL) + "/"
+		collection.UpdateId(account.ID, account) // todo how to update only part?
+		verifyURL := "http" + "://" + c.Request.Host + "/account/verification/" + string(VerifyURL) + "/"
 		c.Set("VerifyURL", verifyURL)
 
 		mailConf := MailConfig{}
@@ -91,14 +91,12 @@ func AccountVerificationRender1(c *gin.Context) {
 			//todo it's not serious
 		}
 
-
-
 	}
 
 	c.HTML(http.StatusOK, c.Request.URL.Path, c.Keys)
 }
 
-func Verify1 (c *gin.Context) {
+func Verify1(c *gin.Context) {
 
 	account := getAccount(c)
 	user := getUser(c)
@@ -114,7 +112,7 @@ func Verify1 (c *gin.Context) {
 	c.Redirect(http.StatusFound, user.defaultReturnUrl())
 }
 
-func ResendVerification1 (c *gin.Context) {
+func ResendVerification1(c *gin.Context) {
 	account := getAccount(c)
 	user := getUser(c)
 	if account.IsVerified == "yes" {
@@ -127,9 +125,9 @@ func ResendVerification1 (c *gin.Context) {
 	response.Init(c)
 
 	var body struct {
-		Username    string  `json:"username"`
-		Email   string  `json:"email"`
-		Password string  `json:"password"`
+		Username string `json:"username"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
 	}
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&body)
@@ -164,8 +162,8 @@ func ResendVerification1 (c *gin.Context) {
 		return
 	}
 	account.VerificationToken = string(hash)
-	collection.UpdateId(account.ID, account)// todo how to update only part?
-	verifyURL := "http" +"://"+ c.Request.Host +"/account/verification/" + string(VerifyURL) + "/"
+	collection.UpdateId(account.ID, account) // todo how to update only part?
+	verifyURL := "http" + "://" + c.Request.Host + "/account/verification/" + string(VerifyURL) + "/"
 	c.Set("VerifyURL", verifyURL)
 	mailConf := MailConfig{}
 	mailConf.Data = c.Keys
@@ -196,8 +194,8 @@ func AccountSettingsRender1(c *gin.Context) {
 	}
 	if len(us.Username) != 0 {
 		User, _ := json.Marshal(gin.H{
-			"_id": us.ID.Hex(),
-			"user": us.Username,
+			"_id":   us.ID.Hex(),
+			"user":  us.Username,
 			"email": us.Email,
 		})
 		c.Set("User", url.QueryEscape(string(User)))
@@ -212,13 +210,13 @@ func AccountSettingsRender1(c *gin.Context) {
 		Account, _ := json.Marshal(gin.H{
 			"_id": ac.ID.Hex(),
 			"name": gin.H{
-				"first": ac.Name.First,
+				"first":  ac.Name.First,
 				"middle": ac.Name.Middle,
-				"last": ac.Name.Last,
+				"last":   ac.Name.Last,
 			},
 			"company": ac.Company,
-			"phone": ac.Phone,
-			"zip": ac.Zip,
+			"phone":   ac.Phone,
+			"zip":     ac.Zip,
 		})
 		c.Set("Account", url.QueryEscape(string(Account)))
 	}

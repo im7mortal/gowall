@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
-	"net/http"
-	"gopkg.in/mgo.v2/bson"
 	"encoding/json"
+	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
+	"gopkg.in/mgo.v2/bson"
+	"net/http"
 	"strings"
 	"time"
 )
@@ -20,15 +20,14 @@ func ForgotRender(c *gin.Context) {
 	}
 }
 
-
 func SendReset(c *gin.Context) {
 	response := Response{}
 	response.Init(c)
 
 	var body struct {
-		Username    string  `json:"username"`
-		Email   string  `json:"email"`
-		Password string  `json:"password"`
+		Username string `json:"username"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
 	}
 	err := json.NewDecoder(c.Request.Body).Decode(&body)
 	if err != nil {
@@ -40,7 +39,6 @@ func SendReset(c *gin.Context) {
 		response.Fail()
 		return
 	}
-
 
 	token := generateToken(21)
 	hash, err := bcrypt.GenerateFromPassword(token, bcrypt.DefaultCost)
@@ -69,10 +67,9 @@ func SendReset(c *gin.Context) {
 	us.ResetPasswordExpires = time.Now().Add(24 * time.Hour)
 	collection.UpdateId(us.ID, us)
 
-	resetURL := "http" +"://"+ c.Request.Host +"/login/reset/" + body.Email + "/" + string(token) + "/"
+	resetURL := "http" + "://" + c.Request.Host + "/login/reset/" + body.Email + "/" + string(token) + "/"
 	c.Set("ResetURL", resetURL)
 	c.Set("Username", us.Username)
-
 
 	mailConf := MailConfig{}
 	mailConf.Data = c.Keys
@@ -88,11 +85,6 @@ func SendReset(c *gin.Context) {
 	response.Finish()
 }
 
-
-
-
-
-
 func ResetRender(c *gin.Context) {
 	isAuthenticated, _ := c.Get("isAuthenticated")
 	if is, ok := isAuthenticated.(bool); ok && is {
@@ -103,21 +95,19 @@ func ResetRender(c *gin.Context) {
 	}
 }
 
-func ResetPassword (c *gin.Context) {
+func ResetPassword(c *gin.Context) {
 
 	var body struct {
-		Confirm   string  `json:"confirm"`
-		Password string  `json:"password"`
+		Confirm  string `json:"confirm"`
+		Password string `json:"password"`
 	}
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&body)
-
 
 	response := Response{} // todo sync.Pool
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
 	response.Init(c)
-
 
 	password := strings.ToLower(body.Password)
 	if len(password) == 0 {
@@ -128,7 +118,7 @@ func ResetPassword (c *gin.Context) {
 		response.ErrFor["confirm"] = "required"
 	}
 	if confirm != password {
-		response.Errors = append(response.Errors,"Passwords do not match.")
+		response.Errors = append(response.Errors, "Passwords do not match.")
 	}
 	if response.HasErrors() {
 		response.Fail()

@@ -1,12 +1,12 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
-	"net/http"
-	"gopkg.in/mgo.v2/bson"
 	"github.com/gin-gonic/contrib/sessions"
-	"gopkg.in/mgo.v2"
+	"github.com/gin-gonic/gin"
 	"github.com/markbates/goth"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
+	"net/http"
 )
 
 func LoginProvider(c *gin.Context) {
@@ -26,7 +26,7 @@ func loginProvider(c *gin.Context, userGoth goth.User) {
 	if err != nil {
 		if err == mgo.ErrNotFound {
 			session := sessions.Default(c)
-			session.Set("oauthMessage", "No users found linked to your " + userGoth.Provider + " account. You may need to create an account first.")
+			session.Set("oauthMessage", "No users found linked to your "+userGoth.Provider+" account. You may need to create an account first.")
 			session.Save()
 			c.Redirect(http.StatusFound, "/login/")
 			return

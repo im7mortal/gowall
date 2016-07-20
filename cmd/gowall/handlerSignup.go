@@ -1,13 +1,13 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
-	"net/http"
-	"gopkg.in/mgo.v2/bson"
-	"strings"
 	"encoding/json"
-	"golang.org/x/crypto/bcrypt"
 	"github.com/gin-gonic/contrib/sessions"
+	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
+	"gopkg.in/mgo.v2/bson"
+	"net/http"
+	"strings"
 )
 
 func signupRender(c *gin.Context) {
@@ -111,7 +111,7 @@ func Signup(c *gin.Context) {
 		account.IsVerified = "yes"
 	}
 	account.Name.Full = response.Username
-	account.User.ID  = user.ID
+	account.User.ID = user.ID
 	account.User.Name = user.Username
 	account.Search = []string{response.Username}
 
@@ -126,7 +126,7 @@ func Signup(c *gin.Context) {
 	go func() {
 		c.Set("Username", response.Username)
 		c.Set("Email", response.Email)
-		c.Set("LoginURL", "http://" + c.Request.Host + "/login/")
+		c.Set("LoginURL", "http://"+c.Request.Host+"/login/")
 
 		mailConf := MailConfig{}
 		mailConf.Data = c.Keys
@@ -147,7 +147,7 @@ func Signup(c *gin.Context) {
 	response.Finish()
 }
 
-func (user *User)login(c *gin.Context) {
+func (user *User) login(c *gin.Context) {
 	sess := sessions.Default(c)
 	sess.Set("public", user.ID.Hex())
 	sess.Save()

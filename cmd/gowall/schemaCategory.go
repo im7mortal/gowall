@@ -9,6 +9,6 @@ type Category struct {
 }
 
 var CategoryIndex mgo.Index = mgo.Index{
-	Key:        []string{"name", "pivot"},
-	Unique:     true,
+	Key:    []string{"name", "pivot"},
+	Unique: true,
 }

@@ -44,13 +44,12 @@ func initTemplates(router *gin.Engine) (r multitemplate.Render) {
 	return
 }
 
-
 type tmpl struct {
 	rootTmpl string
-	r multitemplate.Render
+	r        multitemplate.Render
 }
 
-func (t *tmpl) addFromFiles (name string, files ...string) {
+func (t *tmpl) addFromFiles(name string, files ...string) {
 	files = append([]string{t.rootTmpl}, files...)
 	t.r.AddFromFiles(name, files...)
 }

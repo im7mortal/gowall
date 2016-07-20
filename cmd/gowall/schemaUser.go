@@ -1,11 +1,11 @@
 package main
 
 import (
+	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
-	"time"
 	"gopkg.in/mgo.v2/bson"
 	"strings"
-	"golang.org/x/crypto/bcrypt"
+	"time"
 )
 
 type vendorOauth struct {
@@ -13,34 +13,34 @@ type vendorOauth struct {
 }
 
 type User struct {
-	ID                   bson.ObjectId `bson:"_id"`
-	Username             string `bson:"username"`
-	Password             string `bson:"password"`
-	Email                string `bson:"email"`
-	Roles                struct {
-							 Admin   bson.ObjectId `bson:"admin,omitempty"`
-							 Account bson.ObjectId `bson:"account,omitempty"`
-						 } `bson:"roles"`
+	ID       bson.ObjectId `bson:"_id"`
+	Username string        `bson:"username"`
+	Password string        `bson:"password"`
+	Email    string        `bson:"email"`
+	Roles    struct {
+		Admin   bson.ObjectId `bson:"admin,omitempty"`
+		Account bson.ObjectId `bson:"account,omitempty"`
+	} `bson:"roles"`
 
-	IsActive             string `bson:"isActive,omitempty"`
+	IsActive             string    `bson:"isActive,omitempty"`
 	TimeCreated          time.Time `bson:"timeCreated"`
-	ResetPasswordToken   string `bson:"resetPasswordToken,omitempty"`
+	ResetPasswordToken   string    `bson:"resetPasswordToken,omitempty"`
 	ResetPasswordExpires time.Time `bson:"resetPasswordExpires,omitempty"`
 
-	Twitter              vendorOauth `bson:"twitter"`
-	Github               vendorOauth `bson:"github"`
-	Facebook             vendorOauth `bson:"facebook"`
-	Google               vendorOauth `bson:"google"`
-	Tumblr               vendorOauth `bson:"tumblr"`
-	Search               []string `bson:"search"`
+	Twitter  vendorOauth `bson:"twitter"`
+	Github   vendorOauth `bson:"github"`
+	Facebook vendorOauth `bson:"facebook"`
+	Google   vendorOauth `bson:"google"`
+	Tumblr   vendorOauth `bson:"tumblr"`
+	Search   []string    `bson:"search"`
 }
 
 func (user *User) canPlayRoleOf(role string) bool {
 	if role == "admin" && len(user.Roles.Account.String()) > 0 {
-		return true;
+		return true
 	}
 	if role == "account" && len(user.Roles.Account.String()) > 0 {
-		return true;
+		return true
 	}
 	return false
 }
@@ -97,10 +97,10 @@ func validatePassword(password *string, r *Response) {
 }
 
 var UserUniqueIndex mgo.Index = mgo.Index{
-	Key:        []string{"username", "email"},
-	Unique:     true,
+	Key:    []string{"username", "email"},
+	Unique: true,
 }
 
 var UserIndex mgo.Index = mgo.Index{
-	Key:        []string{"timeCreated", "twitter.id", "github.id", "facebook.id", "google.id", "search"},
+	Key: []string{"timeCreated", "twitter.id", "github.id", "facebook.id", "google.id", "search"},
 }

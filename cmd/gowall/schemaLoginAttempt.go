@@ -1,8 +1,8 @@
 package main
 
 import (
-	"gopkg.in/mgo.v2/bson"
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 	"time"
 )
 
@@ -18,13 +18,13 @@ var LoginAttemptsExpireAfter time.Duration
 
 type LoginAttempt struct {
 	ID   bson.ObjectId `bson:"_id,omitempty"`
-	IP   string `bson:"ip"`
-	User string `bson:"user"`
-	Time time.Time `bson:"time"`
+	IP   string        `bson:"ip"`
+	User string        `bson:"user"`
+	Time time.Time     `bson:"time"`
 }
 
 var LoginAttemptsIndex mgo.Index = mgo.Index{
-	Key:        []string{"username", "email"},
-	Unique:     true,
+	Key:         []string{"username", "email"},
+	Unique:      true,
 	ExpireAfter: LoginAttemptsExpireAfter,
 }

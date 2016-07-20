@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-const VERSION  = "0.1"
+const VERSION = "0.1"
 
 var store sessions.CookieStore
 
@@ -20,11 +20,11 @@ var Router *gin.Engine
 
 var year int
 
-func init () {
+func init() {
 	InitConfig()
 	store = sessions.NewCookieStore([]byte("MFDQmJQ4TF"))
 	store.Options(sessions.Options{
-		Path: "/",
+		Path:   "/",
 		MaxAge: 60 * 60 * 6,
 		//Secure: !CONF.DEVELOP,  // TODO https sudo run hack for test without https on local machine
 		HttpOnly: true,
@@ -51,11 +51,11 @@ func main() {
 
 	//refresh year every minute
 	go func() {
-		for ;; {
+		for {
 			year, _, _ = time.Now().Date()
 			time.Sleep(time.Minute)
 		}
-	} ()
+	}()
 
 	Router.Use(func(c *gin.Context) {
 
@@ -81,13 +81,13 @@ func main() {
 	// put path to cert instead of CONF.TLS.CERT
 	// put path to key instead of CONF.TLS.KEY
 	/*
-	go func() {
-			http.ListenAndServe(":80", http.HandlerFunc(redirectToHTTPS))
-		}()
-		errorHTTPS := router.RunTLS(":443", CONF.TLS.CERT, CONF.TLS.KEY)
-		if errorHTTPS != nil {
-			log.Fatal("HTTPS doesn't work:", errorHTTPS.Error())
-		}
+		go func() {
+				http.ListenAndServe(":80", http.HandlerFunc(redirectToHTTPS))
+			}()
+			errorHTTPS := router.RunTLS(":443", CONF.TLS.CERT, CONF.TLS.KEY)
+			if errorHTTPS != nil {
+				log.Fatal("HTTPS doesn't work:", errorHTTPS.Error())
+			}
 	*/
 }
 

@@ -1,13 +1,13 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
-	"net/http"
-	"gopkg.in/mgo.v2/bson"
-	"encoding/json"
 	"crypto/rand"
 	"encoding/hex"
+	"encoding/json"
+	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
+	"gopkg.in/mgo.v2/bson"
+	"net/http"
 )
 
 func generateToken(n int) []byte {
@@ -17,7 +17,7 @@ func generateToken(n int) []byte {
 		println(err.Error())
 		return b
 	}
-	token := make([]byte, n * 2)
+	token := make([]byte, n*2)
 	hex.Encode(token, b)
 	return token
 }
@@ -47,8 +47,8 @@ func AccountVerificationRender(c *gin.Context) {
 		defer db.Session.Close()
 		collection := db.C(ACCOUNTS)
 		account.VerificationToken = string(hash)
-		collection.UpdateId(account.ID, account)// todo how to update only part?
-		verifyURL := "http" +"://"+ c.Request.Host +"/account/verification/" + string(VerifyURL) + "/"
+		collection.UpdateId(account.ID, account) // todo how to update only part?
+		verifyURL := "http" + "://" + c.Request.Host + "/account/verification/" + string(VerifyURL) + "/"
 		c.Set("VerifyURL", verifyURL)
 
 		mailConf := MailConfig{}
@@ -63,14 +63,12 @@ func AccountVerificationRender(c *gin.Context) {
 			//todo it's not serious
 		}
 
-
-
 	}
 
 	c.HTML(http.StatusOK, c.Request.URL.Path, c.Keys)
 }
 
-func Verify (c *gin.Context) {
+func Verify(c *gin.Context) {
 
 	account := getAccount(c)
 	user := getUser(c)
@@ -86,7 +84,7 @@ func Verify (c *gin.Context) {
 	c.Redirect(http.StatusFound, user.defaultReturnUrl())
 }
 
-func ResendVerification (c *gin.Context) {
+func ResendVerification(c *gin.Context) {
 	account := getAccount(c)
 	user := getUser(c)
 	if account.IsVerified == "yes" {
@@ -99,9 +97,9 @@ func ResendVerification (c *gin.Context) {
 	response.Init(c)
 
 	var body struct {
-		Username    string  `json:"username"`
-		Email   string  `json:"email"`
-		Password string  `json:"password"`
+		Username string `json:"username"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
 	}
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&body)
@@ -136,8 +134,8 @@ func ResendVerification (c *gin.Context) {
 		return
 	}
 	account.VerificationToken = string(hash)
-	collection.UpdateId(account.ID, account)// todo how to update only part?
-	verifyURL := "http" +"://"+ c.Request.Host +"/account/verification/" + string(VerifyURL) + "/"
+	collection.UpdateId(account.ID, account) // todo how to update only part?
+	verifyURL := "http" + "://" + c.Request.Host + "/account/verification/" + string(VerifyURL) + "/"
 	c.Set("VerifyURL", verifyURL)
 	mailConf := MailConfig{}
 	mailConf.Data = c.Keys

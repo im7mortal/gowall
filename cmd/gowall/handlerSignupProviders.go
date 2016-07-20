@@ -1,15 +1,15 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
-	"net/http"
-	"gopkg.in/mgo.v2/bson"
-	"strings"
 	"encoding/json"
 	"github.com/gin-gonic/contrib/sessions"
+	"github.com/gin-gonic/gin"
 	"github.com/markbates/goth"
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 	"html/template"
+	"net/http"
+	"strings"
 )
 
 func SignUpProvider(c *gin.Context) {
@@ -28,7 +28,7 @@ func signupProvider(c *gin.Context, userGoth goth.User) {
 	// we expect err == mgo.ErrNotFound for success
 	if err == nil {
 		session := sessions.Default(c)
-		session.Set("oauthMessage", "We found a user linked to your " + userGoth.Provider + " account")
+		session.Set("oauthMessage", "We found a user linked to your "+userGoth.Provider+" account")
 		session.Save()
 		c.Redirect(http.StatusFound, "/signup/")
 		return
@@ -163,7 +163,7 @@ func SignUpSocial(c *gin.Context) {
 	go func() {
 		c.Set("Username", response.Username)
 		c.Set("Email", response.Email)
-		c.Set("LoginURL", "http://" + c.Request.Host + "/login/")
+		c.Set("LoginURL", "http://"+c.Request.Host+"/login/")
 
 		mailConf := MailConfig{}
 		mailConf.Data = c.Keys

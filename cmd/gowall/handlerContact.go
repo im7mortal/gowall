@@ -1,9 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"encoding/json"
 )
 
 func contactRender(c *gin.Context) {
@@ -13,9 +13,9 @@ func contactRender(c *gin.Context) {
 func contactSend(c *gin.Context) {
 	response := getResponseObj(c)
 	var body struct {
-		Name    string  `json:"name"`
-		Email   string  `json:"email"`
-		Message string  `json:"message"`
+		Name    string `json:"name"`
+		Email   string `json:"email"`
+		Message string `json:"message"`
 	}
 	err := json.NewDecoder(c.Request.Body).Decode(&body)
 	if err != nil {
@@ -59,5 +59,3 @@ func contactSend(c *gin.Context) {
 
 	response.Finish()
 }
-
-

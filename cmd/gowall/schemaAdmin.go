@@ -1,32 +1,32 @@
 package main
 
 import (
-	"gopkg.in/mgo.v2"
-	"time"
-	"gopkg.in/mgo.v2/bson"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
+	"time"
 )
 
 type Admin struct {
-	ID bson.ObjectId `bson:"_id,omitempty" json:"_id"`
-	User struct{
-		   ID bson.ObjectId `bson:"id,omitempty" json:"id"`
-		   Name string `bson:"name" json:"name"`
-	   } `bson:"user" json:"user"`
+	ID   bson.ObjectId `bson:"_id,omitempty" json:"_id"`
+	User struct {
+		ID   bson.ObjectId `bson:"id,omitempty" json:"id"`
+		Name string        `bson:"name" json:"name"`
+	} `bson:"user" json:"user"`
 	Name struct {
-		   First string  `bson:"first" json:"first"`
-		   Middle string `bson:"middle" json:"middle"`
-		   Last string `bson:"last" json:"last"`
-		   Full string `bson:"full" json:"full"`
-	   } `bson:"name" json:"name"`
-	Groups []string `bson:"groups" json:"groups"`
+		First  string `bson:"first" json:"first"`
+		Middle string `bson:"middle" json:"middle"`
+		Last   string `bson:"last" json:"last"`
+		Full   string `bson:"full" json:"full"`
+	} `bson:"name" json:"name"`
+	Groups      []string     `bson:"groups" json:"groups"`
 	Permissions []Permission `bson:"permissions" json:"permissions"`
-	TimeCreated time.Time `bson:"timeCreated" json:"timeCreated"`
-	Search []string `bson:"search" json:"search"`
+	TimeCreated time.Time    `bson:"timeCreated" json:"timeCreated"`
+	Search      []string     `bson:"search" json:"search"`
 }
 
-func (u *Admin) Flow()  {
+func (u *Admin) Flow() {
 
 }
 
@@ -42,21 +42,21 @@ func (admin *Admin) HasPermissionTo(requiredPermission string) (hasPermission bo
 	hasPermission = false
 	//check group permissions
 	/*
-	for _, adminGroup := range admin.Groups{
-		for _, permission := range adminGroup.Permissions{
-			if permission.Name == requiredPermission {
-				hasPermission = true
+		for _, adminGroup := range admin.Groups{
+			for _, permission := range adminGroup.Permissions{
+				if permission.Name == requiredPermission {
+					hasPermission = true
+					break
+				}
+			}
+			if hasPermission {
 				break
 			}
 		}
-		if hasPermission {
-			break
-		}
-	}
 	*/
 
 	//check admin permissions
-	for _, permission := range admin.Permissions{
+	for _, permission := range admin.Permissions {
 		if permission.Name == requiredPermission {
 			if permission.Permit {
 				return true
@@ -68,7 +68,7 @@ func (admin *Admin) HasPermissionTo(requiredPermission string) (hasPermission bo
 }
 
 func (admin *Admin) IsMemberOf(groupName string) bool {
-	for _, group := range admin.Groups{
+	for _, group := range admin.Groups {
 		if group == groupName {
 			return true
 		}
@@ -77,7 +77,7 @@ func (admin *Admin) IsMemberOf(groupName string) bool {
 }
 
 var AdminsIndex mgo.Index = mgo.Index{
-	Key:        []string{"user.id", "search"},
+	Key: []string{"user.id", "search"},
 }
 
 func (admin *Admin) linkUser(db *mgo.Database, user User) (err error) {
@@ -99,7 +99,7 @@ func (admin *Admin) linkUser(db *mgo.Database, user User) (err error) {
 	collection = db.C(ADMINS)
 	err = collection.UpdateId(admin.ID, bson.M{
 		"$set": bson.M{"user": bson.M{
-			"id": user.ID,
+			"id":   user.ID,
 			"name": user.Username,
 		}},
 	})
@@ -112,7 +112,6 @@ func (admin *Admin) linkUser(db *mgo.Database, user User) (err error) {
 	}
 	return
 }
-
 
 func (admin *Admin) unlinkUser(db *mgo.Database, user User) (err error) {
 

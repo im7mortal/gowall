@@ -1,12 +1,12 @@
 package main
 
 import (
-	"net/url"
-	"strings"
-	"regexp"
 	"github.com/gin-gonic/gin"
 	"gopkg.in/mgo.v2"
+	"net/url"
+	"regexp"
 	"strconv"
+	"strings"
 )
 
 func getEscapedString(str string) string {
@@ -23,10 +23,10 @@ var rVerificationURL, _ = regexp.Compile(`^[a-zA-Z0-9\-\_\.\+]+@[a-zA-Z0-9\-\_\.
 var signupProviderReg, _ = regexp.Compile(`/[^a-zA-Z0-9\-\_]/g`)
 
 /**
-	preparing id
- */
+preparing id
+*/
 
-func slugify (str string) string {
+func slugify(str string) string {
 	str = strings.ToLower(str)
 	str = rSlugify1.ReplaceAllString(str, "")
 	str = rSlugify2.ReplaceAllString(str, "-")
@@ -38,7 +38,7 @@ func slugifyName(str string) string {
 	return rSlugify2.ReplaceAllString(str, " ")
 }
 
-func getData (c *gin.Context, query *mgo.Query, results interface{}) (data gin.H) {
+func getData(c *gin.Context, query *mgo.Query, results interface{}) (data gin.H) {
 	limitS := c.DefaultQuery("limit", "20")
 	limit_, _ := strconv.ParseInt(limitS, 0, 0)
 	limit := int(limit_)
@@ -58,11 +58,11 @@ func getData (c *gin.Context, query *mgo.Query, results interface{}) (data gin.H
 	count_ := page * limit
 	pages := gin.H{
 		"current": page,
-		"prev": page - 1,
-		"hasPrev": page - 1 != 0,
-		"next": page + 1,
-		"hasNext": float64(count) / float64(count_) > 1,
-		"total": count,
+		"prev":    page - 1,
+		"hasPrev": page-1 != 0,
+		"next":    page + 1,
+		"hasNext": float64(count)/float64(count_) > 1,
+		"total":   count,
 	}
 
 	end := count_
@@ -72,24 +72,22 @@ func getData (c *gin.Context, query *mgo.Query, results interface{}) (data gin.H
 
 	items := gin.H{
 		"begin": (page - 1) * limit,
-		"end": end,
+		"end":   end,
 		"total": count,
 	}
 
 	filters := gin.H{
 		"limit": limit,
-		"page": page,
-		"sort": sort,
+		"page":  page,
+		"sort":  sort,
 	}
 	return gin.H{
-		"data": results,
-		"pages": pages,
-		"items": items,
+		"data":    results,
+		"pages":   pages,
+		"items":   items,
 		"filters": filters,
 	}
 }
-
-
 
 func XHR(c *gin.Context) bool {
 	return strings.ToLower(c.Request.Header.Get("X-Requested-With")) == "xmlhttprequest"

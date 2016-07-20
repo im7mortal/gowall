@@ -3,9 +3,9 @@ package main
 import (
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"net/http"
-	"gopkg.in/mgo.v2/bson"
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
+	"net/http"
 )
 
 func EnsureAuthenticated(c *gin.Context) {
@@ -67,7 +67,6 @@ func EnsureAccount(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/")
 }
 
-
 func getAdmin(c *gin.Context) (admin *Admin) {
 	if _admin, ok := c.Get("Admin"); ok {
 		admin, ok = _admin.(*Admin)
@@ -110,7 +109,7 @@ func IsAuthenticated(c *gin.Context) {
 		err := collection.Find(bson.M{"_id": bson.ObjectIdHex(public_)}).One(&us)
 		if err != nil {
 			if err != mgo.ErrNotFound {
-			panic(err)
+				panic(err)
 			}
 			println(err.Error())
 		}

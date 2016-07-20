@@ -1,12 +1,12 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
-	"net/http"
 	"encoding/json"
+	"github.com/gin-gonic/gin"
+	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"html/template"
-	"gopkg.in/mgo.v2"
+	"net/http"
 	"net/url"
 )
 
@@ -34,16 +34,16 @@ func renderUsers(c *gin.Context) {
 	roles, ok := c.GetQuery("roles")
 	if ok && len(roles) != 0 {
 		// roles.admin or roles.account
-		query["roles." + roles] = bson.M{
+		query["roles."+roles] = bson.M{
 			"$exists": true,
 		}
 	}
 
 	type _user struct {
-		ID bson.ObjectId `bson:"_id" json:"_id"`
-		Username string `bson:"username" json:"username"`
-		IsActive string `bson:"isActive" json:"isActive"`
-		Email string `bson:"email" json:"email"`
+		ID       bson.ObjectId `bson:"_id" json:"_id"`
+		Username string        `bson:"username" json:"username"`
+		IsActive string        `bson:"isActive" json:"isActive"`
+		Email    string        `bson:"email" json:"email"`
 	}
 
 	var results []_user
@@ -129,9 +129,9 @@ func readUser(c *gin.Context) {
 	user := User{}
 	collection.FindId(bson.ObjectIdHex(c.Param("id"))).One(&user)
 	json, err := json.Marshal(gin.H{
-		"_id": user.ID.Hex(),
+		"_id":      user.ID.Hex(),
 		"username": user.Username,
-		"email": user.Email,
+		"email":    user.Email,
 		"isActive": user.IsActive,
 	})
 	if err != nil {
@@ -152,9 +152,9 @@ func changeDataUser(c *gin.Context) {
 	response := Response{}
 
 	var body struct {
-		Username    string  `json:"username"`
-		Email   string  `json:"email"`
-		IsActive   string  `json:"isActive"`
+		Username string `json:"username"`
+		Email    string `json:"email"`
+		IsActive string `json:"isActive"`
 	}
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&body)
@@ -179,7 +179,6 @@ func changeDataUser(c *gin.Context) {
 		response.Fail()
 		return
 	}
-
 
 	if len(user.IsActive) == 0 {
 		user.IsActive = "no"
@@ -224,12 +223,10 @@ func changePasswordUser(c *gin.Context) {
 	response := Response{}
 	response.Init(c)
 
-
 	var body struct {
-		Confirm   string  `json:"confirm"`
-		Password string  `json:"newPassword"`
+		Confirm  string `json:"confirm"`
+		Password string `json:"newPassword"`
 	}
-
 
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&body)

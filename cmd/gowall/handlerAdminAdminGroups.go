@@ -1,12 +1,12 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
-	"net/http"
 	"encoding/json"
+	"github.com/gin-gonic/gin"
+	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"html/template"
-	"gopkg.in/mgo.v2"
+	"net/http"
 )
 
 type responseAdminGroup struct {
@@ -168,8 +168,8 @@ func updateAdminGroup(c *gin.Context) {
 	// _id is slugified name so first delete second insert // todo http://stackoverflow.com/questions/24166615/update-an-item-in-an-array-that-is-in-an-array
 	err = collection.RemoveId(c.Param("id"))
 	if err != nil {
-		panic(err)	// todo: bug: it updateAdminGroup doesn't update id in url. and if user will update AdminGroup 2 time
-					// todo: it will not find AdminGroup in second time
+		panic(err) // todo: bug: it updateAdminGroup doesn't update id in url. and if user will update AdminGroup 2 time
+		// todo: it will not find AdminGroup in second time
 	}
 	err = collection.Insert(response.AdminGroup)
 	if err != nil {

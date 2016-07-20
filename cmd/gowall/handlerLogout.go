@@ -1,9 +1,9 @@
 package main
 
 import (
+	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"github.com/gin-gonic/contrib/sessions"
 )
 
 func Logout(c *gin.Context) {

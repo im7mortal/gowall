@@ -5,12 +5,12 @@ import (
 )
 
 type Status struct {
-	ID string `bson:"_id" json:"_id"`
-	Name string `bson:"name" json:"name"`
+	ID    string `bson:"_id" json:"_id"`
+	Name  string `bson:"name" json:"name"`
 	Pivot string `bson:"pivot" json:"pivot"`
 }
 
 var StatusesIndex mgo.Index = mgo.Index{
-	Key:        []string{"name", "pivot"},
-	Unique:     true,
+	Key:    []string{"name", "pivot"},
+	Unique: true,
 }

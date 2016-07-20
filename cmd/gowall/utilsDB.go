@@ -19,8 +19,8 @@ func getMongoDBInstance() *mgo.Database {
 // it will work on MongoLab where dbName is part of url
 func getDBName(url *string) string {
 	arr := strings.Split(*url, ":")
-	arr = strings.Split(arr[len(arr) - 1], "/")
-	return arr[len(arr) - 1]
+	arr = strings.Split(arr[len(arr)-1], "/")
+	return arr[len(arr)-1]
 }
 
 // count of documents in collection

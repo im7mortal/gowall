@@ -1,14 +1,14 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
-	"net/http"
 	"encoding/json"
-	"strings"
-	"gopkg.in/mgo.v2/bson"
-	"golang.org/x/crypto/bcrypt"
 	"github.com/gin-gonic/contrib/sessions"
+	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
+	"net/http"
+	"strings"
 )
 
 func LoginRender(c *gin.Context) {
@@ -70,11 +70,11 @@ func Login(c *gin.Context) {
 		"ip": clientIP,
 	})
 	go getCount(collection, IpUserCountChan, bson.M{
-		"ip": clientIP,
+		"ip":   clientIP,
 		"user": response.Username,
 	})
-	IpCount := <- IpCountChan
-	IpUserCount := <- IpUserCountChan
+	IpCount := <-IpCountChan
+	IpUserCount := <-IpUserCountChan
 	if IpCount > config.LoginAttempts.ForIp || IpUserCount > config.LoginAttempts.ForIpAndUser {
 		response.Errors = append(response.Errors, "You've reached the maximum number of login attempts. Please try again later.")
 		response.Fail()

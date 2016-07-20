@@ -2,13 +2,13 @@ package main
 
 // create collections if not exist and ensure indexes
 
-const USERS  = "users"
-const LOGINATTEMPTS  = "loginattempts"
-const ACCOUNTS  = "accounts"
-const ADMINGROUPS  = "admingroups"
-const CATEGORIES  = "categories"
+const USERS = "users"
+const LOGINATTEMPTS = "loginattempts"
+const ACCOUNTS = "accounts"
+const ADMINGROUPS = "admingroups"
+const CATEGORIES = "categories"
 const STATUSES = "status"
-const ADMINS  = "admins"
+const ADMINS = "admins"
 
 func init() {
 
