@@ -5,6 +5,7 @@ import (
 	"time"
 	"gopkg.in/mgo.v2/bson"
 	"strings"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type vendorOauth struct {
@@ -53,6 +54,14 @@ func (user *User) defaultReturnUrl() (returnUrl string) {
 		returnUrl = "/admin/"
 	}
 	return
+}
+
+func (user *User) setPassword(password string) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		panic(err)
+	}
+	user.Password = string(hashedPassword)
 }
 
 func validateUsername(username *string, r *Response) {

@@ -8,7 +8,6 @@ import (
 	"html/template"
 	"gopkg.in/mgo.v2"
 	"net/url"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type responseUser struct {
@@ -265,12 +264,7 @@ func changePasswordUser(c *gin.Context) {
 		return
 	}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
-	if err != nil {
-		panic(err)
-	}
-
-	user.Password = string(hashedPassword)
+	user.setPassword(body.Password)
 	err = collection.UpdateId(user.ID, user)
 	if err != nil {
 		response.Errors = append(response.Errors, err.Error())
