@@ -79,8 +79,7 @@ func createUser(c *gin.Context) {
 	response := responseUser{}
 	response.Init(c)
 
-	decoder := json.NewDecoder(c.Request.Body)
-	err := decoder.Decode(&response.User)
+	err := json.NewDecoder(c.Request.Body).Decode(&response.User)
 	if err != nil {
 		panic(err)
 		return
@@ -97,8 +96,7 @@ func createUser(c *gin.Context) {
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(USERS)
-	user := User{}
-	err = collection.Find(bson.M{"username": response.Username}).One(&user)
+	err = collection.Find(bson.M{"username": response.Username}).One(nil)
 	// we expect err == mgo.ErrNotFound for success
 	if err == nil {
 		response.Errors = append(response.Errors, "That username is already taken.")
@@ -109,15 +107,15 @@ func createUser(c *gin.Context) {
 	}
 
 	// createUser
-	user.ID = bson.NewObjectId()
-	user.Username = response.Username
-	user.Search = []string{response.Username}
+	response.User.ID = bson.NewObjectId()
+	response.User.Search = []string{response.Username}
 
-	err = collection.Insert(user)
+	err = collection.Insert(response.User)
 	if err != nil {
 		panic(err)
 		return
 	}
+	response.Data["record"] = response.User
 	response.Finish()
 }
 

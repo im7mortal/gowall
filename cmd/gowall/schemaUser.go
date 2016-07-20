@@ -17,7 +17,7 @@ type vendorOauth struct {
 type User struct {
 	ID       bson.ObjectId `bson:"_id"`
 	Username string        `bson:"username"`
-	Password string        `bson:"password"`
+	Password string        `json:"-" bson:"password"`
 	Email    string        `bson:"email"`
 	Roles    struct {
 		Admin   bson.ObjectId `bson:"admin,omitempty"`
@@ -26,7 +26,7 @@ type User struct {
 
 	IsActive             string    `bson:"isActive,omitempty"`
 	TimeCreated          time.Time `bson:"timeCreated"`
-	ResetPasswordToken   string    `bson:"resetPasswordToken,omitempty"`
+	ResetPasswordToken   string    `json:"-" bson:"resetPasswordToken,omitempty"`
 	ResetPasswordExpires time.Time `bson:"resetPasswordExpires,omitempty"`
 
 	Twitter  vendorOauth `bson:"twitter"`
