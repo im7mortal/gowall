@@ -179,7 +179,7 @@ func updateAdminGroup(c *gin.Context) {
 	response.Finish()
 }
 
-func updateAdminGroupPermissions(c *gin.Context) {
+func updatePermissionsAdminGroup(c *gin.Context) {
 	response := responseAdminGroup{}
 	response.Init(c)
 

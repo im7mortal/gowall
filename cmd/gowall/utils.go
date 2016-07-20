@@ -13,8 +13,14 @@ func getEscapedString(str string) string {
 	return strings.Replace(url.QueryEscape(str), "+", "%20", -1)
 }
 
-var r1, _ = regexp.Compile(`[^\w ]+`)
-var r2, _ = regexp.Compile(` +`)
+var rSlugify1, _ = regexp.Compile(`[^\w ]+`)
+var rSlugify2, _ = regexp.Compile(` +`)
+
+var rUsername, _ = regexp.Compile(`^[a-zA-Z0-9\-\_]+$`)
+var rEmail, _ = regexp.Compile(`^[a-zA-Z0-9\-\_\.\+]+@[a-zA-Z0-9\-\_\.]+\.[a-zA-Z0-9\-\_]+$`)
+
+var rVerificationURL, _ = regexp.Compile(`^[a-zA-Z0-9\-\_\.\+]+@[a-zA-Z0-9\-\_\.]+\.[a-zA-Z0-9\-\_]+$`)
+var signupProviderReg, _ = regexp.Compile(`/[^a-zA-Z0-9\-\_]/g`)
 
 /**
 	preparing id
@@ -22,14 +28,14 @@ var r2, _ = regexp.Compile(` +`)
 
 func slugify (str string) string {
 	str = strings.ToLower(str)
-	str = r1.ReplaceAllString(str, "")
-	str = r2.ReplaceAllString(str, "-")
+	str = rSlugify1.ReplaceAllString(str, "")
+	str = rSlugify2.ReplaceAllString(str, "-")
 	return str
 }
 
 func slugifyName(str string) string {
 	str = strings.TrimSpace(str)
-	return r2.ReplaceAllString(str, " ")
+	return rSlugify2.ReplaceAllString(str, " ")
 }
 
 func getData (c *gin.Context, query *mgo.Query, results interface{}) (data gin.H) {

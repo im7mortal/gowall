@@ -15,7 +15,7 @@ type responseAdmin struct {
 	Admin
 }
 
-func renderAdministrators(c *gin.Context) {
+func renderAdmin(c *gin.Context) {
 	query := bson.M{}
 
 	name, ok := c.GetQuery("name")
@@ -47,7 +47,7 @@ func renderAdministrators(c *gin.Context) {
 	c.HTML(http.StatusOK, c.Request.URL.Path, c.Keys)
 }
 
-func createAdministrator(c *gin.Context) {
+func createAdmin(c *gin.Context) {
 	response := responseAdmin{}
 	response.Init(c)
 	admin := getAdmin(c)
@@ -114,7 +114,7 @@ func createAdministrator(c *gin.Context) {
 	//c.JSON(http.StatusOK, gin.H{"record": response, "success": true}) // todo necessary check
 }
 
-func readAdministrator(c *gin.Context) {
+func readAdmin(c *gin.Context) {
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(ADMINS)
@@ -141,7 +141,7 @@ func readAdministrator(c *gin.Context) {
 	c.HTML(http.StatusOK, "/admin/administrators/details/", c.Keys)
 }
 
-func updateAdministrator(c *gin.Context) {
+func updateAdmin(c *gin.Context) {
 	response := responseAdmin{}
 	response.Init(c)
 
@@ -184,7 +184,7 @@ func updateAdministrator(c *gin.Context) {
 	response.Finish()
 }
 
-func updateAdministratorPermissions(c *gin.Context) {
+func updatePermissionsAdmin(c *gin.Context) {
 	response := responseAdmin{}
 	response.Init(c)
 	//TODO there are not clear logic with populate of groups
@@ -227,7 +227,7 @@ func updateAdministratorPermissions(c *gin.Context) {
 	response.Finish()
 }
 
-func updateAdministratorGroups(c *gin.Context) {
+func updateGroupsAdmin(c *gin.Context) {
 	response := responseAdmin{}
 	response.Init(c)
 	//TODO there are not clear logic with populate of groups
@@ -275,9 +275,9 @@ func linkUser(c *gin.Context) {
 	admin := getAdmin(c)
 
 	// validate
-	ok := admin.IsMemberOf("root")
+	ok := admin.IsMemberOf(ROOTGROUP)
 	if !ok {
-		response.Errors = append(response.Errors, "You may not change the permissions of admin groups.")
+		response.Errors = append(response.Errors, "You may not link admins to users.")
 		response.Fail()
 		return
 	}
@@ -291,13 +291,9 @@ func linkUser(c *gin.Context) {
 		panic(err)
 	}
 
-	response.ErrFor = map[string]string{} // in that handler it required (non standard behavior from node)
 	if len(req.NewUsername) == 0 {
 		response.ErrFor["newUsername"] = "required"
 		response.Errors = append(response.Errors, "required")
-	}
-
-	if response.HasErrors() {
 		response.Fail()
 		return
 	}
@@ -341,26 +337,12 @@ func linkUser(c *gin.Context) {
 		panic(err)
 	}
 
-	// patchUser
-	collection = db.C(USERS)
-	err = collection.UpdateId(user.ID, bson.M{
-		"$set": bson.M{"roles.admin": bson.ObjectIdHex(id)},
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	// patchAdministrator
-	collection = db.C(ADMINS)
-	err = collection.UpdateId(bson.ObjectIdHex(id), bson.M{
-		"$set": bson.M{"user": bson.M{
-			"id": user.ID,
-			"name": user.Username,
-		}},
-	})
+	admin.ID = bson.ObjectIdHex(id)
+	// patchUser patchAdministrator
+	err = admin.linkUser(db, user)
 
 	if err != nil {
-		panic(err)
+
 	}
 
 	// getAdminForResponse  drywall require it // todo maybe bulk?
@@ -381,7 +363,7 @@ func unlinkUser(c *gin.Context) {
 	admin := getAdmin(c)
 
 	// validate
-	ok := admin.IsMemberOf("root")
+	ok := admin.IsMemberOf(ROOTGROUP)
 	if !ok {
 		response.Errors = append(response.Errors, "You may not change the permissions of admin groups.")
 		response.Fail()
@@ -425,7 +407,7 @@ func unlinkUser(c *gin.Context) {
 	response.Finish()
 }
 
-func deleteAdministrator(c *gin.Context) {
+func deleteAdmin(c *gin.Context) {
 	response := Response{}
 	response.Init(c)
 

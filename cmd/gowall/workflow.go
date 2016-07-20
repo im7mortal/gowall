@@ -53,6 +53,14 @@ func (r *Response)Init(c *gin.Context) {
 	r.ErrFor = map[string]string{}
 }
 
+func getResponseObj (c *gin.Context) (r *Response) {
+	r = &Response{}
+	r.c = c
+	r.Data = map[string]interface{}{}
+	r.ErrFor = map[string]string{}
+	return
+}
+
 func (r *Response) Recover() {}
 
 

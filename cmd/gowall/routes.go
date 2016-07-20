@@ -7,13 +7,13 @@ import (
 func BindRoutes(router *gin.Engine) {
 
 	//front end
-	router.GET("/", Index)
-	router.GET("/about/", About)
-	router.GET("/contact/", ContactRender)
-	router.POST("/contact/", ContactSend)
+	router.GET("/", index)
+	router.GET("/about/", about)
+	router.GET("/contact/", contactRender)
+	router.POST("/contact/", contactSend)
 
 	//sign up
-	router.GET("/signup/", SignupRender)
+	router.GET("/signup/", signupRender)
 	router.POST("/signup/", Signup)
 
 	//social sign up
@@ -41,48 +41,48 @@ func BindRoutes(router *gin.Engine) {
 	admin.Use(EnsureAuthenticated)
 	admin.Use(EnsureAdmin)
 	{
-		admin.GET("/", AdminRender)
+		admin.GET("/", renderAdministrator)
 
 		//admin > users
 		admin.GET("/users/", renderUsers)
 		admin.POST("/users/", createUser)
 		admin.GET("/users/:id/", readUser)
-		admin.PUT("/users/:id/", changeUserData)
-		admin.PUT("/users/:id/password/", changeUserPassword)
-		admin.PUT("/users/:id/role-admin/", Index)
-		admin.DELETE("/users/:id/role-admin/", Index)
-		admin.PUT("/users/:id/role-account/", Index)
-		admin.DELETE("/users/:id/role-account/", Index)
+		admin.PUT("/users/:id/", changeDataUser)
+		admin.PUT("/users/:id/password/", changePasswordUser)
+		admin.PUT("/users/:id/role-admin/", index)
+		admin.DELETE("/users/:id/role-admin/", index)
+		admin.PUT("/users/:id/role-account/", index)
+		admin.DELETE("/users/:id/role-account/", index)
 		admin.DELETE("/users/:id/", deleteUser)
 
 		//admin > administrators
-		admin.GET("/administrators/", renderAdministrators)
-		admin.POST("/administrators/", createAdministrator)
-		admin.GET("/administrators/:id/", readAdministrator)
-		admin.PUT("/administrators/:id/", updateAdministrator)
-		admin.PUT("/administrators/:id/permissions/", updateAdministratorPermissions)
-		admin.PUT("/administrators/:id/groups/", updateAdministratorGroups) // todo didn't finished
+		admin.GET("/administrators/", renderAdmin)
+		admin.POST("/administrators/", createAdmin)
+		admin.GET("/administrators/:id/", readAdmin)
+		admin.PUT("/administrators/:id/", updateAdmin)
+		admin.PUT("/administrators/:id/permissions/", updatePermissionsAdmin)
+		admin.PUT("/administrators/:id/groups/", updateGroupsAdmin) // todo didn't finished
 		admin.PUT("/administrators/:id/user/", linkUser)
 		admin.DELETE("/administrators/:id/user/", unlinkUser)
-		admin.DELETE("/administrators/:id/", deleteAdministrator)
+		admin.DELETE("/administrators/:id/", deleteAdmin)
 
 		//admin > admin groups
 		admin.GET("/admin-groups/", renderAdminGroups)
 		admin.POST("/admin-groups/", createAdminGroup)
 		admin.GET("/admin-groups/:id/", readAdminGroup)
 		admin.PUT("/admin-groups/:id/", updateAdminGroup)
-		admin.PUT("/admin-groups/:id/permissions/", updateAdminGroupPermissions)
+		admin.PUT("/admin-groups/:id/permissions/", updatePermissionsAdminGroup)
 		admin.DELETE("/admin-groups/:id/", deleteAdminGroup)
 
 		//admin > accounts
 		admin.GET("/accounts/", renderAccounts)
 		admin.POST("/accounts/", createAccount)
 		admin.GET("/accounts/:id/", readAccount)
-		admin.PUT("/accounts/:id/", Index)
-		admin.PUT("/accounts/:id/user/", Index)
-		admin.DELETE("/accounts/:id/user/", Index)
-		admin.POST("/accounts/:id/notes/", Index)
-		admin.POST("/accounts/:id/status/", Index)
+		admin.PUT("/accounts/:id/", index)
+		admin.PUT("/accounts/:id/user/", index)
+		admin.DELETE("/accounts/:id/user/", index)
+		admin.POST("/accounts/:id/notes/", index)
+		admin.POST("/accounts/:id/status/", index)
 		admin.DELETE("/accounts/:id/", deleteAccount)
 
 		//admin > statuses
@@ -100,7 +100,7 @@ func BindRoutes(router *gin.Engine) {
 		admin.DELETE("/categories/:id/", deleteCategory)
 
 		//admin > search
-		admin.GET("/search/", Index)
+		admin.GET("/search/", index)
 	}
 
 	//account

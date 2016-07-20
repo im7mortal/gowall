@@ -10,8 +10,6 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"golang.org/x/crypto/bcrypt"
-	"regexp"
-	"strings"
 )
 
 func generateToken1(n int) []byte {
@@ -26,7 +24,7 @@ func generateToken1(n int) []byte {
 	return token
 }
 
-func AdminRender(c *gin.Context) {
+func renderAdministrator(c *gin.Context) {
 
 	// todo has to be sync pkg
 	db := getMongoDBInstance()
@@ -60,7 +58,7 @@ func AccountVerificationRender1(c *gin.Context) {
 	account := getAccount(c)
 	user := getUser(c)
 	if account.IsVerified == "yes" {
-		c.Redirect(http.StatusFound, user.DefaultReturnUrl())
+		c.Redirect(http.StatusFound, user.defaultReturnUrl())
 		return
 	}
 	if len(account.VerificationToken) > 0 {
@@ -113,14 +111,14 @@ func Verify1 (c *gin.Context) {
 		account.IsVerified = "yes"
 		collection.UpdateId(account.ID, account)
 	}
-	c.Redirect(http.StatusFound, user.DefaultReturnUrl())
+	c.Redirect(http.StatusFound, user.defaultReturnUrl())
 }
 
 func ResendVerification1 (c *gin.Context) {
 	account := getAccount(c)
 	user := getUser(c)
 	if account.IsVerified == "yes" {
-		c.HTML(http.StatusOK, user.DefaultReturnUrl(), c.Keys)
+		c.HTML(http.StatusOK, user.defaultReturnUrl(), c.Keys)
 		return
 	}
 	response := Response{} // todo sync.Pool
@@ -136,18 +134,7 @@ func ResendVerification1 (c *gin.Context) {
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&body)
 
-	email := strings.ToLower(body.Email)
-	if len(email) == 0 {
-		response.ErrFor["email"] = "required"
-	} else {
-		r, err := regexp.MatchString(`^[a-zA-Z0-9\-\_\.\+]+@[a-zA-Z0-9\-\_\.]+\.[a-zA-Z0-9\-\_]+$`, email)
-		if err != nil {
-			println(err.Error())
-		}
-		if !r {
-			response.ErrFor["email"] = `invalid email format`
-		}
-	}
+	validateEmail(&body.Email, &response)
 	if response.HasErrors() {
 		response.Fail()
 		return
@@ -157,7 +144,7 @@ func ResendVerification1 (c *gin.Context) {
 	collection := db.C(USERS)
 	{
 		user_ := User{}
-		collection.Find(bson.M{"email": email, "_id": bson.M{"$ne": user.ID}}).One(&user_)
+		collection.Find(bson.M{"email": body.Email, "_id": bson.M{"$ne": user.ID}}).One(&user_)
 		if len(user_.Username) > 0 {
 			response.ErrFor["email"] = `email already taken`
 		}
@@ -166,7 +153,7 @@ func ResendVerification1 (c *gin.Context) {
 		response.Fail()
 		return
 	}
-	user.Email = email
+	user.Email = body.Email
 	collection.UpdateId(user.ID, user)
 
 	collection = db.C(ACCOUNTS)

@@ -13,6 +13,8 @@ func Status404Render(c *gin.Context) {
 func checkRecover(c *gin.Context) {
 	defer func(c *gin.Context) {
 		if rec := recover(); rec != nil {
+			println(rec)
+			println(rec.(error).Error())
 			if XHR(c) {
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"error": "Something went wrong.",

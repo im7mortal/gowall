@@ -6,28 +6,22 @@ import (
 	"encoding/json"
 )
 
-func ContactRender(c *gin.Context) {
+func contactRender(c *gin.Context) {
 	c.HTML(http.StatusOK, c.Request.URL.Path, c.Keys)
 }
 
-func ContactSend(c *gin.Context) {
-	response := Response{} // todo sync.Pool
-	response.Errors = []string{}
-	response.ErrFor = make(map[string]string)
-
-	//response.BindContext(c)
-
+func contactSend(c *gin.Context) {
+	response := getResponseObj(c)
 	var body struct {
 		Name    string  `json:"name"`
 		Email   string  `json:"email"`
 		Message string  `json:"message"`
 	}
-	decoder := json.NewDecoder(c.Request.Body)
-	err := decoder.Decode(&body)
-
+	err := json.NewDecoder(c.Request.Body).Decode(&body)
 	if err != nil {
 		panic(err.Error())
 	}
+
 	if len(body.Name) == 0 {
 		response.ErrFor["name"] = "required"
 	}
@@ -58,7 +52,7 @@ func ContactSend(c *gin.Context) {
 	mailConf.HtmlPath = "views/contact/email-html.html"
 
 	if err := mailConf.SendMail(); err != nil {
-		response.Errors = append(response.Errors, "Error Sending: " + err.Error())
+		response.Errors = append(response.Errors, "Email wasn't send. Please try another time or later.")
 		response.Fail()
 		return
 	}

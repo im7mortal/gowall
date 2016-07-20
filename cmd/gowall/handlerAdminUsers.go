@@ -6,11 +6,9 @@ import (
 	"encoding/json"
 	"gopkg.in/mgo.v2/bson"
 	"html/template"
-	"strings"
 	"gopkg.in/mgo.v2"
 	"net/url"
 	"golang.org/x/crypto/bcrypt"
-	"regexp"
 )
 
 type responseUser struct {
@@ -90,8 +88,7 @@ func createUser(c *gin.Context) {
 	}
 
 	// validate
-	response.User.ValidateUsername(&response.Response)
-
+	validateUsername(&response.User.Username, &response.Response)
 	if response.HasErrors() {
 		response.Fail()
 		return
@@ -152,7 +149,7 @@ func readUser(c *gin.Context) {
 	c.HTML(http.StatusOK, "/admin/users/details/", c.Keys)
 }
 
-func changeUserData(c *gin.Context) {
+func changeDataUser(c *gin.Context) {
 	response := Response{}
 
 	var body struct {
@@ -163,32 +160,8 @@ func changeUserData(c *gin.Context) {
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&body)
 
-
-	username := strings.ToLower(body.Username)
-	if len(username) == 0 {
-		response.ErrFor["username"] = "required"
-	} else {
-		r, err := regexp.MatchString(`^[a-zA-Z0-9\-\_]+$`, username)
-		if err != nil {
-			println(err.Error())
-		}
-		if !r {
-			response.ErrFor["username"] = `only use letters, numbers, \'-\', \'_\'`
-		}
-	}
-	email := strings.ToLower(body.Email)
-	if len(email) == 0 {
-		response.ErrFor["email"] = "required"
-	} else {
-		r, err := regexp.MatchString(`^[a-zA-Z0-9\-\_\.\+]+@[a-zA-Z0-9\-\_\.]+\.[a-zA-Z0-9\-\_]+$`, email)
-		if err != nil {
-			println(err.Error())
-		}
-		if !r {
-			response.ErrFor["email"] = `invalid email format`
-		}
-	}
-
+	validateUsername(&body.Username, &response)
+	validateEmail(&body.Email, &response)
 	if response.HasErrors() {
 		response.Fail()
 		return
@@ -217,7 +190,16 @@ func changeUserData(c *gin.Context) {
 	// duplicateEmailCheck
 	{
 		us := User{}
-		err = collection.Find(bson.M{"$or": []bson.M{bson.M{"username": username}, bson.M{"email": email}}}).One(&us)
+		err = collection.Find(bson.M{
+			"$or": []bson.M{
+				bson.M{
+					"username": body.Username,
+				},
+				bson.M{
+					"email": body.Email,
+				},
+			},
+		}).One(&us)
 		if err != nil {
 			response.Errors = append(response.Errors, "username or email already exist")
 			response.Fail()
@@ -237,16 +219,9 @@ func changeUserData(c *gin.Context) {
 	// TODO  patch admin and account
 	response.Success = true
 	c.JSON(http.StatusOK, response)
-
-
-
-
-
-	response.Success = true
-	c.JSON(http.StatusOK, response)
 }
 
-func changeUserPassword(c *gin.Context) {
+func changePasswordUser(c *gin.Context) {
 	response := Response{}
 	response.Init(c)
 

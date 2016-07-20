@@ -5,7 +5,6 @@ import (
 	"time"
 	"gopkg.in/mgo.v2/bson"
 	"strings"
-	"regexp"
 )
 
 type vendorOauth struct {
@@ -35,7 +34,7 @@ type User struct {
 	Search               []string `bson:"search"`
 }
 
-func (user *User) CanPlayRoleOf(role string) bool {
+func (user *User) canPlayRoleOf(role string) bool {
 	if role == "admin" && len(user.Roles.Account.String()) > 0 {
 		return true;
 	}
@@ -45,53 +44,45 @@ func (user *User) CanPlayRoleOf(role string) bool {
 	return false
 }
 
-func (user *User) DefaultReturnUrl() (returnUrl string) {
+func (user *User) defaultReturnUrl() (returnUrl string) {
 	returnUrl = "/"
-	if user.CanPlayRoleOf("account") {
+	if user.canPlayRoleOf("account") {
 		returnUrl = "/account/"
 	}
-	if user.CanPlayRoleOf("admin") {
+	if user.canPlayRoleOf("admin") {
 		returnUrl = "/admin/"
 	}
 	return
 }
 
-func (u *User) ValidateUsername(r *Response) {
-	u.Username = strings.ToLower(u.Username)
-	if len(u.Username) == 0 {
+func validateUsername(username *string, r *Response) {
+	*username = strings.ToLower(*username)
+	if len(*username) == 0 {
 		r.ErrFor["username"] = "required"
 	} else {
-		ok, err := regexp.MatchString(`^[a-zA-Z0-9\-\_]+$`, u.Username)
-		if err != nil {
-			println(err.Error())
-		}
-		if !ok {
+		if ok := rUsername.MatchString(*username); !ok {
 			r.ErrFor["username"] = `only use letters, numbers, \'-\', \'_\'`
 		}
 	}
 }
 
-func (u *User) ValidateEmail(r *Response) {
-	u.Email = strings.ToLower(u.Email)
-	if len(u.Email) == 0 {
+func validateEmail(email *string, r *Response) {
+	*email = strings.ToLower(*email)
+	if len(*email) == 0 {
 		r.ErrFor["email"] = "required"
 	} else {
-		ok, err := regexp.MatchString(`^[a-zA-Z0-9\-\_\.\+]+@[a-zA-Z0-9\-\_\.]+\.[a-zA-Z0-9\-\_]+$`, u.Email)
-		if err != nil {
-			println(err.Error())
-		}
-		if !ok {
+		if ok := rEmail.MatchString(*email); !ok {
 			r.ErrFor["email"] = `invalid email format`
 		}
 	}
 }
 
-func (u *User) ValidatePassword(r *Response) {
-	if len(u.Password) == 0 {
+func validatePassword(password *string, r *Response) {
+	if len(*password) == 0 {
 		r.ErrFor["password"] = "required"
 	} else {
-		if len(u.Password) < 8 {
-			r.ErrFor["password"] = `too weak password`
+		if len(*password) < 8 {
+			r.ErrFor["password"] = `too weak password, at least 8 necessary`
 		}
 	}
 }

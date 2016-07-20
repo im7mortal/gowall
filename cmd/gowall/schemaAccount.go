@@ -55,3 +55,67 @@ func (a *Account) DecodeRequest(c *gin.Context) {
 var AccountIndex mgo.Index = mgo.Index{
 	Key:        []string{"user", "status.id", "search"},
 }
+
+func (a *Account) linkUser(db *mgo.Database, user User) (err error) {
+
+	// patchUser
+	collection := db.C(USERS)
+	err = collection.UpdateId(user.ID, bson.M{
+		"$set": bson.M{"roles.admin": a.ID},
+	})
+
+	if err != nil {
+		if err != mgo.ErrNotFound {
+			panic(err)
+		}
+		return
+	}
+
+	// patchAdministrator
+	collection = db.C(ACCOUNTS)
+	err = collection.UpdateId(a.ID, bson.M{
+		"$set": bson.M{"user": bson.M{
+			"id": user.ID,
+			"name": user.Username,
+		}},
+	})
+
+	if err != nil {
+		if err != mgo.ErrNotFound {
+			panic(err)
+		}
+		return
+	}
+	return
+}
+
+
+func (a *Account) unlinkUser(db *mgo.Database, user User) (err error) {
+
+	// patchUser
+	collection := db.C(USERS)
+	err = collection.Update(bson.M{"roles.admin": a.ID}, bson.M{
+		"$set": bson.M{"roles.admin": ""},
+	})
+
+	if err != nil {
+		if err != mgo.ErrNotFound {
+			panic(err)
+		}
+		return
+	}
+
+	// patchAdministrator
+	collection = db.C(ADMINS)
+	err = collection.UpdateId(a.ID, bson.M{
+		"$set": bson.M{"user": bson.M{}},
+	})
+
+	if err != nil {
+		if err != mgo.ErrNotFound {
+			panic(err)
+		}
+		return
+	}
+	return
+}

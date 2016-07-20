@@ -5,6 +5,6 @@ import (
 	"net/http"
 )
 
-func Index(c *gin.Context) {
+func index(c *gin.Context) {
 	c.HTML(http.StatusOK, "/", c.Keys)
 }

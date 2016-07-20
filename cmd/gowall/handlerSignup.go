@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/contrib/sessions"
 )
 
-func SignupRender(c *gin.Context) {
+func signupRender(c *gin.Context) {
 	isAuthenticated, _ := c.Get("isAuthenticated")
 	if is, ok := isAuthenticated.(bool); ok && is {
 		defaultReturnUrl, exist := c.Get("DefaultReturnUrl")
@@ -39,9 +39,9 @@ func Signup(c *gin.Context) {
 	response.CleanErrors()
 
 	// validate
-	response.User.ValidateUsername(&response.Response)
-	response.User.ValidateEmail(&response.Response)
-	response.User.ValidatePassword(&response.Response)
+	validateUsername(&response.User.Username, &response.Response)
+	validateEmail(&response.User.Email, &response.Response)
+	validatePassword(&response.User.Password, &response.Response)
 
 	if response.HasErrors() {
 		response.Fail()

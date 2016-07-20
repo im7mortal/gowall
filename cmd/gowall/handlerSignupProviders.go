@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"regexp"
 	"gopkg.in/mgo.v2/bson"
 	"strings"
 	"encoding/json"
@@ -63,7 +62,7 @@ func SignUpSocial(c *gin.Context) {
 	response.ErrFor = make(map[string]string)
 
 	// validate
-	response.ValidateEmail(&response.Response)
+	validateEmail(&response.User.Email, &response.Response)
 	if response.HasErrors() {
 		response.Fail()
 		return
@@ -106,13 +105,7 @@ func SignUpSocial(c *gin.Context) {
 	} else if len(socialProfile.UserID) != 0 {
 		username = socialProfile.UserID
 	}
-	reg, err := regexp.Compile(`/[^a-zA-Z0-9\-\_]/g`)
-	if err != nil {
-		panic(err)
-	}
-	usernameSrc := []byte(username)
-	reg.ReplaceAll(usernameSrc, []byte(""))
-	username = string(usernameSrc)
+	signupProviderReg.ReplaceAllString(username, "")
 	if len(user.Username) != 0 {
 		response.Fail()
 	}

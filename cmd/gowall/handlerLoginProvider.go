@@ -43,6 +43,6 @@ func loginProvider(c *gin.Context, userGoth goth.User) {
 	if ok {
 		c.Redirect(http.StatusFound, returnURL)
 	} else {
-		c.Redirect(http.StatusFound, user.DefaultReturnUrl())
+		c.Redirect(http.StatusFound, user.defaultReturnUrl())
 	}
 }

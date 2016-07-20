@@ -6,7 +6,6 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"encoding/json"
 	"golang.org/x/crypto/bcrypt"
-	"regexp"
 	"strings"
 	"time"
 )
@@ -23,9 +22,7 @@ func ForgotRender(c *gin.Context) {
 
 
 func SendReset(c *gin.Context) {
-	response := Response{} // todo sync.Pool
-	response.Errors = []string{}
-	response.ErrFor = make(map[string]string)
+	response := Response{}
 	response.Init(c)
 
 	var body struct {
@@ -33,22 +30,12 @@ func SendReset(c *gin.Context) {
 		Email   string  `json:"email"`
 		Password string  `json:"password"`
 	}
-	decoder := json.NewDecoder(c.Request.Body)
-	err := decoder.Decode(&body)
-
-
-	email := strings.ToLower(body.Email)
-	if len(email) == 0 {
-		response.ErrFor["email"] = "required"
-	} else {
-		r, err := regexp.MatchString(`^[a-zA-Z0-9\-\_\.\+]+@[a-zA-Z0-9\-\_\.]+\.[a-zA-Z0-9\-\_]+$`, email)
-		if err != nil {
-			println(err.Error())
-		}
-		if !r {
-			response.ErrFor["email"] = `invalid email format`
-		}
+	err := json.NewDecoder(c.Request.Body).Decode(&body)
+	if err != nil {
+		panic(err)
 	}
+
+	validateEmail(&body.Email, &response)
 	if response.HasErrors() {
 		response.Fail()
 		return
@@ -65,8 +52,8 @@ func SendReset(c *gin.Context) {
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(USERS)
-	us := User{} // todo pool
-	err = collection.Find(bson.M{"email": email}).One(&us)
+	us := User{}
+	err = collection.Find(bson.M{"email": body.Email}).One(&us)
 	if err != nil {
 		println(err.Error())
 	}
@@ -82,7 +69,7 @@ func SendReset(c *gin.Context) {
 	us.ResetPasswordExpires = time.Now().Add(24 * time.Hour)
 	collection.UpdateId(us.ID, us)
 
-	resetURL := "http" +"://"+ c.Request.Host +"/login/reset/" + email + "/" + string(token) + "/"
+	resetURL := "http" +"://"+ c.Request.Host +"/login/reset/" + body.Email + "/" + string(token) + "/"
 	c.Set("ResetURL", resetURL)
 	c.Set("Username", us.Username)
 

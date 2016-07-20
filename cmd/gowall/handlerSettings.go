@@ -9,8 +9,6 @@ import (
 	"html/template"
 	"github.com/markbates/goth"
 	"gopkg.in/mgo.v2"
-	"regexp"
-	"strings"
 	"golang.org/x/crypto/bcrypt"
 	"net/url"
 )
@@ -184,30 +182,8 @@ func ChangeIdentity (c *gin.Context) {
 	err := decoder.Decode(&body)
 
 
-	username := strings.ToLower(body.Username)
-	if len(username) == 0 {
-		response.ErrFor["username"] = "required"
-	} else {
-		r, err := regexp.MatchString(`^[a-zA-Z0-9\-\_]+$`, username)
-		if err != nil {
-			println(err.Error())
-		}
-		if !r {
-			response.ErrFor["username"] = `only use letters, numbers, \'-\', \'_\'`
-		}
-	}
-	email := strings.ToLower(body.Email)
-	if len(email) == 0 {
-		response.ErrFor["email"] = "required"
-	} else {
-		r, err := regexp.MatchString(`^[a-zA-Z0-9\-\_\.\+]+@[a-zA-Z0-9\-\_\.]+\.[a-zA-Z0-9\-\_]+$`, email)
-		if err != nil {
-			println(err.Error())
-		}
-		if !r {
-			response.ErrFor["email"] = `invalid email format`
-		}
-	}
+	validateUsername(&body.Username, &response)
+	validateEmail(&body.Email, &response)
 
 	if response.HasErrors() {
 		response.Fail()
@@ -219,7 +195,7 @@ func ChangeIdentity (c *gin.Context) {
 
 	{
 		us := User{} // todo pool
-		err = collection.Find(bson.M{"$or": []bson.M{bson.M{"username": username}, bson.M{"email": email}}}).One(&us)
+		err = collection.Find(bson.M{"$or": []bson.M{bson.M{"username": body.Username}, bson.M{"email": body.Email}}}).One(&us)
 		if err != nil {
 			response.Errors = append(response.Errors, "username or email already exist")
 			response.Fail()

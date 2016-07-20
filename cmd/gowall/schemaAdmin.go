@@ -79,3 +79,67 @@ func (admin *Admin) IsMemberOf(groupName string) bool {
 var AdminsIndex mgo.Index = mgo.Index{
 	Key:        []string{"user.id", "search"},
 }
+
+func (admin *Admin) linkUser(db *mgo.Database, user User) (err error) {
+
+	// patchUser
+	collection := db.C(USERS)
+	err = collection.UpdateId(user.ID, bson.M{
+		"$set": bson.M{"roles.admin": admin.ID},
+	})
+
+	if err != nil {
+		if err != mgo.ErrNotFound {
+			panic(err)
+		}
+		return
+	}
+
+	// patchAdministrator
+	collection = db.C(ADMINS)
+	err = collection.UpdateId(admin.ID, bson.M{
+		"$set": bson.M{"user": bson.M{
+			"id": user.ID,
+			"name": user.Username,
+		}},
+	})
+
+	if err != nil {
+		if err != mgo.ErrNotFound {
+			panic(err)
+		}
+		return
+	}
+	return
+}
+
+
+func (admin *Admin) unlinkUser(db *mgo.Database, user User) (err error) {
+
+	// patchUser
+	collection := db.C(USERS)
+	err = collection.Update(bson.M{"roles.admin": admin.ID}, bson.M{
+		"$set": bson.M{"roles.admin": ""},
+	})
+
+	if err != nil {
+		if err != mgo.ErrNotFound {
+			panic(err)
+		}
+		return
+	}
+
+	// patchAdministrator
+	collection = db.C(ADMINS)
+	err = collection.UpdateId(admin.ID, bson.M{
+		"$set": bson.M{"user": bson.M{}},
+	})
+
+	if err != nil {
+		if err != mgo.ErrNotFound {
+			panic(err)
+		}
+		return
+	}
+	return
+}

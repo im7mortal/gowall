@@ -5,6 +5,6 @@ import (
 	"net/http"
 )
 
-func About(c *gin.Context) {
+func about(c *gin.Context) {
 	c.HTML(http.StatusOK, c.Request.URL.Path, c.Keys)
 }

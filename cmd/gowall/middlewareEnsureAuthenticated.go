@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"regexp"
 	"gopkg.in/mgo.v2/bson"
 	"gopkg.in/mgo.v2"
 )
@@ -47,7 +46,7 @@ func getAccount(c *gin.Context) (account *Account) {
 
 func EnsureAccount(c *gin.Context) {
 	user := getUser(c)
-	if ok := user.CanPlayRoleOf("account"); ok {
+	if ok := user.canPlayRoleOf("account"); ok {
 		account := Account{}
 		db := getMongoDBInstance()
 		defer db.Session.Close()
@@ -56,8 +55,7 @@ func EnsureAccount(c *gin.Context) {
 		c.Set("Account", &account)
 		if config.RequireAccountVerification {
 			if account.IsVerified != "yes" {
-				r, _ := regexp.MatchString(`^\/account\/verification\/`, c.Request.URL.Path)
-				if !r {
+				if yes := rVerificationURL.MatchString(c.Request.URL.Path); !yes {
 					c.Redirect(http.StatusFound, "/account/verification/")
 					return
 				}
@@ -84,7 +82,7 @@ func getAdmin(c *gin.Context) (admin *Admin) {
 
 func EnsureAdmin(c *gin.Context) {
 	user := getUser(c)
-	if ok := user.CanPlayRoleOf("admin"); ok {
+	if ok := user.canPlayRoleOf("admin"); ok {
 		admin := Admin{}
 		db := getMongoDBInstance()
 		defer db.Session.Close()
@@ -121,7 +119,7 @@ func IsAuthenticated(c *gin.Context) {
 			c.Set("isAuthenticated", true)
 			c.Set("UserName", us.Username)
 			c.Set("User", &us)
-			c.Set("DefaultReturnUrl", us.DefaultReturnUrl())
+			c.Set("DefaultReturnUrl", us.defaultReturnUrl())
 		}
 	}
 
