@@ -13,6 +13,7 @@ import (
 )
 
 const VERSION = "0.1"
+const ISOSTRING = "2006-01-02T15:04:05.99Z"
 
 var store sessions.CookieStore
 

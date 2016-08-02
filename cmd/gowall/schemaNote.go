@@ -6,11 +6,11 @@ import (
 )
 
 type Note struct {
-	ID          bson.ObjectId `bson:"_id,omitempty"`
-	Data        string        `bson:"data"`
+	ID          bson.ObjectId `json:"_id" bson:"_id,omitempty"`
+	Data        string        `json:"data" bson:"data"`
 	UserCreated struct {
-		ID   bson.ObjectId `bson:"id"`
-		Name string        `bson:"name"`
-		Time time.Time     `bson:"time"`
-	} `bson:"userCreated"`
+		ID   bson.ObjectId `json:"id" bson:"id"`
+		Name string        `json:"name" bson:"name"`
+		Time time.Time     `json:"time" bson:"time"`
+	} `json:"userCreated" bson:"userCreated"`
 }

@@ -8,6 +8,7 @@ import (
 	"html/template"
 	"net/http"
 	"strings"
+	"time"
 )
 
 type responseAccount struct {
@@ -181,325 +182,103 @@ func readAccount(c *gin.Context) {
 	c.HTML(http.StatusOK, "/admin/accounts/details/", c.Keys)
 }
 
-/*
-
-
-
-func readAdministrator(c *gin.Context) {
-	db := getMongoDBInstance()
-	defer db.Session.Close()
-	collection := db.C(ADMINS)
-	admin := Admin{}
-	err := collection.FindId(bson.ObjectIdHex(c.Param("id"))).One(&admin)
-	if err != nil {
-		if err == mgo.ErrNotFound {
-			Status404Render(c)
-			return
-		}
-		panic(err)
-	}
-	json, err := json.Marshal(admin)
-	if err != nil {
-		panic(err)
-	}
-	if XHR(c) {
-		c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
-		c.Data(http.StatusOK, "application/json; charset=utf-8", json)
-		return
-	}
-
-	c.Set("Record", template.JS(getEscapedString(string(json))))
-	c.HTML(http.StatusOK, "/admin/administrators/details/", c.Keys)
-}
-
-func updateAdministrator(c *gin.Context) {
-	response := responseAdmin{}
+func newNote(c *gin.Context) {
+	user := getUser(c)
+	response := responseAccount{}
 	response.Init(c)
-
-	err := json.NewDecoder(c.Request.Body).Decode(&response.Admin.Name)
-	if err != nil {
-		panic(err)
-	}
-	// clean errors from client
-	response.CleanErrors()
-
-	if len(response.Name.First) == 0 {
-		response.Errors = append(response.Errors, "A name is required")
-	}
-
-	if len(response.Name.Last) == 0 {
-		response.Errors = append(response.Errors, "A lastname is required")
-	}
-
-	if response.HasErrors() {
-		response.Fail()
-		return
-	}
-
-	response.Admin.Name.Full = response.Admin.Name.First + " " + response.Admin.Name.Last
-
-	db := getMongoDBInstance()
-	defer db.Session.Close()
-	collection := db.C(ADMINS)
-
-	// patchAdministrator
-	err = collection.UpdateId(bson.ObjectIdHex(c.Param("id")), bson.M{
-		"$set": bson.M{
-			"name": response.Admin.Name,
-		},
-	})
-	if err != nil {
-		response.Errors = append(response.Errors, err.Error())
-		response.Fail()
-		return
-	}
-
-	response.Finish()
-}
-
-func updateAdministratorPermissions(c *gin.Context) {
-	response := responseAdmin{}
-	response.Init(c)
-	//TODO there are not clear logic with populate of groups
-	admin := getAdmin(c)
 
 	// validate
-	ok := admin.IsMemberOf("root")
-	if !ok {
-		response.Errors = append(response.Errors, "You may not change the permissions of admin groups.")
-		response.Fail()
-		return
+	var body struct {
+		Data string `json:"data"`
 	}
-
-	response.Admin.DecodeRequest(c)
-	response.ErrFor = map[string]string{} // in that handler it required (non standard behavior from node)
-	if len(response.Permissions) == 0 {
-		response.ErrFor["permissions"] = "required"
-	}
-
-	if response.HasErrors() {
-		response.Fail()
-		return
-	}
-
-	//patchAdmin
-	db := getMongoDBInstance()
-	defer db.Session.Close()
-	collection := db.C(ADMINS)
-
-	err := collection.UpdateId(bson.ObjectIdHex(c.Param("id")), bson.M{
-		"$set": bson.M{
-			"permissions": response.Admin.Permissions,
-		},
-	})
-	if err != nil {
-		println(err.Error())
-		panic(err)
-	}
-
-	response.Finish()
-}
-
-func updateAdministratorGroups(c *gin.Context) {
-	response := responseAdmin{}
-	response.Init(c)
-	//TODO there are not clear logic with populate of groups
-	admin := getAdmin(c)
-
-	// validate
-	ok := admin.IsMemberOf("root")
-	if !ok {
-		response.Errors = append(response.Errors, "You may not change the group memberships of admins.")
-		response.Fail()
-		return
-	}
-
-	response.Admin.DecodeRequest(c)
-	response.ErrFor = map[string]string{} // in that handler it required (non standard behavior from node)
-	if len(response.Groups) == 0 {
-		response.ErrFor["groups"] = "required"
-		response.Fail()
-		return
-	}
-
-
-	//patchAdmin
-	db := getMongoDBInstance()
-	defer db.Session.Close()
-	collection := db.C(ADMINS)
-
-	err := collection.UpdateId(bson.ObjectIdHex(c.Param("id")), bson.M{
-		"$set": bson.M{
-			"groups": response.Admin.Groups,
-		},
-	})
-	if err != nil {
-		println(err.Error())
-		panic(err)
-	}
-
-	response.Finish()
-}
-
-func linkUser(c *gin.Context) {
-	response := responseAdmin{}
-	response.Init(c)
-
-	admin := getAdmin(c)
-
-	// validate
-	ok := admin.IsMemberOf("root")
-	if !ok {
-		response.Errors = append(response.Errors, "You may not change the permissions of admin groups.")
-		response.Fail()
-		return
-	}
-
-	var req struct {
-		NewUsername string `json:"newUsername"`
-	}
-
-	err := json.NewDecoder(c.Request.Body).Decode(&req)
+	decoder := json.NewDecoder(c.Request.Body)
+	err := decoder.Decode(&body)
 	if err != nil {
 		panic(err)
 	}
-
-	response.ErrFor = map[string]string{} // in that handler it required (non standard behavior from node)
-	if len(req.NewUsername) == 0 {
-		response.ErrFor["newUsername"] = "required"
-		response.Errors = append(response.Errors, "required")
-	}
-
-	if response.HasErrors() {
+	if len(body.Data) == 0 {
+		response.Errors = append(response.Errors, "Data is required.")
 		response.Fail()
 		return
 	}
 
-	//verifyUser
+	// addNote
 	db := getMongoDBInstance()
 	defer db.Session.Close()
-	collection := db.C(USERS)
-	user := User{}
-	err = collection.Find(bson.M{"username": req.NewUsername}).One(&user)
-	if err != nil {
-		if err != mgo.ErrNotFound {
-			panic(err)
-		}
-		response.Errors = append(response.Errors, "User not found.")
-		response.Fail()
-		return
-	}
-	id := c.Param("id")
-	if user.Roles.Admin.String() == id {
-		response.Errors = append(response.Errors, "User is already linked to a different admin.")
-		response.Fail()
-		return
-	}
-
-	// duplicateLinkCheck
-	collection = db.C(ADMINS)
-	err = collection.Find(
-		bson.M{
-			"user.id": id,
-			"_id": bson.M{
-				"user.id": id,
+	collection := db.C(ACCOUNTS)
+	account := &Account{}
+	err = collection.UpdateId(bson.ObjectIdHex(c.Param("id")),
+		bson.M{"$push": bson.M{"notes": bson.M{
+			"_id": bson.NewObjectId(),
+			"data": body.Data,
+			"userCreated": bson.M{
+				"id": user.ID,
+				"name": user.Username,
+				"time": time.Now().Format(ISOSTRING),
 			},
-		}).One(&admin) // reuse admin. If it will be used it mean that user already linked.
-
-	if err == nil {
-		response.Errors = append(response.Errors, "Another admin is already linked to that user.")
-		response.Fail()
-		return
-	} else if err != mgo.ErrNotFound {
-		panic(err)
-	}
-
-	// patchUser
-	collection = db.C(USERS)
-	err = collection.UpdateId(user.ID, bson.M{
-		"$set": bson.M{"roles.admin": bson.ObjectIdHex(id)},
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	// patchAdministrator
-	collection = db.C(ADMINS)
-	err = collection.UpdateId(bson.ObjectIdHex(id), bson.M{
-		"$set": bson.M{"user": bson.M{
-			"id": user.ID,
-			"name": user.Username,
 		}},
-	})
-
+		})
 	if err != nil {
 		panic(err)
 	}
-
-	// getAdminForResponse  drywall require it // todo maybe bulk?
-	err = collection.FindId(bson.ObjectIdHex(id)).One(&response.Admin)
-
+	err = collection.FindId(bson.ObjectIdHex(c.Param("id"))).One(account)
 	if err != nil {
 		panic(err)
 	}
-
-	response.Data["admin"] = response.Admin
+	response.Data["account"] = account
 	response.Finish()
 }
 
-func unlinkUser(c *gin.Context) {
-	response := responseAdmin{}
+func newStatus(c *gin.Context) {
+	user := getUser(c)
+	response := responseAccount{}
 	response.Init(c)
 
-	admin := getAdmin(c)
-
 	// validate
-	ok := admin.IsMemberOf("root")
-	if !ok {
-		response.Errors = append(response.Errors, "You may not change the permissions of admin groups.")
-		response.Fail()
-		return
+	var body struct {
+		StatusID string `json:"id"`
+		Name string `json:"name"`
 	}
-	id := c.Param("id")
-	if admin.ID.String() == id {
-		response.Errors = append(response.Errors, "You may not unlink yourself from admin.")
-		response.Fail()
-		return
-	} // todo  here is func for errors
-	response.ErrFor = map[string]string{} // in that handler it required (non standard behavior from node)
-
-	// patchUser
-	db := getMongoDBInstance()
-	defer db.Session.Close()
-	collection := db.C(USERS)
-	err := collection.Update(bson.M{"roles.admin": bson.ObjectIdHex(id)}, bson.M{
-		"$set": bson.M{"roles.admin": ""},
-	})
-	if err != nil {
-		if err != mgo.ErrNotFound {
-			panic(err)
-		}
-		response.Errors = append(response.Errors, "User not found.")
-		response.Fail()
-		return
-	}
-
-	// patchAdministrator
-	collection = db.C(ADMINS)
-	err = collection.UpdateId(bson.ObjectIdHex(id), bson.M{
-		"$set": bson.M{"user": bson.M{}},
-	})
-
+	decoder := json.NewDecoder(c.Request.Body)
+	err := decoder.Decode(&body)
 	if err != nil {
 		panic(err)
 	}
+	if len(body.StatusID) == 0 {
+		response.Errors = append(response.Errors, "Please choose a status.")
+		response.Fail()
+		return
+	}
 
-	response.Data["admin"] = response.Admin
+	// addStatus
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+	collection := db.C(ACCOUNTS)
+	account := &Account{}
+	statusToAdd := bson.M{
+			"_id": body.StatusID,
+			"name": body.Name,
+			"userCreated": bson.M{
+				"id": user.ID,
+				"name": user.Username,
+				"time": time.Now().Format(ISOSTRING),
+			},
+		}
+	err = collection.UpdateId(bson.ObjectIdHex(c.Param("id")),
+		bson.M{
+			"$push": bson.M{"statusLog": statusToAdd},
+			"$set": bson.M{"status": statusToAdd},
+		})
+	if err != nil {
+		panic(err)
+	}
+	err = collection.FindId(bson.ObjectIdHex(c.Param("id"))).One(account)
+	if err != nil {
+		panic(err)
+	}
+	response.Data["account"] = account
 	response.Finish()
 }
-
-
-*/
 
 func deleteAccount(c *gin.Context) {
 	response := Response{}

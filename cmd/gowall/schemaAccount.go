@@ -22,26 +22,18 @@ type Account struct {
 		Last   string `bson:"last" json:"last"`
 		Full   string `bson:"full" json:"full"`
 	} `bson:"name" json:"name"`
-	Company string `bson:"company" json:"company"`
-	Phone   string `bson:"phone" json:"phone"`
-	Zip     string `bson:"zip" json:"zip"`
-	Status  struct {
-		ID          bson.ObjectId `bson:"id" json:"id"`
-		Name        string        `bson:"name" json:"name"`
-		UserCreated struct {
-			ID   bson.ObjectId `bson:"id" json:"id"`
-			Name string        `bson:"name" json:"name"`
-			Time time.Time     `bson:"time" json:"time"`
-		} `bson:"userCreated" json:"userCreated"`
-	} `bson:"status" json:"status"`
-	StatusLog   []StatusLog `bson:"statusLog" json:"statusLog"`
-	Notes       []Note      `bson:"notes" json:"notes"`
-	UserCreated struct {
+	Company           string `bson:"company" json:"company"`
+	Phone             string `bson:"phone" json:"phone"`
+	Zip               string `bson:"zip" json:"zip"`
+	Status            accountStatus `bson:"status" json:"status"`
+	StatusLog         []accountStatus `bson:"statusLog" json:"statusLog"`
+	Notes             []Note      `bson:"notes" json:"notes"`
+	UserCreated       struct {
 		ID   bson.ObjectId `bson:"id" json:"id"`
 		Name string        `bson:"name" json:"name"`
 		Time time.Time     `bson:"time" json:"time"`
 	} `bson:"userCreated" json:"userCreated"`
-	Search []string `bson:"search" json:"search"`
+	Search            []string `bson:"search" json:"search"`
 }
 
 func (a *Account) DecodeRequest(c *gin.Context) {
