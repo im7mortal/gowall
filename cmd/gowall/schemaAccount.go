@@ -71,7 +71,7 @@ func (a *Account) linkUser(db *mgo.Database, user User) (err error) {
 		return
 	}
 
-	// patchAdministrator
+	// patchAccount
 	collection = db.C(ACCOUNTS)
 	err = collection.UpdateId(a.ID, bson.M{
 		"$set": bson.M{"user": bson.M{
@@ -104,8 +104,8 @@ func (a *Account) unlinkUser(db *mgo.Database, user User) (err error) {
 		return
 	}
 
-	// patchAdministrator
-	collection = db.C(ADMINS)
+	// patchAccount
+	collection = db.C(ACCOUNTS)
 	err = collection.UpdateId(a.ID, bson.M{
 		"$set": bson.M{"user": bson.M{}},
 	})

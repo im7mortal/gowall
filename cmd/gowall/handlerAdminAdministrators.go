@@ -301,7 +301,7 @@ func linkUser(c *gin.Context) {
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(USERS)
-	user := User{}
+	user := &User{}
 	err = collection.Find(bson.M{"username": req.NewUsername}).One(&user)
 	if err != nil {
 		if err != mgo.ErrNotFound {

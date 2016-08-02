@@ -148,7 +148,7 @@ func readUser(c *gin.Context) {
 
 func changeDataUser(c *gin.Context) {
 	response := Response{}
-
+	response.Init(c)
 	var body struct {
 		Username string `json:"username"`
 		Email    string `json:"email"`
@@ -168,7 +168,8 @@ func changeDataUser(c *gin.Context) {
 	defer db.Session.Close()
 	collection := db.C(USERS)
 	user := User{}
-	err = collection.FindId(bson.ObjectIdHex(c.Param("id"))).One(&user)
+	_id := c.Param("id")
+	err = collection.FindId(bson.ObjectIdHex(_id)).One(&user)
 	if err != nil {
 		if err != mgo.ErrNotFound {
 			panic(err)
@@ -184,37 +185,57 @@ func changeDataUser(c *gin.Context) {
 
 	// duplicateUsernameCheck
 	// duplicateEmailCheck
-	{
-		us := User{}
-		err = collection.Find(bson.M{
-			"$or": []bson.M{
-				bson.M{
-					"username": body.Username,
-				},
-				bson.M{
-					"email": body.Email,
-				},
+	err = collection.Find(bson.M{
+		"$or": []bson.M{
+			bson.M{
+				"username": body.Username,
 			},
-		}).One(&us)
-		if err != nil {
-			response.Errors = append(response.Errors, "username or email already exist")
-			response.Fail()
-			return
-		}
+			bson.M{
+				"email": body.Email,
+			},
+		},
+		"_id": bson.M{ "$ne": bson.ObjectIdHex(_id)},
+	}).One(nil)
+	if err == nil {
+		response.Errors = append(response.Errors, "username or email already exist")
+		response.Fail()
+		return
+	} else if err != mgo.ErrNotFound {
+		panic(err)
 	}
 
 	user.Username = body.Username
 	user.Email = body.Email
 
-	err = collection.UpdateId(user.ID, user)
+	// patchUser
+	err = collection.UpdateId(user.ID, bson.M{
+		"$set": bson.M{
+			"username": user.Username,
+			"email": user.Email,
+			"isActive": user.IsActive,
+			"search": []string{user.Username, user.Email},
+		},
+	})
 	if err != nil {
 		response.Errors = append(response.Errors, err.Error())
 		response.Fail()
 		return
 	}
-	// TODO  patch admin and account
-	response.Success = true
-	c.JSON(http.StatusOK, response)
+	// patchAdmin
+	collection = db.C(ADMINS)
+	err = collection.Update(bson.M{ "user.id": user.ID},
+		bson.M{ "$set": bson.M{ "user.name": user.Username},
+	})
+
+	// patchAccount
+	collection = db.C(ACCOUNTS)
+	err = collection.Update(bson.M{ "user.id": user.ID},
+		bson.M{ "$set": bson.M{ "user.name": user.Username},
+	})
+
+
+	// populateRoles // TODO
+	response.Finish()
 }
 
 func changePasswordUser(c *gin.Context) {
@@ -263,6 +284,158 @@ func changePasswordUser(c *gin.Context) {
 	err = collection.UpdateId(user.ID, user)
 	if err != nil {
 		response.Errors = append(response.Errors, err.Error())
+		response.Fail()
+		return
+	}
+
+	response.Finish()
+}
+
+func linkAdminToUser (c *gin.Context) {
+	response := Response{}
+	response.Init(c)
+
+	admin := getAdmin(c)
+	//user := getUser(c)
+
+	// validate
+	ok := admin.IsMemberOf(ROOTGROUP)
+	if !ok {
+		response.Errors = append(response.Errors, "You may not link users to admins.")
+		response.Fail()
+		return
+	}
+	var body struct {
+		NewAdminId  string `json:"newAdminId"`
+	}
+	decoder := json.NewDecoder(c.Request.Body)
+	err := decoder.Decode(&body)
+	if err != nil {
+		panic(err)
+	}
+	if len(body.NewAdminId) == 0 {
+		response.ErrFor["newAdminId"] = "required"
+		response.Fail()
+		return
+	}
+
+	// verifyAdmin
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+
+	collection := db.C(ADMINS)
+	admin = &Admin{}
+	err = collection.Find(bson.M{
+		"name.first": body.NewAdminId,
+	}).One(admin)
+
+	if err != nil {
+		if err != mgo.ErrNotFound {
+		panic(err)
+	}
+		response.Errors = append(response.Errors, "Admin not found.")
+		response.Fail()
+		return
+	}
+	userID := c.Param("id")
+	id_ := admin.User.ID.Hex()
+
+	if len(id_) == 12 && id_ != userID {
+		response.Errors = append(response.Errors, "Admin is already linked to a different user.")
+		response.Fail()
+		return
+	}
+
+
+	//duplicateLinkCheck
+	collection = db.C(USERS)
+	err = collection.Find(bson.M{
+		"roles.admin": admin.ID,
+		"_id": bson.M{ "$ne": bson.ObjectIdHex(userID)},
+	}).One(nil)
+	if err == nil {
+		response.Errors = append(response.Errors, "Another user is already linked to that admin.")
+		response.Fail()
+		return
+	} else if err != mgo.ErrNotFound {
+		panic(err)
+	}
+
+	//patchUser
+	//patchAdmin
+	user := &User{}
+
+	err = collection.FindId(bson.ObjectIdHex(userID)).One(user)
+
+	if err != nil {
+		if err != mgo.ErrNotFound {
+		panic(err)
+	}
+		response.Errors = append(response.Errors, "User not found.")
+		response.Fail()
+		return
+	}
+	err = admin.linkUser(db, user)
+	if err != nil {
+		response.Errors = append(response.Errors, "Something went wrong.")
+		response.Fail()
+		return
+	}
+
+	response.Data["user"] = user
+	response.Finish()
+}
+
+func unlinkAdminToUser (c *gin.Context) {
+	response := Response{}
+	response.Init(c)
+
+	admin := getAdmin(c)
+	//user := getUser(c)
+
+	// validate
+	ok := admin.IsMemberOf(ROOTGROUP)
+	if !ok {
+		response.Errors = append(response.Errors, "You may not link users to admins.")
+		response.Fail()
+		return
+	}
+	id_ := c.Param("id")
+	if admin.ID.Hex() == id_ {
+		response.Errors = append(response.Errors, "You may not unlink yourself from admin.")
+		response.Fail()
+		return
+	}
+
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+
+
+
+	collection := db.C(ADMINS)
+	admin = &Admin{}
+	err := collection.Find(bson.M{
+		"name.first": "",
+	}).One(admin)
+
+
+	//patchUser
+	//patchAdmin
+	user := &User{}
+
+	err = collection.FindId(bson.ObjectIdHex(id_)).One(user)
+
+	if err != nil {
+		if err != mgo.ErrNotFound {
+		panic(err)
+	}
+		response.Errors = append(response.Errors, "User not found.")
+		response.Fail()
+		return
+	}
+	err = admin.linkUser(db, user)
+	if err != nil {
+		response.Errors = append(response.Errors, "Something went wrong.")
 		response.Fail()
 		return
 	}

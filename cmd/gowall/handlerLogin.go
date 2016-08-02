@@ -32,11 +32,16 @@ func LoginRender(c *gin.Context) {
 }
 
 func Login(c *gin.Context) {
-	response := responseUser{} // todo sync.Pool
+	response := responseUser{}
 	response.Init(c)
 
+	var body struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+
 	decoder := json.NewDecoder(c.Request.Body)
-	err := decoder.Decode(&response)
+	err := decoder.Decode(&body)
 	if err != nil {
 		response.Errors = append(response.Errors, err.Error())
 		response.Fail()
@@ -47,17 +52,18 @@ func Login(c *gin.Context) {
 
 	// validate
 	response.Username = strings.ToLower(response.Username)
-	if len(response.Username) == 0 {
+	if len(body.Username) == 0 {
 		response.ErrFor["username"] = "required"
 	}
-	if len(response.Password) == 0 {
+	if len(body.Password) == 0 {
 		response.ErrFor["password"] = "required"
 	}
 	if response.HasErrors() {
 		response.Fail()
 		return
 	}
-
+	response.Username = body.Username
+	response.Password = body.Password
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 

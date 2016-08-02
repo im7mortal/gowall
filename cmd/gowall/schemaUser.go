@@ -15,26 +15,26 @@ type vendorOauth struct {
 }
 
 type User struct {
-	ID       bson.ObjectId `bson:"_id"`
-	Username string        `bson:"username"`
+	ID       bson.ObjectId `json:"_id" bson:"_id"`
+	Username string        `json:"username" bson:"username"`
 	Password string        `json:"-" bson:"password"`
-	Email    string        `bson:"email"`
+	Email    string        `json:"email" bson:"email"`
 	Roles    struct {
-		Admin   bson.ObjectId `bson:"admin,omitempty"`
-		Account bson.ObjectId `bson:"account,omitempty"`
-	} `bson:"roles"`
+		Admin   bson.ObjectId `json:"admin" bson:"admin,omitempty"`
+		Account bson.ObjectId `json:"account" bson:"account,omitempty"`
+	} `json:"roles" bson:"roles"`
 
-	IsActive             string    `bson:"isActive,omitempty"`
-	TimeCreated          time.Time `bson:"timeCreated"`
+	IsActive             string    `json:"isActive" bson:"isActive,omitempty"`
+	TimeCreated          time.Time `json:"timeCreated" bson:"timeCreated"`
 	ResetPasswordToken   string    `json:"-" bson:"resetPasswordToken,omitempty"`
-	ResetPasswordExpires time.Time `bson:"resetPasswordExpires,omitempty"`
+	ResetPasswordExpires time.Time `json:"resetPasswordExpires" bson:"resetPasswordExpires,omitempty"`
 
-	Twitter  vendorOauth `bson:"twitter"`
-	Github   vendorOauth `bson:"github"`
-	Facebook vendorOauth `bson:"facebook"`
-	Google   vendorOauth `bson:"google"`
-	Tumblr   vendorOauth `bson:"tumblr"`
-	Search   []string    `bson:"search"`
+	Twitter  vendorOauth `json:"twitter" bson:"twitter"`
+	Github   vendorOauth `json:"github" bson:"github"`
+	Facebook vendorOauth `json:"facebook" bson:"facebook"`
+	Google   vendorOauth `json:"google" bson:"google"`
+	Tumblr   vendorOauth `json:"tumblr" bson:"tumblr"`
+	Search   []string    `json:"search" bson:"search"`
 }
 
 func (user *User) canPlayRoleOf(role string) bool {

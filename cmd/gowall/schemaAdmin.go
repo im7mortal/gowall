@@ -80,7 +80,7 @@ var AdminsIndex mgo.Index = mgo.Index{
 	Key: []string{"user.id", "search"},
 }
 
-func (admin *Admin) linkUser(db *mgo.Database, user User) (err error) {
+func (admin *Admin) linkUser(db *mgo.Database, user *User) (err error) {
 
 	// patchUser
 	collection := db.C(USERS)
