@@ -51,8 +51,8 @@ func BindRoutes(router *gin.Engine) {
 		admin.PUT("/users/:id/password/", changePasswordUser)
 		admin.PUT("/users/:id/role-admin/", linkAdminToUser)
 		admin.DELETE("/users/:id/role-admin/", unlinkAdminToUser)
-		admin.PUT("/users/:id/role-account/", index)
-		admin.DELETE("/users/:id/role-account/", index)
+		admin.PUT("/users/:id/role-account/", linkAccountToUser)
+		admin.DELETE("/users/:id/role-account/", unlinkAccountToUser)
 		admin.DELETE("/users/:id/", deleteUser)
 
 		//admin > administrators

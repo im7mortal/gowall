@@ -48,12 +48,12 @@ var AccountIndex mgo.Index = mgo.Index{
 	Key: []string{"user", "status.id", "search"},
 }
 
-func (a *Account) linkUser(db *mgo.Database, user User) (err error) {
+func (a *Account) linkUser(db *mgo.Database, user *User) (err error) {
 
 	// patchUser
 	collection := db.C(USERS)
 	err = collection.UpdateId(user.ID, bson.M{
-		"$set": bson.M{"roles.admin": a.ID},
+		"$set": bson.M{"roles.account": a.ID},
 	})
 
 	if err != nil {
@@ -81,12 +81,12 @@ func (a *Account) linkUser(db *mgo.Database, user User) (err error) {
 	return
 }
 
-func (a *Account) unlinkUser(db *mgo.Database, user User) (err error) {
+func (a *Account) unlinkUser(db *mgo.Database, user *User) (err error) {
 
 	// patchUser
 	collection := db.C(USERS)
-	err = collection.Update(bson.M{"roles.admin": a.ID}, bson.M{
-		"$set": bson.M{"roles.admin": ""},
+	err = collection.Update(bson.M{"roles.account": user.Roles.Account}, bson.M{
+		"$set": bson.M{"roles.account": ""},
 	})
 
 	if err != nil {
@@ -98,8 +98,8 @@ func (a *Account) unlinkUser(db *mgo.Database, user User) (err error) {
 
 	// patchAccount
 	collection = db.C(ACCOUNTS)
-	err = collection.UpdateId(a.ID, bson.M{
-		"$set": bson.M{"user": bson.M{}},
+	err = collection.UpdateId(user.Roles.Account, bson.M{
+		"$set": bson.M{"roles.account": ""},
 	})
 
 	if err != nil {

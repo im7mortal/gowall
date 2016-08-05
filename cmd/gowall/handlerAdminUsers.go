@@ -136,7 +136,6 @@ func readUser(c *gin.Context) {
 
 	// TODO parrallel?
 
-
 	if len(user.Roles.Admin.Hex()) != 0 {
 		admin := Admin{}
 		collection := db.C(ADMINS)
@@ -151,28 +150,22 @@ func readUser(c *gin.Context) {
 		}
 	}
 
-	/*
 	if len(user.Roles.Account.Hex()) != 0 {
 		roles, ok := res["roles"].(gin.H)
 		if !ok {
-			res["roles"] = gin.H{}
-		}
-
-
-		if !created {
-			res["roles"] = gin.H{}
+			roles = gin.H{}
 		}
 		account := Account{}
 		collection := db.C(ACCOUNTS)
 		collection.FindId(user.Roles.Account).One(&account)
-		res["roles"]["account"] = gin.H{
+		roles["account"] = gin.H{
 			"id_": account.ID.Hex(),
 			"name": gin.H{
 				"full": account.Name.Full,
 			},
 		}
+		res["roles"] = roles
 	}
-	*/
 
 	json, err := json.Marshal(res)
 	if err != nil {
@@ -493,6 +486,165 @@ func unlinkAdminToUser (c *gin.Context) {
 		"search": []string{},
 		"roles": gin.H{
 			"admin": nil,
+		},
+	}
+
+	response.Finish()
+}
+
+func linkAccountToUser (c *gin.Context) {
+	response := Response{}
+	response.Init(c)
+
+	admin := getAdmin(c)
+
+	// validate
+	ok := admin.IsMemberOf(ROOTGROUP)
+	if !ok {
+		response.Errors = append(response.Errors, "You may not link users to admins.")
+		response.Fail()
+		return
+	}
+	var body struct {
+		NewAccountId string `json:"newAccountId"`
+	}
+	decoder := json.NewDecoder(c.Request.Body)
+	err := decoder.Decode(&body)
+	if err != nil {
+		panic(err)
+	}
+	if len(body.NewAccountId) == 0 {
+		response.ErrFor["newAccountId"] = "required"
+		response.Fail()
+		return
+	}
+
+	// verifyAccount
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+
+	collection := db.C(ACCOUNTS)
+	account := &Account{}
+	err = collection.FindId(bson.ObjectIdHex(body.NewAccountId)).One(account)
+
+	if err != nil {
+		if err != mgo.ErrNotFound {
+		panic(err)
+	}
+		response.Errors = append(response.Errors, "Account not found.")
+		response.Fail()
+		return
+	}
+	userID := c.Param("id")
+	id_ := account.User.ID.Hex()
+
+	if len(id_) == 12 && id_ != userID {
+		response.Errors = append(response.Errors, "Account is already linked to a different user.")
+		response.Fail()
+		return
+	}
+
+
+	//duplicateLinkCheck
+	collection = db.C(USERS)
+	err = collection.Find(bson.M{
+		"roles.account": account.ID,
+		"_id": bson.M{ "$ne": bson.ObjectIdHex(userID)},
+	}).One(nil)
+	if err == nil {
+		response.Errors = append(response.Errors, "Another user is already linked to that account.")
+		response.Fail()
+		return
+	} else if err != mgo.ErrNotFound {
+		panic(err)
+	}
+
+	//patchUser
+	//patchAccount
+	user := &User{}
+
+	err = collection.FindId(bson.ObjectIdHex(userID)).One(user)
+
+	if err != nil {
+		if err != mgo.ErrNotFound {
+		panic(err)
+	}
+		response.Errors = append(response.Errors, "User not found.")
+		response.Fail()
+		return
+	}
+	err = account.linkUser(db, user)
+	if err != nil {
+		response.Errors = append(response.Errors, "Something went wrong.")
+		response.Fail()
+		return
+	}
+
+	response.Data["user"] = gin.H{
+		"id_": userID,
+		"timeCreated": userID, //TODO
+		"username": user.Username,
+		"search": []string{user.Username},
+		"roles": gin.H{
+			"account": gin.H{
+				"id_": account.ID.Hex(),
+				"name": gin.H{
+					"full": account.Name.Full,
+				},
+			},
+		},
+	}
+	response.Finish()
+}
+
+func unlinkAccountToUser (c *gin.Context) {
+	response := Response{}
+	response.Init(c)
+
+	admin := getAdmin(c)
+
+	// validate
+	ok := admin.IsMemberOf(ROOTGROUP)
+	if !ok {
+		response.Errors = append(response.Errors, "You may not link users to accounts.")
+		response.Fail()
+		return
+	}
+	id_ := c.Param("id")
+
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+
+	collection := db.C(USERS)
+	user := &User{}
+
+	err := collection.FindId(bson.ObjectIdHex(id_)).One(user)
+
+	if err != nil {
+		if err != mgo.ErrNotFound {
+		panic(err)
+	}
+		response.Errors = append(response.Errors, "User not found.")
+		response.Fail()
+		return
+	}
+	account := &Account{}
+
+	//patchUser
+	//patchAccount
+	err = account.unlinkUser(db, user)
+	if err != nil {
+		response.Errors = append(response.Errors, "Something went wrong.")
+		response.Fail()
+		return
+	}
+		response.Data["user"] = gin.H{
+		"id_": id_,
+		"timeCreated": id_, //TODO
+		"username": user.Username,
+		"search": []string{},
+		"roles": gin.H{
+			"account": nil,
 		},
 	}
 
