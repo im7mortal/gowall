@@ -4,6 +4,10 @@
 
 3) adminGroups has minor errors in update
 
+
+мокрое место, то что чувак вместо строки в одном месте вставляет обьект
+я зафигачил интерфейс
+
 # Drywall  ( ca35c06  I forked)
 
 A website and user system starter. Implemented with Express and Backbone.
