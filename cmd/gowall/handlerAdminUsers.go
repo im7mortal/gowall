@@ -325,9 +325,7 @@ func linkAdminToUser (c *gin.Context) {
 
 	collection := db.C(ADMINS)
 	admin = &Admin{}
-	err = collection.Find(bson.M{
-		"name.first": body.NewAdminId,
-	}).One(admin)
+	err = collection.FindId(bson.ObjectIdHex(body.NewAdminId)).One(admin)
 
 	if err != nil {
 		if err != mgo.ErrNotFound {
@@ -381,6 +379,8 @@ func linkAdminToUser (c *gin.Context) {
 		response.Fail()
 		return
 	}
+
+	user.Roles.Admin = admin
 
 	response.Data["user"] = user
 	response.Finish()
