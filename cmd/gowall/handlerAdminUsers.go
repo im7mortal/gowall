@@ -380,9 +380,20 @@ func linkAdminToUser (c *gin.Context) {
 		return
 	}
 
-	user.Roles.Admin = admin
-
-	response.Data["user"] = user
+	response.Data["user"] = gin.H{
+		"id_": userID,
+		"timeCreated": userID, //TODO
+		"username": user.Username,
+		"search": []string{user.Username},
+		"roles": gin.H{
+			"admin": gin.H{
+				"id_": admin.ID.Hex(),
+				"name": gin.H{
+					"full": admin.Name.Full,
+				},
+			},
+		},
+	}
 	response.Finish()
 }
 
