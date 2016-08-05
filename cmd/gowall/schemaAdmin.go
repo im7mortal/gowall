@@ -113,11 +113,11 @@ func (admin *Admin) linkUser(db *mgo.Database, user *User) (err error) {
 	return
 }
 
-func (admin *Admin) unlinkUser(db *mgo.Database, user User) (err error) {
+func (admin *Admin) unlinkUser(db *mgo.Database, user *User) (err error) {
 
 	// patchUser
 	collection := db.C(USERS)
-	err = collection.Update(bson.M{"roles.admin": admin.ID}, bson.M{
+	err = collection.Update(bson.M{"roles.admin": user.Roles.Admin}, bson.M{
 		"$set": bson.M{"roles.admin": ""},
 	})
 
@@ -130,7 +130,7 @@ func (admin *Admin) unlinkUser(db *mgo.Database, user User) (err error) {
 
 	// patchAdministrator
 	collection = db.C(ADMINS)
-	err = collection.UpdateId(admin.ID, bson.M{
+	err = collection.UpdateId(user.Roles.Admin, bson.M{
 		"$set": bson.M{"user": bson.M{}},
 	})
 

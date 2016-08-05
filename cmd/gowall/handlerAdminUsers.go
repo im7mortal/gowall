@@ -126,12 +126,55 @@ func readUser(c *gin.Context) {
 	collection := db.C(USERS)
 	user := User{}
 	collection.FindId(bson.ObjectIdHex(c.Param("id"))).One(&user)
-	json, err := json.Marshal(gin.H{
+
+	res := gin.H{
 		"_id":      user.ID.Hex(),
 		"username": user.Username,
 		"email":    user.Email,
 		"isActive": user.IsActive,
-	})
+	}
+
+	// TODO parrallel?
+
+
+	if len(user.Roles.Admin.Hex()) != 0 {
+		admin := Admin{}
+		collection := db.C(ADMINS)
+		collection.FindId(user.Roles.Admin).One(&admin)
+		res["roles"] = gin.H{
+			"admin": gin.H{
+				"id_": admin.ID.Hex(),
+				"name": gin.H{
+					"full": admin.Name.Full,
+				},
+			},
+		}
+	}
+
+	/*
+	if len(user.Roles.Account.Hex()) != 0 {
+		roles, ok := res["roles"].(gin.H)
+		if !ok {
+			res["roles"] = gin.H{}
+		}
+
+
+		if !created {
+			res["roles"] = gin.H{}
+		}
+		account := Account{}
+		collection := db.C(ACCOUNTS)
+		collection.FindId(user.Roles.Account).One(&account)
+		res["roles"]["account"] = gin.H{
+			"id_": account.ID.Hex(),
+			"name": gin.H{
+				"full": account.Name.Full,
+			},
+		}
+	}
+	*/
+
+	json, err := json.Marshal(res)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -402,7 +445,6 @@ func unlinkAdminToUser (c *gin.Context) {
 	response.Init(c)
 
 	admin := getAdmin(c)
-	//user := getUser(c)
 
 	// validate
 	ok := admin.IsMemberOf(ROOTGROUP)
@@ -421,20 +463,10 @@ func unlinkAdminToUser (c *gin.Context) {
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 
-
-
-	collection := db.C(ADMINS)
-	admin = &Admin{}
-	err := collection.Find(bson.M{
-		"name.first": "",
-	}).One(admin)
-
-
-	//patchUser
-	//patchAdmin
+	collection := db.C(USERS)
 	user := &User{}
 
-	err = collection.FindId(bson.ObjectIdHex(id_)).One(user)
+	err := collection.FindId(bson.ObjectIdHex(id_)).One(user)
 
 	if err != nil {
 		if err != mgo.ErrNotFound {
@@ -444,11 +476,24 @@ func unlinkAdminToUser (c *gin.Context) {
 		response.Fail()
 		return
 	}
-	err = admin.linkUser(db, user)
+	admin = &Admin{}
+
+	//patchUser
+	//patchAdmin
+	err = admin.unlinkUser(db, user)
 	if err != nil {
 		response.Errors = append(response.Errors, "Something went wrong.")
 		response.Fail()
 		return
+	}
+		response.Data["user"] = gin.H{
+		"id_": id_,
+		"timeCreated": id_, //TODO
+		"username": user.Username,
+		"search": []string{},
+		"roles": gin.H{
+			"admin": nil,
+		},
 	}
 
 	response.Finish()
