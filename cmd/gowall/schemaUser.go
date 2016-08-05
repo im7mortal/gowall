@@ -19,9 +19,9 @@ type User struct {
 	Username string        `json:"username" bson:"username"`
 	Password string        `json:"-" bson:"password"`
 	Email    string        `json:"email" bson:"email"`
-	Roles    struct {
-		Admin   bson.ObjectId `json:"admin" bson:"admin,omitempty"`
-		Account bson.ObjectId `json:"account" bson:"account,omitempty"`
+	Roles    struct { // TODO I don't like it but it's port from js
+		Admin   interface{} `json:"admin" bson:"admin,omitempty"`
+		Account interface{} `json:"account" bson:"account,omitempty"`
 	} `json:"roles" bson:"roles"`
 
 	IsActive             string    `json:"isActive" bson:"isActive,omitempty"`
@@ -38,11 +38,17 @@ type User struct {
 }
 
 func (user *User) canPlayRoleOf(role string) bool {
-	if role == "admin" && len(user.Roles.Account.String()) > 0 {
-		return true
+	var id bson.ObjectId
+	var ok bool
+	if id, ok = user.Roles.Admin.(bson.ObjectId); ok {
+		if role == "admin" && len(id.String()) > 0 {
+			return true
+		}
 	}
-	if role == "account" && len(user.Roles.Account.String()) > 0 {
-		return true
+	if id, ok = user.Roles.Account.(bson.ObjectId); ok {
+		if role == "account" && len(id.String()) > 0 {
+			return true
+		}
 	}
 	return false
 }

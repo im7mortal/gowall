@@ -312,10 +312,13 @@ func linkUser(c *gin.Context) {
 		return
 	}
 	id := c.Param("id")
-	if user.Roles.Admin.String() == id {
-		response.Errors = append(response.Errors, "User is already linked to a different admin.")
-		response.Fail()
-		return
+
+	if id_, ok := user.Roles.Admin.(bson.ObjectId); ok {
+		if id_.String() == id {
+			response.Errors = append(response.Errors, "User is already linked to a different admin.")
+			response.Fail()
+			return
+		}
 	}
 
 	// duplicateLinkCheck
