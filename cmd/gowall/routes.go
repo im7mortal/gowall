@@ -100,7 +100,7 @@ func BindRoutes(router *gin.Engine) {
 		admin.DELETE("/categories/:id/", deleteCategory)
 
 		//admin > search
-		admin.GET("/search/", index) //TODO
+		admin.GET("/search/", searchResult)
 	}
 
 	//account
