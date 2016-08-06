@@ -20,7 +20,8 @@ type Admin struct {
 		Last   string `bson:"last" json:"last"`
 		Full   string `bson:"full" json:"full"`
 	} `bson:"name" json:"name"`
-	Groups      []string     `bson:"groups" json:"groups"`
+	Groups      []string     `bson:"groups" json:"-"` // drywall author used mutable objects
+	GroupsJS    []AdminGroup `json:"groups" bson:"-"` // I separate types for mongoDB and json
 	Permissions []Permission `bson:"permissions" json:"permissions"`
 	TimeCreated time.Time    `bson:"timeCreated" json:"timeCreated"`
 	Search      []string     `bson:"search" json:"search"`

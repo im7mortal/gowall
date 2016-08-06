@@ -102,9 +102,9 @@
 			</div><% } %>
 		</div>
 		<div class="form-group <%- errfor.newMembership ? "has-error" : "" %>">
-		<label>Add Membership:</label>
 		<div class="input-group">
 			<select name="newMembership" class="form-control">
+				{{.Groups}}
 			</select>
 			<div class="input-group-btn">
 				<button type="button" class="btn btn-success btn-add">Add</button>
@@ -128,14 +128,6 @@
 		</div>
 	</fieldset>
 </script>
-
-
-
-
-
-
-
-
 
 <script type="text/template" id="tmpl-permissions">
 	<fieldset>

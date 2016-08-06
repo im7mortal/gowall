@@ -127,6 +127,24 @@ func readAdmin(c *gin.Context) {
 		}
 		panic(err)
 	}
+
+	// populateGroups
+	collection = db.C(ADMINGROUPS)
+	adminGroups := []AdminGroup{}
+	err = collection.Find(nil).All(&adminGroups)
+	if err != nil {
+		// mgo.ErrNotFound is not possible. "Root" group must be.
+		panic(err)
+	}
+
+	for _, adminGroupID := range admin.Groups {
+		for _, adminGroup := range adminGroups {
+			if adminGroupID == adminGroup.ID {
+				admin.GroupsJS = append(admin.GroupsJS, adminGroup)
+			}
+		}
+	}
+
 	results, err := json.Marshal(admin)
 	if err != nil {
 		panic(err)
@@ -137,6 +155,16 @@ func readAdmin(c *gin.Context) {
 		return
 	}
 
+	// preparing for js.  Don't like it.
+	// https://groups.google.com/forum/#!topic/golang-nuts/0HJoROz2TMo
+	// https://play.golang.org/p/M_AoMQwtFt
+	// 10 july 2016 wasn't expected
+	// !!!  somehow label broke it too
+	var adminGroupsS string
+	for _, adminGroup := range adminGroups {
+		adminGroupsS += `<option value="` + adminGroup.ID + `">` + adminGroup.Name + `</option>`
+	}
+	c.Set("Groups", template.JS(adminGroupsS))
 	c.Set("Record", template.JS(getEscapedString(string(results))))
 	c.HTML(http.StatusOK, "/admin/administrators/details/", c.Keys)
 }
