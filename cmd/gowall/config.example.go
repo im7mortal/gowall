@@ -89,7 +89,7 @@ func InitConfig() {
 	// I think it's ok. I use it only for "get". No modifying
 	config.Socials = make(map[string]OAuth)
 
-	ins := OAuth{} // todo i hope it's not like JS link
+	ins := OAuth{}
 
 	ins.Key = getEnvOrSetDef("TWITTER_OAUTH_KEY", "")
 	ins.Secret = getEnvOrSetDef("TWITTER_OAUTH_SECRET", "")
