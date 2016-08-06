@@ -130,19 +130,10 @@ func readAdmin(c *gin.Context) {
 
 	// populateGroups
 	collection = db.C(ADMINGROUPS)
-	adminGroups := []AdminGroup{}
-	err = collection.Find(nil).All(&adminGroups)
+	adminGroups, err := admin.populateGroups(db)
 	if err != nil {
 		// mgo.ErrNotFound is not possible. "Root" group must be.
 		panic(err)
-	}
-
-	for _, adminGroupID := range admin.Groups {
-		for _, adminGroup := range adminGroups {
-			if adminGroupID == adminGroup.ID {
-				admin.GroupsJS = append(admin.GroupsJS, adminGroup)
-			}
-		}
 	}
 
 	results, err := json.Marshal(admin)
@@ -256,9 +247,9 @@ func updatePermissionsAdmin(c *gin.Context) {
 }
 
 func updateGroupsAdmin(c *gin.Context) {
-	response := responseAdmin{}
+	response := Response{}
 	response.Init(c)
-	//TODO there are not clear logic with populate of groups
+
 	admin := getAdmin(c)
 
 	// validate
@@ -269,29 +260,46 @@ func updateGroupsAdmin(c *gin.Context) {
 		return
 	}
 
-	response.Admin.DecodeRequest(c)
-	response.ErrFor = map[string]string{} // in that handler it required (non standard behavior from node)
-	if len(response.Groups) == 0 {
+	var req struct {
+		Groups []AdminGroup `json:"groups"`
+	}
+	err := json.NewDecoder(c.Request.Body).Decode(&req)
+	if err != nil {
+		panic(err)
+	}
+
+	if len(req.Groups) == 0 {
 		response.ErrFor["groups"] = "required"
 		response.Fail()
 		return
+	}
+
+	setGroups := []string{}
+	for _, group := range req.Groups {
+		setGroups = append(setGroups, group.ID)
 	}
 
 	//patchAdmin
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(ADMINS)
-
-	err := collection.UpdateId(bson.ObjectIdHex(c.Param("id")), bson.M{
+	id := bson.ObjectIdHex(c.Param("id"))
+	err = collection.UpdateId(id, bson.M{
 		"$set": bson.M{
-			"groups": response.Admin.Groups,
+			"groups": setGroups,
 		},
 	})
 	if err != nil {
-		println(err.Error())
+		panic(err)
+	}
+	admin = &Admin{}
+	err = collection.FindId(id).One(admin)
+	if err != nil {
 		panic(err)
 	}
 
+	admin.populateGroups(db)
+	response.Data["admin"] = admin
 	response.Finish()
 }
 

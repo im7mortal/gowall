@@ -143,3 +143,22 @@ func (admin *Admin) unlinkUser(db *mgo.Database, user *User) (err error) {
 	}
 	return
 }
+
+func (admin *Admin) populateGroups(db *mgo.Database) (adminGroups []AdminGroup, err error) {
+	// populateGroups
+	collection := db.C(ADMINGROUPS)
+	adminGroups = []AdminGroup{}
+	err = collection.Find(nil).All(&adminGroups)
+	if err != nil {
+		return
+	}
+
+	for _, adminGroupID := range admin.Groups {
+		for _, adminGroup := range adminGroups {
+			if adminGroupID == adminGroup.ID {
+				admin.GroupsJS = append(admin.GroupsJS, adminGroup)
+			}
+		}
+	}
+	return
+}
