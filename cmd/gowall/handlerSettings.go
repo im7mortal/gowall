@@ -9,7 +9,6 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"html/template"
 	"net/http"
-	"net/url"
 )
 
 func AccountSettingsRender(c *gin.Context) {
@@ -34,7 +33,7 @@ func AccountSettingsRender(c *gin.Context) {
 			"username": user.Username,
 			"email":    user.Email,
 		})
-		c.Set("User", template.JS(url.QueryEscape(string(User))))
+		c.Set("User", template.JS(getEscapedString(string(User))))
 	}
 	collection = db.C(ACCOUNTS)
 	ac := Account{}
@@ -54,7 +53,7 @@ func AccountSettingsRender(c *gin.Context) {
 			"phone":   ac.Phone,
 			"zip":     ac.Zip,
 		})
-		c.Set("Account", template.JS(url.QueryEscape(string(Account))))
+		c.Set("Account", template.JS(getEscapedString(string(Account))))
 	}
 	c.HTML(http.StatusOK, c.Request.URL.Path, c.Keys)
 }

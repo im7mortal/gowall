@@ -7,7 +7,6 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"html/template"
 	"net/http"
-	"net/url"
 )
 
 func renderStatuses(c *gin.Context) {
@@ -136,7 +135,7 @@ func readStatus(c *gin.Context) {
 		return
 	}
 
-	c.Set("Record", template.JS(url.QueryEscape(string(json))))
+	c.Set("Record", template.JS(getEscapedString(string(json))))
 	c.HTML(http.StatusOK, "/admin/statuses/details/", c.Keys)
 }
 

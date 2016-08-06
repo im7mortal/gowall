@@ -9,7 +9,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2/bson"
 	"net/http"
-	"net/url"
 )
 
 func generateToken1(n int) []byte {
@@ -198,7 +197,7 @@ func AccountSettingsRender1(c *gin.Context) {
 			"user":  us.Username,
 			"email": us.Email,
 		})
-		c.Set("User", url.QueryEscape(string(User)))
+		c.Set("User", getEscapedString(string(User)))
 	}
 	collection = db.C(ACCOUNTS)
 	ac := Account{}
@@ -218,7 +217,7 @@ func AccountSettingsRender1(c *gin.Context) {
 			"phone":   ac.Phone,
 			"zip":     ac.Zip,
 		})
-		c.Set("Account", url.QueryEscape(string(Account)))
+		c.Set("Account", getEscapedString(string(Account)))
 	}
 	c.HTML(http.StatusOK, c.Request.URL.Path, c.Keys)
 }
