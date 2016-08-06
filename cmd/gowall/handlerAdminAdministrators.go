@@ -131,6 +131,7 @@ func readAdmin(c *gin.Context) {
 	// populateGroups
 	collection = db.C(ADMINGROUPS)
 	adminGroups, err := admin.populateGroups(db)
+	admin.Permissions = []Permission{}
 	if err != nil {
 		// mgo.ErrNotFound is not possible. "Root" group must be.
 		panic(err)
