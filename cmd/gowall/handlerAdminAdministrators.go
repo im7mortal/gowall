@@ -104,7 +104,7 @@ func createAdmin(c *gin.Context) {
 
 	// createAdministrator
 	response.Admin.ID = bson.NewObjectId()
-	err = collection.Insert(response.Admin) // todo I think mgo's behavior isn't expected
+	err = collection.Insert(response.Admin)
 	if err != nil {
 		panic(err)
 		return

@@ -418,7 +418,7 @@ func linkAdminToUser (c *gin.Context) {
 
 	response.Data["user"] = gin.H{
 		"id_": userID,
-		"timeCreated": userID, //TODO
+		"timeCreated": user.TimeCreated.Format(ISOSTRING),
 		"username": user.Username,
 		"search": []string{user.Username},
 		"roles": gin.H{
@@ -481,7 +481,7 @@ func unlinkAdminToUser (c *gin.Context) {
 	}
 		response.Data["user"] = gin.H{
 		"id_": id_,
-		"timeCreated": id_, //TODO
+		"timeCreated": user.TimeCreated.Format(ISOSTRING),
 		"username": user.Username,
 		"search": []string{},
 		"roles": gin.H{
@@ -582,7 +582,7 @@ func linkAccountToUser (c *gin.Context) {
 
 	response.Data["user"] = gin.H{
 		"id_": userID,
-		"timeCreated": userID, //TODO
+		"timeCreated": user.TimeCreated.Format(ISOSTRING),
 		"username": user.Username,
 		"search": []string{user.Username},
 		"roles": gin.H{
@@ -640,7 +640,7 @@ func unlinkAccountToUser (c *gin.Context) {
 	}
 		response.Data["user"] = gin.H{
 		"id_": id_,
-		"timeCreated": id_, //TODO
+		"timeCreated": user.TimeCreated.Format(ISOSTRING),
 		"username": user.Username,
 		"search": []string{},
 		"roles": gin.H{
