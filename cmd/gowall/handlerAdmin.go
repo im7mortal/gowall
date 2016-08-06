@@ -119,7 +119,7 @@ func ResendVerification1(c *gin.Context) {
 		c.HTML(http.StatusOK, user.defaultReturnUrl(), c.Keys)
 		return
 	}
-	response := Response{} // todo sync.Pool
+	response := Response{}
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
 	response.Init(c)
@@ -187,7 +187,7 @@ func AccountSettingsRender1(c *gin.Context) {
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(USERS)
-	us := User{} // todo pool
+	us := User{}
 	err := collection.FindId(bson.ObjectIdHex(public.(string))).One(&us)
 	if err != nil {
 		println(err.Error())
@@ -201,7 +201,7 @@ func AccountSettingsRender1(c *gin.Context) {
 		c.Set("User", url.QueryEscape(string(User)))
 	}
 	collection = db.C(ACCOUNTS)
-	ac := Account{} // todo pool
+	ac := Account{}
 	err = collection.FindId(us.Roles.Account).One(&ac)
 	if err != nil {
 		println(err.Error())

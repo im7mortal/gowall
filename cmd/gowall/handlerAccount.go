@@ -91,7 +91,7 @@ func ResendVerification(c *gin.Context) {
 		c.HTML(http.StatusOK, user.defaultReturnUrl(), c.Keys)
 		return
 	}
-	response := Response{} // todo sync.Pool
+	response := Response{}
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
 	response.Init(c)

@@ -23,7 +23,7 @@ func AccountSettingsRender(c *gin.Context) {
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(USERS)
-	user = &User{} // todo pool
+	user = &User{}
 	err := collection.FindId(bson.ObjectIdHex(public.(string))).One(user)
 	if err != nil {
 		println(err.Error())
@@ -37,7 +37,7 @@ func AccountSettingsRender(c *gin.Context) {
 		c.Set("User", template.JS(url.QueryEscape(string(User))))
 	}
 	collection = db.C(ACCOUNTS)
-	ac := Account{} // todo pool
+	ac := Account{}
 	err = collection.FindId(user.Roles.Account).One(&ac)
 	if err != nil {
 		println(err.Error())
@@ -61,7 +61,7 @@ func AccountSettingsRender(c *gin.Context) {
 
 func SetSettings(c *gin.Context) {
 	account := getAccount(c)
-	response := Response{} // todo sync.Pool
+	response := Response{}
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
 	response.Init(c)
@@ -119,7 +119,7 @@ func SetSettings(c *gin.Context) {
 
 func ChangePassword(c *gin.Context) {
 	user := getUser(c)
-	response := Response{} // todo sync.Pool
+	response := Response{}
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
 	response.Init(c)
@@ -163,7 +163,7 @@ func ChangePassword(c *gin.Context) {
 
 func ChangeIdentity(c *gin.Context) {
 	user := getUser(c)
-	response := Response{} // todo sync.Pool
+	response := Response{}
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
 	response.Init(c)
@@ -186,7 +186,7 @@ func ChangeIdentity(c *gin.Context) {
 	collection := db.C(USERS)
 
 	{
-		us := User{} // todo pool
+		us := User{}
 		err = collection.Find(bson.M{"$or": []bson.M{bson.M{"username": body.Username}, bson.M{"email": body.Email}}}).One(&us)
 		if err != nil {
 			response.Errors = append(response.Errors, "username or email already exist")
