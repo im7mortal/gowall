@@ -25,7 +25,7 @@ type LoginAttempt struct {
 }
 
 var LoginAttemptsIndex mgo.Index = mgo.Index{
-	Key:         []string{"username", "email"},
+	Key:         []string{"ip", "user"},
 	Unique:      true,
 	ExpireAfter: LoginAttemptsExpireAfter,
 }
