@@ -2,10 +2,9 @@ package main
 
 import (
 	"github.com/gin-gonic/contrib/renders/multitemplate"
-	"github.com/gin-gonic/gin"
 )
 
-func initTemplates(router *gin.Engine) (r multitemplate.Render) {
+func initTemplates() (r multitemplate.Render) {
 
 	r = multitemplate.New()
 

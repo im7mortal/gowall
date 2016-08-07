@@ -43,7 +43,7 @@ func main() {
 	Router.Static("/vendor", "vendor") // todo not good. conflict with go project structure
 
 	// templates
-	Router.HTMLRender = initTemplates(Router)
+	Router.HTMLRender = initTemplates()
 
 	Router.Use(gin.Logger())
 	Router.Use(checkRecover)
