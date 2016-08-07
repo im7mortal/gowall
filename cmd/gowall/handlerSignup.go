@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func signupRender(c *gin.Context) {
+func renderSignup(c *gin.Context) {
 	isAuthenticated, _ := c.Get("isAuthenticated")
 	if is, ok := isAuthenticated.(bool); ok && is {
 		defaultReturnUrl, exist := c.Get("DefaultReturnUrl")
@@ -23,7 +23,7 @@ func signupRender(c *gin.Context) {
 	}
 }
 
-func Signup(c *gin.Context) {
+func signup(c *gin.Context) {
 	response := responseUser{}
 	response.Init(c)
 

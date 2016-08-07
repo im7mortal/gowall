@@ -107,7 +107,7 @@ func readAdminGroup(c *gin.Context) {
 	err := collection.FindId(c.Param("id")).One(&adminGroup)
 	if err != nil {
 		if err == mgo.ErrNotFound {
-			Status404Render(c)
+			renderStatus404(c)
 			return
 		}
 		panic(err)

@@ -11,7 +11,7 @@ import (
 	"net/http"
 )
 
-func AccountSettingsRender(c *gin.Context) {
+func renderAccountSettings(c *gin.Context) {
 	sess := sessions.Default(c)
 
 	user := getUser(c)
@@ -58,7 +58,7 @@ func AccountSettingsRender(c *gin.Context) {
 	c.HTML(http.StatusOK, c.Request.URL.Path, c.Keys)
 }
 
-func SetSettings(c *gin.Context) {
+func setSettings(c *gin.Context) {
 	account := getAccount(c)
 	response := Response{}
 	response.Errors = []string{}
@@ -116,7 +116,7 @@ func SetSettings(c *gin.Context) {
 	response.Finish()
 }
 
-func ChangePassword(c *gin.Context) {
+func changePassword(c *gin.Context) {
 	user := getUser(c)
 	response := Response{}
 	response.Errors = []string{}
@@ -160,7 +160,7 @@ func ChangePassword(c *gin.Context) {
 	response.Finish()
 }
 
-func ChangeIdentity(c *gin.Context) {
+func changeIdentity(c *gin.Context) {
 	user := getUser(c)
 	response := Response{}
 	response.Errors = []string{}
@@ -207,7 +207,7 @@ func ChangeIdentity(c *gin.Context) {
 	response.Finish()
 }
 
-func providerSettings(c *gin.Context) {
+func settingsProvider_(c *gin.Context) {
 	session := sessions.Default(c)
 	session.Set("action", "/account/settings/")
 	session.Save()

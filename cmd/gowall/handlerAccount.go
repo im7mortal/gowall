@@ -22,11 +22,11 @@ func generateToken(n int) []byte {
 	return token
 }
 
-func AccountRender(c *gin.Context) {
+func renderAccount(c *gin.Context) {
 	c.HTML(http.StatusOK, c.Request.URL.Path, c.Keys)
 }
 
-func AccountVerificationRender(c *gin.Context) {
+func renderAccountVerification(c *gin.Context) {
 	account := getAccount(c)
 	user := getUser(c)
 	if account.IsVerified == "yes" {
@@ -68,7 +68,7 @@ func AccountVerificationRender(c *gin.Context) {
 	c.HTML(http.StatusOK, c.Request.URL.Path, c.Keys)
 }
 
-func Verify(c *gin.Context) {
+func verify(c *gin.Context) {
 
 	account := getAccount(c)
 	user := getUser(c)
@@ -84,7 +84,7 @@ func Verify(c *gin.Context) {
 	c.Redirect(http.StatusFound, user.defaultReturnUrl())
 }
 
-func ResendVerification(c *gin.Context) {
+func resendVerification(c *gin.Context) {
 	account := getAccount(c)
 	user := getUser(c)
 	if account.IsVerified == "yes" {

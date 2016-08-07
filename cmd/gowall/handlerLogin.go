@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func LoginRender(c *gin.Context) {
+func renderLogin(c *gin.Context) {
 	isAuthenticated, _ := c.Get("isAuthenticated")
 	if is, ok := isAuthenticated.(bool); ok && is {
 		var redirectURL string
@@ -30,7 +30,7 @@ func LoginRender(c *gin.Context) {
 	}
 }
 
-func Login(c *gin.Context) {
+func login(c *gin.Context) {
 	response := responseUser{}
 	response.Init(c)
 

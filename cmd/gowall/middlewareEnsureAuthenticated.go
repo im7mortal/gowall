@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-func EnsureAuthenticated(c *gin.Context) {
+func ensureAuthenticated(c *gin.Context) {
 	isAuthenticated, _ := c.Get("isAuthenticated")
 	if is, ok := isAuthenticated.(bool); ok && is {
 		c.Next()
@@ -44,7 +44,7 @@ func getAccount(c *gin.Context) (account *Account) {
 	return
 }
 
-func EnsureAccount(c *gin.Context) {
+func ensureAccount(c *gin.Context) {
 	user := getUser(c)
 	if ok := user.canPlayRoleOf("account"); ok {
 		account := Account{}
@@ -79,7 +79,7 @@ func getAdmin(c *gin.Context) (admin *Admin) {
 	return
 }
 
-func EnsureAdmin(c *gin.Context) {
+func ensureAdmin(c *gin.Context) {
 	user := getUser(c)
 	if ok := user.canPlayRoleOf("admin"); ok {
 		admin := Admin{}

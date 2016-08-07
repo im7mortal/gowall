@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func ForgotRender(c *gin.Context) {
+func renderForgon(c *gin.Context) {
 	isAuthenticated, _ := c.Get("isAuthenticated")
 	if is, ok := isAuthenticated.(bool); ok && is {
 		defaultReturnUrl, _ := c.Get("DefaultReturnUrl")
@@ -20,7 +20,7 @@ func ForgotRender(c *gin.Context) {
 	}
 }
 
-func SendReset(c *gin.Context) {
+func sendReset(c *gin.Context) {
 	response := Response{}
 	response.Init(c)
 
@@ -85,7 +85,7 @@ func SendReset(c *gin.Context) {
 	response.Finish()
 }
 
-func ResetRender(c *gin.Context) {
+func renderReset(c *gin.Context) {
 	isAuthenticated, _ := c.Get("isAuthenticated")
 	if is, ok := isAuthenticated.(bool); ok && is {
 		defaultReturnUrl, _ := c.Get("DefaultReturnUrl")
@@ -95,7 +95,7 @@ func ResetRender(c *gin.Context) {
 	}
 }
 
-func ResetPassword(c *gin.Context) {
+func resetPassword(c *gin.Context) {
 
 	var body struct {
 		Confirm  string `json:"confirm"`

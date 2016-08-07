@@ -26,7 +26,7 @@ func startOAuth(c *gin.Context) {
 	gothic.BeginAuthHandler(c.Writer, c.Request)
 }
 
-func CompleteOAuth(c *gin.Context) {
+func completeOAuth(c *gin.Context) {
 	// gothic was written for another path
 	// i just put provider query
 	provider := c.Param("provider")

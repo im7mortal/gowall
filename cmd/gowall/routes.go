@@ -4,42 +4,42 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func BindRoutes(router *gin.Engine) {
+func bindRoutes(router *gin.Engine) {
 
 	//front end
 	router.GET("/", index)
 	router.GET("/about/", about)
-	router.GET("/contact/", contactRender)
-	router.POST("/contact/", contactSend)
+	router.GET("/contact/", renderContact)
+	router.POST("/contact/", sendContact)
 
 	//sign up
-	router.GET("/signup/", signupRender)
-	router.POST("/signup/", Signup)
+	router.GET("/signup/", renderSignup)
+	router.POST("/signup/", signup)
 
 	//social sign up
-	router.POST("/signup/social/", SignUpSocial)
-	router.GET("/signup/:provider/", SignUpProvider)
+	router.POST("/signup/social/", socialSignup)
+	router.GET("/signup/:provider/", providerSignup)
 
 	//OAuth callback for /signup/  /login/  /settings/connect/
-	router.GET("/provider/:provider/callback/", CompleteOAuth)
+	router.GET("/provider/:provider/callback/", completeOAuth)
 
 	//social login
-	router.GET("/provider/:provider/", LoginProvider)
+	router.GET("/provider/:provider/", providerLogin)
 
 	//login/out
-	router.GET("/login/", LoginRender)
-	router.POST("/login/", Login)
-	router.GET("/login/forgot/", ForgotRender)
-	router.POST("/login/forgot/", SendReset)
-	router.GET("/login/reset/", ResetRender)
-	router.GET("/login/reset/:email/:token/", ResetRender)
-	router.PUT("/login/reset/:email/:token/", ResetPassword)
-	router.GET("/logout/", Logout)
+	router.GET("/login/", renderLogin)
+	router.POST("/login/", login)
+	router.GET("/login/forgot/", renderForgon)
+	router.POST("/login/forgot/", sendReset)
+	router.GET("/login/reset/", renderReset)
+	router.GET("/login/reset/:email/:token/", renderReset)
+	router.PUT("/login/reset/:email/:token/", resetPassword)
+	router.GET("/logout/", logout)
 
 	//admin
 	admin := router.Group("/admin")
-	admin.Use(EnsureAuthenticated)
-	admin.Use(EnsureAdmin)
+	admin.Use(ensureAuthenticated)
+	admin.Use(ensureAdmin)
 	{
 		admin.GET("/", renderAdministrator)
 
@@ -50,20 +50,20 @@ func BindRoutes(router *gin.Engine) {
 		admin.PUT("/users/:id/", changeDataUser)
 		admin.PUT("/users/:id/password/", changePasswordUser)
 		admin.PUT("/users/:id/role-admin/", linkAdminToUser)
-		admin.DELETE("/users/:id/role-admin/", unlinkAdminToUser)
+		admin.DELETE("/users/:id/role-admin/", unlinkAdminFromUser)
 		admin.PUT("/users/:id/role-account/", linkAccountToUser)
-		admin.DELETE("/users/:id/role-account/", unlinkAccountToUser)
+		admin.DELETE("/users/:id/role-account/", unlinkAccountFromUser)
 		admin.DELETE("/users/:id/", deleteUser)
 
 		//admin > administrators
-		admin.GET("/administrators/", renderAdmin)
+		admin.GET("/administrators/", renderAdmins)
 		admin.POST("/administrators/", createAdmin)
 		admin.GET("/administrators/:id/", readAdmin)
 		admin.PUT("/administrators/:id/", updateAdmin)
 		admin.PUT("/administrators/:id/permissions/", updatePermissionsAdmin) // todo
 		admin.PUT("/administrators/:id/groups/", updateGroupsAdmin)
-		admin.PUT("/administrators/:id/user/", linkUser)
-		admin.DELETE("/administrators/:id/user/", unlinkUser)
+		admin.PUT("/administrators/:id/user/", linkUserToAdmin)
+		admin.DELETE("/administrators/:id/user/", unlinkUserFromAdmin)
 		admin.DELETE("/administrators/:id/", deleteAdmin)
 
 		//admin > admin groups
@@ -80,7 +80,7 @@ func BindRoutes(router *gin.Engine) {
 		admin.GET("/accounts/:id/", readAccount)
 		admin.PUT("/accounts/:id/", updateAccount)
 		admin.PUT("/accounts/:id/user/", linkUserToAccount)
-		admin.DELETE("/accounts/:id/user/", unlinkUserToAccount)
+		admin.DELETE("/accounts/:id/user/", unlinkUserFromAccount)
 		admin.POST("/accounts/:id/notes/", newNote)
 		admin.POST("/accounts/:id/status/", newStatus)
 		admin.DELETE("/accounts/:id/", deleteAccount)
@@ -105,27 +105,27 @@ func BindRoutes(router *gin.Engine) {
 
 	//account
 	account := router.Group("/account")
-	account.Use(EnsureAuthenticated)
-	account.Use(EnsureAccount)
+	account.Use(ensureAuthenticated)
+	account.Use(ensureAccount)
 	{
-		account.GET("/", AccountRender)
+		account.GET("/", renderAccount)
 
 		//account > verification
-		account.GET("/verification/", AccountVerificationRender)
-		account.POST("/verification/", ResendVerification)
-		account.GET("/verification/:token/", Verify)
+		account.GET("/verification/", renderAccountVerification)
+		account.POST("/verification/", resendVerification)
+		account.GET("/verification/:token/", verify)
 
 		//account > settings
-		account.GET("/settings/", AccountSettingsRender)
-		account.PUT("/settings/", SetSettings)
-		account.PUT("/settings/identity/", ChangeIdentity)
-		account.PUT("/settings/password/", ChangePassword)
+		account.GET("/settings/", renderAccountSettings)
+		account.PUT("/settings/", setSettings)
+		account.PUT("/settings/identity/", changeIdentity)
+		account.PUT("/settings/password/", changePassword)
 
 		//account > settings > social
-		account.GET("/providerSettings/:provider/", providerSettings)
+		account.GET("/providerSettings/:provider/", settingsProvider_)
 		account.GET("/providerSettings/:provider/disconnect/", disconnectProvider)
 	}
 
 	//route not found
-	router.NoRoute(Status404Render)
+	router.NoRoute(renderStatus404)
 }

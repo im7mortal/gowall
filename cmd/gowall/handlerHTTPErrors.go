@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func Status404Render(c *gin.Context) {
+func renderStatus404(c *gin.Context) {
 	c.HTML(http.StatusOK, "404", c.Keys)
 }
 

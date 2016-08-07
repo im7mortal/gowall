@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func Logout(c *gin.Context) {
+func logout(c *gin.Context) {
 	session := sessions.Default(c)
 	session.Delete("public")
 	session.Save()

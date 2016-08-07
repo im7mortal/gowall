@@ -74,7 +74,7 @@ func main() {
 		c.Next()
 	})
 	Router.Use(IsAuthenticated)
-	BindRoutes(Router) // --> cmd/go-getting-started/routers.go
+	bindRoutes(Router) // --> cmd/go-getting-started/routers.go
 
 	Router.Run(":" + config.Port)
 

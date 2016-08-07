@@ -15,7 +15,7 @@ type responseAdmin struct {
 	Admin
 }
 
-func renderAdmin(c *gin.Context) {
+func renderAdmins(c *gin.Context) {
 	query := bson.M{}
 
 	name, ok := c.GetQuery("name")
@@ -122,7 +122,7 @@ func readAdmin(c *gin.Context) {
 	err := collection.FindId(bson.ObjectIdHex(c.Param("id"))).One(&admin)
 	if err != nil {
 		if err == mgo.ErrNotFound {
-			Status404Render(c)
+			renderStatus404(c)
 			return
 		}
 		panic(err)
@@ -315,7 +315,7 @@ func updateGroupsAdmin(c *gin.Context) {
 	response.Finish()
 }
 
-func linkUser(c *gin.Context) {
+func linkUserToAdmin(c *gin.Context) {
 	response := responseAdmin{}
 	response.Init(c)
 
@@ -403,7 +403,7 @@ func linkUser(c *gin.Context) {
 	response.Finish()
 }
 
-func unlinkUser(c *gin.Context) {
+func unlinkUserFromAdmin(c *gin.Context) {
 	response := responseAdmin{}
 	response.Init(c)
 

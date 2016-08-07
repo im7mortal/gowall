@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-func SignUpProvider(c *gin.Context) {
+func providerSignup(c *gin.Context) {
 	session := sessions.Default(c)
 	session.Set("action", "/signup/")
 	session.Save()
@@ -49,7 +49,7 @@ func signupProvider(c *gin.Context, userGoth goth.User) {
 	c.HTML(http.StatusOK, "/signup/social/", c.Keys)
 }
 
-func SignUpSocial(c *gin.Context) {
+func socialSignup(c *gin.Context) {
 	response := responseUser{}
 	response.Init(c)
 

@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-func LoginProvider(c *gin.Context) {
+func providerLogin(c *gin.Context) {
 	session := sessions.Default(c)
 	session.Set("action", "/login/")
 	session.Save()

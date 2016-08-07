@@ -6,11 +6,11 @@ import (
 	"net/http"
 )
 
-func contactRender(c *gin.Context) {
+func renderContact(c *gin.Context) {
 	c.HTML(http.StatusOK, c.Request.URL.Path, c.Keys)
 }
 
-func contactSend(c *gin.Context) {
+func sendContact(c *gin.Context) {
 	response := getResponseObj(c)
 	var body struct {
 		Name    string `json:"name"`

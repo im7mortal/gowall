@@ -432,7 +432,7 @@ func linkAdminToUser (c *gin.Context) {
 	response.Finish()
 }
 
-func unlinkAdminToUser (c *gin.Context) {
+func unlinkAdminFromUser(c *gin.Context) {
 	response := Response{}
 	response.Init(c)
 
@@ -596,7 +596,7 @@ func linkAccountToUser (c *gin.Context) {
 	response.Finish()
 }
 
-func unlinkAccountToUser (c *gin.Context) {
+func unlinkAccountFromUser(c *gin.Context) {
 	response := Response{}
 	response.Init(c)
 

@@ -149,7 +149,7 @@ func readAccount(c *gin.Context) {
 	err := collection.FindId(bson.ObjectIdHex(c.Param("id"))).One(&account)
 	if err != nil {
 		if err == mgo.ErrNotFound {
-			Status404Render(c)
+			renderStatus404(c)
 			return
 		}
 		panic(err)
@@ -337,7 +337,7 @@ func linkUserToAccount(c *gin.Context) {
 	response.Finish()
 }
 
-func unlinkUserToAccount(c *gin.Context) {
+func unlinkUserFromAccount(c *gin.Context) {
 	response := responseAccount{}
 	response.Init(c)
 
