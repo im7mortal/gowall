@@ -131,7 +131,9 @@ func readAdmin(c *gin.Context) {
 	// populateGroups
 	collection = db.C(ADMINGROUPS)
 	adminGroups, err := admin.populateGroups(db)
-	admin.Permissions = []Permission{}
+	if len(admin.Permissions) == 0 {
+		admin.Permissions = []Permission{}
+	}
 	if err != nil {
 		// mgo.ErrNotFound is not possible. "Root" group must be.
 		panic(err)
@@ -207,19 +209,18 @@ func updateAdmin(c *gin.Context) {
 func updatePermissionsAdmin(c *gin.Context) {
 	response := responseAdmin{}
 	response.Init(c)
-	//TODO there are not clear logic with populate of groups
+
 	admin := getAdmin(c)
 
 	// validate
 	ok := admin.IsMemberOf("root")
 	if !ok {
-		response.Errors = append(response.Errors, "You may not change the permissions of admin groups.")
+		response.Errors = append(response.Errors, "You may not change the permissions of admins.")
 		response.Fail()
 		return
 	}
 
 	response.Admin.DecodeRequest(c)
-	response.ErrFor = map[string]string{} // in that handler it required (non standard behavior from node)
 	if len(response.Permissions) == 0 {
 		response.ErrFor["permissions"] = "required"
 	}
@@ -229,21 +230,31 @@ func updatePermissionsAdmin(c *gin.Context) {
 		return
 	}
 
+	for _, permission := range response.Admin.Permissions {
+		permission.ID = bson.NewObjectId() // we lost ID every time. it can be solved easy
+	}
+
 	//patchAdmin
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(ADMINS)
-
-	err := collection.UpdateId(bson.ObjectIdHex(c.Param("id")), bson.M{
+	id := bson.ObjectIdHex(c.Param("id"))
+	err := collection.UpdateId(id, bson.M{
 		"$set": bson.M{
 			"permissions": response.Admin.Permissions,
 		},
 	})
 	if err != nil {
-		println(err.Error())
 		panic(err)
 	}
 
+	admin = &Admin{}
+	err = collection.FindId(id).One(admin)
+	if err != nil {
+		panic(err)
+	}
+	admin.populateGroups(db)
+	response.Data["admin"] = admin
 	response.Finish()
 }
 

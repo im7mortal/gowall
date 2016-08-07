@@ -152,7 +152,7 @@ func (admin *Admin) populateGroups(db *mgo.Database) (adminGroups []AdminGroup, 
 	if err != nil {
 		return
 	}
-
+	admin.GroupsJS = []AdminGroup{}
 	for _, adminGroupID := range admin.Groups {
 		for _, adminGroup := range adminGroups {
 			if adminGroupID == adminGroup.ID {

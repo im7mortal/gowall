@@ -60,8 +60,8 @@ func BindRoutes(router *gin.Engine) {
 		admin.POST("/administrators/", createAdmin)
 		admin.GET("/administrators/:id/", readAdmin)
 		admin.PUT("/administrators/:id/", updateAdmin)
-		admin.PUT("/administrators/:id/permissions/", updatePermissionsAdmin)
-		admin.PUT("/administrators/:id/groups/", updateGroupsAdmin) // todo didn't finished
+		admin.PUT("/administrators/:id/permissions/", updatePermissionsAdmin) // todo
+		admin.PUT("/administrators/:id/groups/", updateGroupsAdmin)
 		admin.PUT("/administrators/:id/user/", linkUser)
 		admin.DELETE("/administrators/:id/user/", unlinkUser)
 		admin.DELETE("/administrators/:id/", deleteAdmin)
