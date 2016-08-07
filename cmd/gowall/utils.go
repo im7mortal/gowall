@@ -5,6 +5,8 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"encoding/hex"
+	"crypto/rand"
 )
 
 func getEscapedString(str string) string {
@@ -39,4 +41,16 @@ func slugifyName(str string) string {
 
 func XHR(c *gin.Context) bool {
 	return strings.ToLower(c.Request.Header.Get("X-Requested-With")) == "xmlhttprequest"
+}
+
+func generateToken(n int) []byte {
+	b := make([]byte, n)
+	_, err := rand.Read(b)
+	if err != nil {
+		println(err.Error())
+		return b
+	}
+	token := make([]byte, n*2)
+	hex.Encode(token, b)
+	return token
 }

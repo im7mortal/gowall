@@ -1,26 +1,13 @@
 package main
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2/bson"
 	"net/http"
+	"gopkg.in/mgo.v2"
 )
-
-func generateToken(n int) []byte {
-	b := make([]byte, n)
-	_, err := rand.Read(b)
-	if err != nil {
-		println(err.Error())
-		return b
-	}
-	token := make([]byte, n*2)
-	hex.Encode(token, b)
-	return token
-}
 
 func renderAccount(c *gin.Context) {
 	c.HTML(http.StatusOK, c.Request.URL.Path, c.Keys)
@@ -39,15 +26,19 @@ func renderAccountVerification(c *gin.Context) {
 		VerifyURL := generateToken(21)
 		hash, err := bcrypt.GenerateFromPassword(VerifyURL, bcrypt.DefaultCost)
 		if err != nil {
-			println(err.Error())
-			return
+			panic(err)
 		}
-
 		db := getMongoDBInstance()
 		defer db.Session.Close()
 		collection := db.C(ACCOUNTS)
-		account.VerificationToken = string(hash)
-		collection.UpdateId(account.ID, account) // todo how to update only part?
+		err = collection.UpdateId(account.ID, bson.M{
+			"$set": bson.M{
+				"verificationToken": string(hash),
+			},
+		})
+		if err != nil {
+			panic(err)
+		}
 		verifyURL := "http" + "://" + c.Request.Host + "/account/verification/" + string(VerifyURL) + "/"
 		c.Set("VerifyURL", verifyURL)
 
@@ -60,16 +51,14 @@ func renderAccountVerification(c *gin.Context) {
 		mailConf.HtmlPath = "views/account/verification/email-html.html"
 
 		if err := mailConf.SendMail(); err != nil {
-			//todo it's not serious
+			panic(err)
 		}
-
 	}
 
 	c.HTML(http.StatusOK, c.Request.URL.Path, c.Keys)
 }
 
 func verify(c *gin.Context) {
-
 	account := getAccount(c)
 	user := getUser(c)
 	err := bcrypt.CompareHashAndPassword([]byte(account.VerificationToken), []byte(c.Param("token")))
@@ -77,9 +66,12 @@ func verify(c *gin.Context) {
 		db := getMongoDBInstance()
 		defer db.Session.Close()
 		collection := db.C(ACCOUNTS)
-		account.VerificationToken = ""
-		account.IsVerified = "yes"
-		collection.UpdateId(account.ID, account)
+		collection.UpdateId(account.ID, bson.M{
+			"$set": bson.M{
+				"verificationToken": "",
+				"isVerified": "yes",
+			},
+		})
 	}
 	c.Redirect(http.StatusFound, user.defaultReturnUrl())
 }
@@ -92,19 +84,15 @@ func resendVerification(c *gin.Context) {
 		return
 	}
 	response := Response{}
-	response.Errors = []string{}
-	response.ErrFor = make(map[string]string)
 	response.Init(c)
 
 	var body struct {
-		Username string `json:"username"`
-		Email    string `json:"email"`
-		Password string `json:"password"`
+		Email string `json:"email"`
 	}
-	decoder := json.NewDecoder(c.Request.Body)
-	err := decoder.Decode(&body)
+	err := json.NewDecoder(c.Request.Body).Decode(&body)
 
 	validateEmail(&body.Email, &response)
+
 	if response.HasErrors() {
 		response.Fail()
 		return
@@ -112,29 +100,35 @@ func resendVerification(c *gin.Context) {
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(USERS)
-	{
-		user_ := User{}
-		collection.Find(bson.M{"email": body.Email, "_id": bson.M{"$ne": user.ID}}).One(&user_)
-		if len(user_.Username) > 0 {
-			response.ErrFor["email"] = `email already taken`
-		}
-	}
-	if response.HasErrors() {
+	collection.Find(
+		bson.M{
+			"email": body.Email,
+			"_id": bson.M{
+				"$ne": user.ID,
+			},
+		}).One(nil)
+	if err == nil {
+		response.Errors = append(response.Errors, "That email already taken.")
 		response.Fail()
 		return
+	} else if err != mgo.ErrNotFound {
+		panic(err)
 	}
-	user.Email = body.Email
-	collection.UpdateId(user.ID, user)
+	collection.UpdateId(user.ID, bson.M{
+		"$set": bson.M{
+			"email": body.Email,
+		},
+	})
 
 	collection = db.C(ACCOUNTS)
 	VerifyURL := generateToken(21)
 	hash, err := bcrypt.GenerateFromPassword(VerifyURL, bcrypt.DefaultCost)
 	if err != nil {
-		println(err.Error())
-		return
+		panic(err)
 	}
-	account.VerificationToken = string(hash)
-	collection.UpdateId(account.ID, account) // todo how to update only part?
+	collection.UpdateId(account.ID, bson.M{
+		"verificationToken": string(hash),
+	})
 	verifyURL := "http" + "://" + c.Request.Host + "/account/verification/" + string(VerifyURL) + "/"
 	c.Set("VerifyURL", verifyURL)
 	mailConf := MailConfig{}
@@ -146,8 +140,7 @@ func resendVerification(c *gin.Context) {
 	mailConf.HtmlPath = "views/account/verification/email-html.html"
 
 	if err := mailConf.SendMail(); err != nil {
-		//todo it's serious
+		panic(err)
 	}
-
 	response.Finish()
 }

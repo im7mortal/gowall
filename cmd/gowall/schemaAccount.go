@@ -15,7 +15,7 @@ type Account struct {
 		Name string        `bson:"name" json:"name"`
 	} `bson:"user" json:"user"`
 	IsVerified        string `bson:"isVerified" json:"isVerified"`
-	VerificationToken string `bson:"verificationToken" json:"verificationToken"`
+	VerificationToken string `bson:"verificationToken" json:"-"`
 	Name              struct {
 		First  string `bson:"first" json:"first"`
 		Middle string `bson:"middle" json:"middle"`
