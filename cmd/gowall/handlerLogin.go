@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"net/http"
@@ -102,7 +101,7 @@ func Login(c *gin.Context) {
 		}
 		panic(err)
 	}
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(response.Password))
+	err = user.isPasswordOk(response.Password)
 	if err != nil {
 		attempt := LoginAttempt{}
 		attempt.ID = bson.NewObjectId()

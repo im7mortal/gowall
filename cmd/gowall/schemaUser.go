@@ -112,3 +112,9 @@ func (user *User) login(c *gin.Context) {
 	sess.Set("public", user.ID.Hex())
 	sess.Save()
 }
+
+func (user *User) isPasswordOk(password string) error {
+	return bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+}
+
+
