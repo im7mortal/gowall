@@ -4,12 +4,13 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"time"
+	"log"
 )
 
 func init() {
 	expiration, err := time.ParseDuration(config.LoginAttempts.LogExpiration)
 	if err != nil {
-		panic(err.Error()) // todo FATAL
+		log.Fatal("LoginAttemptsExpireAfter is not set: ", err)
 	}
 	LoginAttemptsExpireAfter = expiration
 }
