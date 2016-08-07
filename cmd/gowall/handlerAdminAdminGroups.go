@@ -94,7 +94,6 @@ func createAdminGroup(c *gin.Context) {
 	err = collection.Insert(response.AdminGroup)
 	if err != nil {
 		panic(err)
-		return
 	}
 	response.Finish()
 }

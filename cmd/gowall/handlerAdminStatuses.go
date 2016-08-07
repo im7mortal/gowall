@@ -75,7 +75,6 @@ func createStatus(c *gin.Context) {
 	err := decoder.Decode(&status)
 	if err != nil {
 		panic(err)
-		return
 	}
 
 	if len(status.Name) == 0 {

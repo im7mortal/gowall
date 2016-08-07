@@ -31,7 +31,6 @@ func signup(c *gin.Context) {
 	err := decoder.Decode(&response)
 	if err != nil {
 		panic(err)
-		return
 	}
 	// clean errors from client
 	response.CleanErrors()
@@ -82,7 +81,6 @@ func signup(c *gin.Context) {
 	err = collection.Insert(user)
 	if err != nil {
 		panic(err)
-		return
 	}
 
 	// createAccount
@@ -95,7 +93,6 @@ func signup(c *gin.Context) {
 	err = collection.UpdateId(user.ID, user)
 	if err != nil {
 		panic(err)
-		return
 	}
 
 	if config.RequireAccountVerification {
@@ -112,7 +109,6 @@ func signup(c *gin.Context) {
 	err = collection.Insert(account)
 	if err != nil {
 		panic(err)
-		return
 	}
 
 	// sendWelcomeEmail

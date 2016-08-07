@@ -76,7 +76,6 @@ func createCategory(c *gin.Context) {
 	err := decoder.Decode(&category)
 	if err != nil {
 		panic(err)
-		return
 	}
 
 	if len(category.Name) == 0 {
@@ -113,7 +112,6 @@ func createCategory(c *gin.Context) {
 	err = collection.Insert(category)
 	if err != nil {
 		panic(err)
-		return
 	}
 	response.Finish()
 }
@@ -138,7 +136,6 @@ func updateCategory(c *gin.Context) {
 	err := decoder.Decode(&category)
 	if err != nil {
 		panic(err)
-		return
 	}
 
 	if len(category.Name) == 0 {
@@ -175,7 +172,6 @@ func updateCategory(c *gin.Context) {
 	err = collection.Insert(category)
 	if err != nil {
 		panic(err)
-		return
 	}
 
 	response.Finish()

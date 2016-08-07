@@ -236,7 +236,6 @@ func settingsProvider(c *gin.Context, userGoth goth.User) {
 	err = collection.UpdateId(user.ID, user)
 	if err != nil {
 		panic(err)
-		return
 	}
 
 	c.Redirect(http.StatusFound, "/account/settings/")
@@ -251,7 +250,6 @@ func disconnectProvider(c *gin.Context) {
 	err := collection.UpdateId(user.ID, user)
 	if err != nil {
 		panic(err)
-		return
 	}
 
 	c.Redirect(http.StatusFound, "/account/settings/")

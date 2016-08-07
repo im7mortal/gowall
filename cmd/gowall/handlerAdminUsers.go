@@ -112,7 +112,6 @@ func createUser(c *gin.Context) {
 	err = collection.Insert(response.User)
 	if err != nil {
 		panic(err)
-		return
 	}
 	response.Data["record"] = response.User
 	response.Finish()

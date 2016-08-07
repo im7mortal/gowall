@@ -107,7 +107,6 @@ func createAdmin(c *gin.Context) {
 	err = collection.Insert(response.Admin)
 	if err != nil {
 		panic(err)
-		return
 	}
 	response.Data["record"] = response
 	response.Finish()

@@ -134,9 +134,7 @@ func createAccount(c *gin.Context) {
 	err = collection.Insert(response.Account) // todo I think mgo's behavior isn't expected
 
 	if err != nil {
-		println(err.Error())
 		panic(err)
-		return
 	}
 	response.Data["record"] = response
 	response.Finish()
@@ -238,7 +236,6 @@ func updateAccount(c *gin.Context) {
 	})
 	if err != nil {
 		panic(err)
-		return
 	}
 
 	account := &Account{}

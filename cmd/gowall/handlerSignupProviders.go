@@ -126,7 +126,6 @@ func socialSignup(c *gin.Context) {
 	err = collection.Insert(user)
 	if err != nil {
 		panic(err)
-		return
 	}
 
 	// createAccount
@@ -139,7 +138,6 @@ func socialSignup(c *gin.Context) {
 	err = collection.UpdateId(user.ID, user)
 	if err != nil {
 		panic(err)
-		return
 	}
 
 	if config.RequireAccountVerification {
@@ -156,7 +154,6 @@ func socialSignup(c *gin.Context) {
 	err = collection.Insert(account)
 	if err != nil {
 		panic(err)
-		return
 	}
 
 	// sendWelcomeEmail
