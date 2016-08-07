@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
+	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"net/http"
-	"gopkg.in/mgo.v2"
 )
 
 func renderAccount(c *gin.Context) {
@@ -69,7 +69,7 @@ func verify(c *gin.Context) {
 		collection.UpdateId(account.ID, bson.M{
 			"$set": bson.M{
 				"verificationToken": "",
-				"isVerified": "yes",
+				"isVerified":        "yes",
 			},
 		})
 	}

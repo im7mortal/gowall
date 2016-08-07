@@ -1,13 +1,13 @@
 package main
 
 import (
+	"github.com/gin-gonic/contrib/sessions"
+	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"strings"
 	"time"
-	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/contrib/sessions"
 )
 
 type vendorOauth struct {
@@ -116,5 +116,3 @@ func (user *User) login(c *gin.Context) {
 func (user *User) isPasswordOk(password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 }
-
-

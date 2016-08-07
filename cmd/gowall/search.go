@@ -3,9 +3,9 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"gopkg.in/mgo.v2"
-	"strconv"
 	"gopkg.in/mgo.v2/bson"
 	"net/http"
+	"strconv"
 )
 
 func searchResult(c *gin.Context) {
@@ -13,8 +13,8 @@ func searchResult(c *gin.Context) {
 	q, ok := c.GetQuery("q")
 	if !ok {
 		c.JSON(http.StatusOK, gin.H{
-			"users": []int{},
-			"accounts": []int{},
+			"users":          []int{},
+			"accounts":       []int{},
 			"administrators": []int{},
 		})
 		return
@@ -64,8 +64,8 @@ func searchResult(c *gin.Context) {
 	}()
 
 	c.JSON(http.StatusOK, gin.H{
-		"users": <-users,
-		"accounts": <-accounts,
+		"users":          <-users,
+		"accounts":       <-accounts,
 		"administrators": <-administrators,
 	})
 }
@@ -91,9 +91,9 @@ func getData(c *gin.Context, query *mgo.Query, results interface{}) (data gin.H)
 	pages := gin.H{
 		"current": page,
 		"prev":    page - 1,
-		"hasPrev": page - 1 != 0,
+		"hasPrev": page-1 != 0,
 		"next":    page + 1,
-		"hasNext": float64(count) / float64(count_) > 1,
+		"hasNext": float64(count)/float64(count_) > 1,
 		"total":   count,
 	}
 
@@ -120,4 +120,3 @@ func getData(c *gin.Context, query *mgo.Query, results interface{}) (data gin.H)
 		"filters": filters,
 	}
 }
-

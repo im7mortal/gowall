@@ -146,7 +146,6 @@ func changePassword(c *gin.Context) {
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 
-
 	user.setPassword(body.Password)
 
 	collection := db.C(USERS)

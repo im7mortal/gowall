@@ -229,7 +229,7 @@ func changeDataUser(c *gin.Context) {
 				"email": body.Email,
 			},
 		},
-		"_id": bson.M{ "$ne": bson.ObjectIdHex(_id)},
+		"_id": bson.M{"$ne": bson.ObjectIdHex(_id)},
 	}).One(nil)
 	if err == nil {
 		response.Errors = append(response.Errors, "username or email already exist")
@@ -246,9 +246,9 @@ func changeDataUser(c *gin.Context) {
 	err = collection.UpdateId(user.ID, bson.M{
 		"$set": bson.M{
 			"username": user.Username,
-			"email": user.Email,
+			"email":    user.Email,
 			"isActive": user.IsActive,
-			"search": []string{user.Username, user.Email},
+			"search":   []string{user.Username, user.Email},
 		},
 	})
 	if err != nil {
@@ -258,16 +258,13 @@ func changeDataUser(c *gin.Context) {
 	}
 	// patchAdmin
 	collection = db.C(ADMINS)
-	err = collection.Update(bson.M{ "user.id": user.ID},
-		bson.M{ "$set": bson.M{ "user.name": user.Username},
-	})
+	err = collection.Update(bson.M{"user.id": user.ID},
+		bson.M{"$set": bson.M{"user.name": user.Username}})
 
 	// patchAccount
 	collection = db.C(ACCOUNTS)
-	err = collection.Update(bson.M{ "user.id": user.ID},
-		bson.M{ "$set": bson.M{ "user.name": user.Username},
-	})
-
+	err = collection.Update(bson.M{"user.id": user.ID},
+		bson.M{"$set": bson.M{"user.name": user.Username}})
 
 	// populateRoles // TODO
 	response.Finish()
@@ -326,7 +323,7 @@ func changePasswordUser(c *gin.Context) {
 	response.Finish()
 }
 
-func linkAdminToUser (c *gin.Context) {
+func linkAdminToUser(c *gin.Context) {
 	response := Response{}
 	response.Init(c)
 
@@ -341,7 +338,7 @@ func linkAdminToUser (c *gin.Context) {
 		return
 	}
 	var body struct {
-		NewAdminId  string `json:"newAdminId"`
+		NewAdminId string `json:"newAdminId"`
 	}
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&body)
@@ -364,8 +361,8 @@ func linkAdminToUser (c *gin.Context) {
 
 	if err != nil {
 		if err != mgo.ErrNotFound {
-		panic(err)
-	}
+			panic(err)
+		}
 		response.Errors = append(response.Errors, "Admin not found.")
 		response.Fail()
 		return
@@ -379,12 +376,11 @@ func linkAdminToUser (c *gin.Context) {
 		return
 	}
 
-
 	//duplicateLinkCheck
 	collection = db.C(USERS)
 	err = collection.Find(bson.M{
 		"roles.admin": admin.ID,
-		"_id": bson.M{ "$ne": bson.ObjectIdHex(userID)},
+		"_id":         bson.M{"$ne": bson.ObjectIdHex(userID)},
 	}).One(nil)
 	if err == nil {
 		response.Errors = append(response.Errors, "Another user is already linked to that admin.")
@@ -402,8 +398,8 @@ func linkAdminToUser (c *gin.Context) {
 
 	if err != nil {
 		if err != mgo.ErrNotFound {
-		panic(err)
-	}
+			panic(err)
+		}
 		response.Errors = append(response.Errors, "User not found.")
 		response.Fail()
 		return
@@ -416,10 +412,10 @@ func linkAdminToUser (c *gin.Context) {
 	}
 
 	response.Data["user"] = gin.H{
-		"id_": userID,
+		"id_":         userID,
 		"timeCreated": user.TimeCreated.Format(ISOSTRING),
-		"username": user.Username,
-		"search": []string{user.Username},
+		"username":    user.Username,
+		"search":      []string{user.Username},
 		"roles": gin.H{
 			"admin": gin.H{
 				"id_": admin.ID.Hex(),
@@ -462,8 +458,8 @@ func unlinkAdminFromUser(c *gin.Context) {
 
 	if err != nil {
 		if err != mgo.ErrNotFound {
-		panic(err)
-	}
+			panic(err)
+		}
 		response.Errors = append(response.Errors, "User not found.")
 		response.Fail()
 		return
@@ -478,11 +474,11 @@ func unlinkAdminFromUser(c *gin.Context) {
 		response.Fail()
 		return
 	}
-		response.Data["user"] = gin.H{
-		"id_": id_,
+	response.Data["user"] = gin.H{
+		"id_":         id_,
 		"timeCreated": user.TimeCreated.Format(ISOSTRING),
-		"username": user.Username,
-		"search": []string{},
+		"username":    user.Username,
+		"search":      []string{},
 		"roles": gin.H{
 			"admin": nil,
 		},
@@ -491,7 +487,7 @@ func unlinkAdminFromUser(c *gin.Context) {
 	response.Finish()
 }
 
-func linkAccountToUser (c *gin.Context) {
+func linkAccountToUser(c *gin.Context) {
 	response := Response{}
 	response.Init(c)
 
@@ -528,8 +524,8 @@ func linkAccountToUser (c *gin.Context) {
 
 	if err != nil {
 		if err != mgo.ErrNotFound {
-		panic(err)
-	}
+			panic(err)
+		}
 		response.Errors = append(response.Errors, "Account not found.")
 		response.Fail()
 		return
@@ -543,12 +539,11 @@ func linkAccountToUser (c *gin.Context) {
 		return
 	}
 
-
 	//duplicateLinkCheck
 	collection = db.C(USERS)
 	err = collection.Find(bson.M{
 		"roles.account": account.ID,
-		"_id": bson.M{ "$ne": bson.ObjectIdHex(userID)},
+		"_id":           bson.M{"$ne": bson.ObjectIdHex(userID)},
 	}).One(nil)
 	if err == nil {
 		response.Errors = append(response.Errors, "Another user is already linked to that account.")
@@ -566,8 +561,8 @@ func linkAccountToUser (c *gin.Context) {
 
 	if err != nil {
 		if err != mgo.ErrNotFound {
-		panic(err)
-	}
+			panic(err)
+		}
 		response.Errors = append(response.Errors, "User not found.")
 		response.Fail()
 		return
@@ -580,10 +575,10 @@ func linkAccountToUser (c *gin.Context) {
 	}
 
 	response.Data["user"] = gin.H{
-		"id_": userID,
+		"id_":         userID,
 		"timeCreated": user.TimeCreated.Format(ISOSTRING),
-		"username": user.Username,
-		"search": []string{user.Username},
+		"username":    user.Username,
+		"search":      []string{user.Username},
 		"roles": gin.H{
 			"account": gin.H{
 				"id_": account.ID.Hex(),
@@ -621,8 +616,8 @@ func unlinkAccountFromUser(c *gin.Context) {
 
 	if err != nil {
 		if err != mgo.ErrNotFound {
-		panic(err)
-	}
+			panic(err)
+		}
 		response.Errors = append(response.Errors, "User not found.")
 		response.Fail()
 		return
@@ -637,11 +632,11 @@ func unlinkAccountFromUser(c *gin.Context) {
 		response.Fail()
 		return
 	}
-		response.Data["user"] = gin.H{
-		"id_": id_,
+	response.Data["user"] = gin.H{
+		"id_":         id_,
 		"timeCreated": user.TimeCreated.Format(ISOSTRING),
-		"username": user.Username,
-		"search": []string{},
+		"username":    user.Username,
+		"search":      []string{},
 		"roles": gin.H{
 			"account": nil,
 		},

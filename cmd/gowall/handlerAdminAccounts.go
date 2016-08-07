@@ -75,14 +75,14 @@ func createAccount(c *gin.Context) {
 	response := responseAccount{}
 	response.Init(c)
 
-	var name_ struct {
+	var body struct {
 		Name string `json:"name.full"`
 	}
-	err := json.NewDecoder(c.Request.Body).Decode(&name_)
+	err := json.NewDecoder(c.Request.Body).Decode(&body)
 	if err != nil {
 		panic(err)
 	}
-	response.Account.Name.Full = name_.Name
+	response.Account.Name.Full = body.Name
 	// clean errors from client
 
 	if len(response.Account.Name.Full) == 0 {
@@ -101,7 +101,9 @@ func createAccount(c *gin.Context) {
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(ADMINS)
-	err = collection.Find(bson.M{"name.full": response.Name.Full}).One(nil)
+	err = collection.Find(bson.M{
+		"name.full": response.Name.Full,
+	}).One(nil)
 	// we expect err == mgo.ErrNotFound for success
 	if err == nil {
 		response.Errors = append(response.Errors, "That account already exists.")
@@ -217,13 +219,13 @@ func updateAccount(c *gin.Context) {
 	// patchAccount
 	err = collection.UpdateId(id, bson.M{
 		"$set": bson.M{
-			"name.first": body.First,
-			"name.last": body.Last,
+			"name.first":  body.First,
+			"name.last":   body.Last,
 			"name.middle": body.Middle,
-			"name.full": body.First + " " + body.Last,
-			"company": body.Company,
-			"phone": body.Phone,
-			"zip": body.Zip,
+			"name.full":   body.First + " " + body.Last,
+			"company":     body.Company,
+			"phone":       body.Phone,
+			"zip":         body.Zip,
 			"search": []string{
 				body.First,
 				body.Last,
@@ -375,8 +377,8 @@ func unlinkUserFromAccount(c *gin.Context) {
 
 	if err != nil {
 		if err != mgo.ErrNotFound {
-		panic(err)
-	}
+			panic(err)
+		}
 		response.Errors = append(response.Errors, "User not found.")
 		response.Fail()
 		return
@@ -418,10 +420,10 @@ func newNote(c *gin.Context) {
 	account := &Account{}
 	err = collection.UpdateId(bson.ObjectIdHex(c.Param("id")),
 		bson.M{"$push": bson.M{"notes": bson.M{
-			"_id": bson.NewObjectId(),
+			"_id":  bson.NewObjectId(),
 			"data": body.Data,
 			"userCreated": bson.M{
-				"id": user.ID,
+				"id":   user.ID,
 				"name": user.Username,
 				"time": time.Now().Format(ISOSTRING),
 			},
@@ -446,7 +448,7 @@ func newStatus(c *gin.Context) {
 	// validate
 	var body struct {
 		StatusID string `json:"id"`
-		Name string `json:"name"`
+		Name     string `json:"name"`
 	}
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&body)
@@ -465,18 +467,18 @@ func newStatus(c *gin.Context) {
 	collection := db.C(ACCOUNTS)
 	account := &Account{}
 	statusToAdd := bson.M{
-			"_id": body.StatusID,
-			"name": body.Name,
-			"userCreated": bson.M{
-				"id": user.ID,
-				"name": user.Username,
-				"time": time.Now().Format(ISOSTRING),
-			},
-		}
+		"_id":  body.StatusID,
+		"name": body.Name,
+		"userCreated": bson.M{
+			"id":   user.ID,
+			"name": user.Username,
+			"time": time.Now().Format(ISOSTRING),
+		},
+	}
 	err = collection.UpdateId(bson.ObjectIdHex(c.Param("id")),
 		bson.M{
 			"$push": bson.M{"statusLog": statusToAdd},
-			"$set": bson.M{"status": statusToAdd},
+			"$set":  bson.M{"status": statusToAdd},
 		})
 	if err != nil {
 		panic(err)

@@ -1,12 +1,12 @@
 package main
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"github.com/gin-gonic/gin"
 	"net/url"
 	"regexp"
 	"strings"
-	"encoding/hex"
-	"crypto/rand"
 )
 
 func getEscapedString(str string) string {
@@ -37,7 +37,6 @@ func slugifyName(str string) string {
 	str = strings.TrimSpace(str)
 	return rSlugify2.ReplaceAllString(str, " ")
 }
-
 
 func XHR(c *gin.Context) bool {
 	return strings.ToLower(c.Request.Header.Get("X-Requested-With")) == "xmlhttprequest"
