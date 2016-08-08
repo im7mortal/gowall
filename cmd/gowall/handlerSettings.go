@@ -206,11 +206,7 @@ func changeIdentity(c *gin.Context) {
 		return
 	}
 
-	err = updateRoles(db, user)
-
-	if err != nil {
-		panic(err)
-	}
+	updateRoles(db, user)
 	response.Finish()
 }
 

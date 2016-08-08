@@ -158,9 +158,10 @@ func changeDataUser(c *gin.Context) {
 		Email    string `json:"email"`
 		IsActive string `json:"isActive"`
 	}
-	decoder := json.NewDecoder(c.Request.Body)
-	err := decoder.Decode(&body)
-
+	err := json.NewDecoder(c.Request.Body).Decode(&body)
+	if err != nil {
+		panic(err)
+	}
 	validateUsername(&body.Username, &response)
 	validateEmail(&body.Email, &response)
 	if response.HasErrors() {
@@ -235,11 +236,7 @@ func changeDataUser(c *gin.Context) {
 	err = collection.Update(bson.M{"user.id": user.ID},
 		bson.M{"$set": bson.M{"user.name": user.Username}})
 
-	err = updateRoles(db, &user)
-
-	if err != nil {
-		panic(err)
-	}
+	updateRoles(db, &user)
 
 	response.Finish()
 }
@@ -707,11 +704,11 @@ func getRoles(db *mgo.Database, user *User) (roles gin.H) {
 }
 
 
-func updateRoles(db *mgo.Database, user *User) (err error) {
+func updateRoles(db *mgo.Database, user *User) {
 	var wg sync.WaitGroup
 	wg.Add(2)
 	go func() {
-		err = db.C(ADMINS).Update(
+		err := db.C(ADMINS).Update(
 			bson.M{
 				"roles.admin": user.ID,
 			},
@@ -731,7 +728,7 @@ func updateRoles(db *mgo.Database, user *User) (err error) {
 		wg.Done()
 	}()
 	go func() {
-		err = db.C(ACCOUNTS).Update(
+		err := db.C(ACCOUNTS).Update(
 			bson.M{
 				"roles.account": user.ID,
 			},
@@ -751,5 +748,6 @@ func updateRoles(db *mgo.Database, user *User) (err error) {
 		wg.Done()
 	}()
 	wg.Wait()
+
 	return
 }
