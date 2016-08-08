@@ -1,9 +1,9 @@
 {
 	"ImportPath": "github.com/im7mortal/gowall",
-	"GoVersion": "go1.6.2",
+	"GoVersion": "go1.6",
 	"GodepVersion": "v60",
 	"Packages": [
-		"./..."
+		"github.com/im7mortal/gowall/cmd/gowall/"
 	],
 	"Deps": [
 		{
@@ -83,14 +83,6 @@
 			"Rev": "1b4cd30d45579eb92ac8c00942a06c1ebe28b67f"
 		},
 		{
-			"ImportPath": "github.com/mattn/go-colorable",
-			"Rev": "3dac7b4f76f6e17fb39b768b89e3783d16e237fe"
-		},
-		{
-			"ImportPath": "github.com/mattn/go-isatty",
-			"Rev": "56b76bdf51f7708750eac80fa38b952bb9f32639"
-		},
-		{
 			"ImportPath": "golang.org/x/crypto/bcrypt",
 			"Rev": "c197bcf24cde29d3f73c7b4ac6fd41f4384e8af6"
 		},
@@ -111,17 +103,8 @@
 			"Rev": "2baa8a1b9338cf13d9eeb27696d761155fa480be"
 		},
 		{
-			"ImportPath": "golang.org/x/sys/unix",
-			"Rev": "320cb01ddbbf0473674c2585f9b6e245721de355"
-		},
-		{
 			"ImportPath": "gopkg.in/alexcesaro/quotedprintable.v3",
 			"Rev": "2caba252f4dc53eaf6b553000885530023f54623"
-		},
-		{
-			"ImportPath": "gopkg.in/bluesuncorp/validator.v5",
-			"Comment": "v5.12",
-			"Rev": "d5acf1dac43705f8bfbb71d878e290e2bed3950b"
 		},
 		{
 			"ImportPath": "gopkg.in/go-playground/validator.v8",
@@ -152,10 +135,6 @@
 			"ImportPath": "gopkg.in/mgo.v2/internal/scram",
 			"Comment": "r2016.02.04-1-gb6e2fa3",
 			"Rev": "b6e2fa371e64216a45e61072a96d4e3859f169da"
-		},
-		{
-			"ImportPath": "github.com/xenolf/lego",
-			"Rev": "948483535f53c34d144419869ecbed86251a30f6"
 		}
 	]
 }
