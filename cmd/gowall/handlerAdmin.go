@@ -7,8 +7,6 @@ import (
 )
 
 func renderAdministrator(c *gin.Context) {
-
-	// todo has to be sync pkg
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 

@@ -26,7 +26,7 @@ func renderAccountSettings(c *gin.Context) {
 	user = &User{}
 	err := collection.FindId(bson.ObjectIdHex(public.(string))).One(user)
 	if err != nil {
-		println(err.Error())
+		panic(err)
 	}
 	if len(user.Username) != 0 {
 		User, _ := json.Marshal(gin.H{
@@ -40,7 +40,7 @@ func renderAccountSettings(c *gin.Context) {
 	ac := Account{}
 	err = collection.FindId(user.Roles.Account).One(&ac)
 	if err != nil {
-		println(err.Error())
+		panic(err)
 	}
 	if len(ac.ID) != 0 {
 		Account, _ := json.Marshal(gin.H{

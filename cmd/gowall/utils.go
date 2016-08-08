@@ -46,7 +46,6 @@ func generateToken(n int) []byte {
 	b := make([]byte, n)
 	_, err := rand.Read(b)
 	if err != nil {
-		println(err.Error())
 		return b
 	}
 	token := make([]byte, n*2)

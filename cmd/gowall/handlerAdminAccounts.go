@@ -130,8 +130,7 @@ func createAccount(c *gin.Context) {
 
 	// createAdministrator
 	response.Account.ID = bson.NewObjectId()
-	println(response.Account.ID.String())
-	err = collection.Insert(response.Account) // todo I think mgo's behavior isn't expected
+	err = collection.Insert(response.Account)
 
 	if err != nil {
 		panic(err)
@@ -325,7 +324,6 @@ func linkUserToAccount(c *gin.Context) {
 
 	}
 
-	// getAccountForResponse  drywall require it // todo maybe bulk?
 	err = collection.FindId(bson.ObjectIdHex(id)).One(&response.Account)
 
 	if err != nil {

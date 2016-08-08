@@ -88,7 +88,6 @@ func socialSignup(c *gin.Context) {
 	defer db.Session.Close()
 	collection := db.C(USERS)
 	user := User{}
-	println(response.Email)
 	err = collection.Find(bson.M{"email": response.Email}).One(&user)
 	// we expect err == mgo.ErrNotFound for success
 	if err == nil {

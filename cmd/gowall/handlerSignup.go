@@ -51,7 +51,7 @@ func signup(c *gin.Context) {
 	user := User{}
 	err = collection.Find(bson.M{"$or": []bson.M{bson.M{"username": response.Username}, bson.M{"email": response.Email}}}).One(&user)
 	if err != nil {
-		println(err.Error())
+		panic(err)
 	}
 
 	// duplicateUsernameCheck

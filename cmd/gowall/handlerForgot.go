@@ -43,8 +43,7 @@ func sendReset(c *gin.Context) {
 	token := generateToken(21)
 	hash, err := bcrypt.GenerateFromPassword(token, bcrypt.DefaultCost)
 	if err != nil {
-		println(err.Error())
-		return
+		panic(err)
 	}
 
 	db := getMongoDBInstance()
@@ -53,7 +52,7 @@ func sendReset(c *gin.Context) {
 	us := User{}
 	err = collection.Find(bson.M{"email": body.Email}).One(&us)
 	if err != nil {
-		println(err.Error())
+		panic(err)
 	}
 	if len(us.Username) == 0 {
 		response.ErrFor["email"] = "email doesn't exist"
@@ -132,7 +131,6 @@ func resetPassword(c *gin.Context) {
 	err = collection.Find(bson.M{"email": c.Param("email"), "resetPasswordExpires": bson.M{"$gt": time.Now()}}).One(&user)
 
 	if err != nil {
-		println(err.Error())
 		response.Fail()
 		return
 	}
