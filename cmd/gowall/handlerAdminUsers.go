@@ -8,6 +8,7 @@ import (
 	"html/template"
 	"net/http"
 	"sync"
+	"strings"
 )
 
 type responseUser struct {
@@ -86,8 +87,8 @@ func createUser(c *gin.Context) {
 	}
 
 	// validate
-	validateUsername(&response.User.Username, &response.Response)
-	if response.HasErrors() {
+	if ok := rUsername.MatchString(strings.ToLower(response.User.Username)); !ok {
+		response.Errors = append(response.Errors, `only use letters, numbers, -, _`)
 		response.Fail()
 		return
 	}
