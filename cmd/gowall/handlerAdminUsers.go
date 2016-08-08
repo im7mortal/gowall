@@ -7,6 +7,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"html/template"
 	"net/http"
+	"sync"
 )
 
 type responseUser struct {
@@ -132,39 +133,56 @@ func readUser(c *gin.Context) {
 		"isActive": user.IsActive,
 	}
 
-	// TODO parrallel?
+	var wg sync.WaitGroup
+	var err error
+	roles := gin.H{}
 
 	if len(user.Roles.Admin.Hex()) != 0 {
-		admin := Admin{}
-		collection := db.C(ADMINS)
-		collection.FindId(user.Roles.Admin).One(&admin)
-		res["roles"] = gin.H{
-			"admin": gin.H{
-				"id_": admin.ID.Hex(),
-				"name": gin.H{
-					"full": admin.Name.Full,
-				},
-			},
-		}
+		wg.Add(1)
+		go func() {
+			admin := Admin{}
+			err = db.C(ADMINS).FindId(user.Roles.Admin).One(&admin)
+			if err != nil {
+				if err != mgo.ErrNotFound {
+					panic(err)
+				}
+			} else {
+				res["roles"] = gin.H{
+					"admin": gin.H{
+						"id_": admin.ID.Hex(),
+						"name": gin.H{
+							"full": admin.Name.Full,
+						},
+					},
+				}
+			}
+			wg.Done()
+		}()
 	}
 
 	if len(user.Roles.Account.Hex()) != 0 {
-		roles, ok := res["roles"].(gin.H)
-		if !ok {
-			roles = gin.H{}
-		}
-		account := Account{}
-		collection := db.C(ACCOUNTS)
-		collection.FindId(user.Roles.Account).One(&account)
-		roles["account"] = gin.H{
-			"id_": account.ID.Hex(),
-			"name": gin.H{
-				"full": account.Name.Full,
-			},
-		}
-		res["roles"] = roles
+		wg.Add(1)
+		go func() {
+			account := Account{}
+			err = db.C(ACCOUNTS).FindId(user.Roles.Account).One(&account)
+			if err != nil {
+				if err != mgo.ErrNotFound {
+					panic(err)
+				}
+			} else {
+				roles["account"] = gin.H{
+					"id_": account.ID.Hex(),
+					"name": gin.H{
+						"full": account.Name.Full,
+					},
+				}
+			}
+			wg.Done()
+		}()
 	}
 
+	wg.Wait()
+	res["roles"] = roles
 	json, err := json.Marshal(res)
 	if err != nil {
 		panic(err.Error())

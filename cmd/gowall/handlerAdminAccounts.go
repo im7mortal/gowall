@@ -125,7 +125,6 @@ func createAccount(c *gin.Context) {
 		}
 	}
 
-	// todo maybe when we create first root user we lose it
 	response.Account.Search = []string{response.Name.First, response.Name.Middle, response.Name.Last}
 
 	// createAdministrator
@@ -137,7 +136,6 @@ func createAccount(c *gin.Context) {
 	}
 	response.Data["record"] = response
 	response.Finish()
-	//c.JSON(http.StatusOK, gin.H{"record": response, "success": true}) // todo necessary check
 }
 
 func readAccount(c *gin.Context) {

@@ -21,7 +21,6 @@ func startOAuth(c *gin.Context) {
 	provider := c.Param("provider")
 	c.Request.URL.RawQuery += "provider=" + provider
 
-	// TODO I don't like it
 	checkProvider(provider, c.Request.Host)
 	gothic.BeginAuthHandler(c.Writer, c.Request)
 }

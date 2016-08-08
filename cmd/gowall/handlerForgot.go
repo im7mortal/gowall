@@ -103,7 +103,7 @@ func resetPassword(c *gin.Context) {
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&body)
 
-	response := Response{} // todo sync.Pool
+	response := Response{}
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
 	response.Init(c)

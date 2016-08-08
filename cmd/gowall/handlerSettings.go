@@ -210,7 +210,7 @@ func changeIdentity(c *gin.Context) {
 	var wg sync.WaitGroup
 	wg.Add(2)
 	go func() {
-		db.C(ADMINS).Update(
+		err = db.C(ADMINS).Update(
 			bson.M{
 				"roles.admin": user.ID,
 			},
