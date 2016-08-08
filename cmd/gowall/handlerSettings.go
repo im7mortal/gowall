@@ -183,16 +183,19 @@ func changeIdentity(c *gin.Context) {
 	defer db.Session.Close()
 	collection := db.C(USERS)
 
-	{
-		us := User{}
-		err = collection.Find(bson.M{"$or": []bson.M{bson.M{"username": body.Username}, bson.M{"email": body.Email}}}).One(&us)
-		if err != nil {
-			response.Errors = append(response.Errors, "username or email already exist")
-			response.Fail()
-			return
-		}
+	err = collection.Find(bson.M{
+		"$or": []bson.M{
+			bson.M{"username": body.Username},
+			bson.M{"email": body.Email},
+		},
+	}).One(nil)
+	if err == nil {
+		response.Errors = append(response.Errors, "That username or email already exist.")
+		response.Fail()
+		return
+	} else if err != mgo.ErrNotFound {
+		panic(err)
 	}
-
 	user.Username = body.Username
 	user.Email = body.Email
 
