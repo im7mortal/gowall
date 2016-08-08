@@ -658,7 +658,7 @@ func deleteUser(c *gin.Context) {
 func getRoles(db *mgo.Database, user *User) (roles gin.H) {
 	var wg sync.WaitGroup
 	var err error
-
+	roles = gin.H{}
 	if len(user.Roles.Admin.Hex()) != 0 {
 		wg.Add(1)
 		go func() {
