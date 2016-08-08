@@ -29,7 +29,7 @@ func bindRoutes(router *gin.Engine) {
 	//login/out
 	router.GET("/login/", renderLogin)
 	router.POST("/login/", login)
-	router.GET("/login/forgot/", renderForgon)
+	router.GET("/login/forgot/", renderForgot)
 	router.POST("/login/forgot/", sendReset)
 	router.GET("/login/reset/", renderReset)
 	router.GET("/login/reset/:email/:token/", renderReset)

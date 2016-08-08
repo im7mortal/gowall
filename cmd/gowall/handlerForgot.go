@@ -8,9 +8,10 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"gopkg.in/mgo.v2"
 )
 
-func renderForgon(c *gin.Context) {
+func renderForgot(c *gin.Context) {
 	isAuthenticated, _ := c.Get("isAuthenticated")
 	if is, ok := isAuthenticated.(bool); ok && is {
 		defaultReturnUrl, _ := c.Get("DefaultReturnUrl")
@@ -52,10 +53,10 @@ func sendReset(c *gin.Context) {
 	us := User{}
 	err = collection.Find(bson.M{"email": body.Email}).One(&us)
 	if err != nil {
-		panic(err)
-	}
-	if len(us.Username) == 0 {
-		response.ErrFor["email"] = "email doesn't exist"
+		if err != mgo.ErrNotFound {
+			panic(err)
+		}
+		response.ErrFor["email"] = "email doesn't exist."
 	}
 	if response.HasErrors() {
 		response.Fail()
