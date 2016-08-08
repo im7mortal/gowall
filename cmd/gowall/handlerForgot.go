@@ -79,7 +79,7 @@ func sendReset(c *gin.Context) {
 	mailConf.HtmlPath = "views/login/forgot/email-html.html"
 
 	if err := mailConf.SendMail(); err != nil {
-		//todo it's not serious
+		panic(err)
 	}
 	response.Finish()
 }

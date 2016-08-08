@@ -26,7 +26,7 @@ func loginProvider(c *gin.Context, userGoth goth.User) {
 	if err != nil {
 		if err == mgo.ErrNotFound {
 			session := sessions.Default(c)
-			session.Set("oauthMessage", "No users found linked to your "+userGoth.Provider+" account. You may need to create an account first.")
+			session.Set("oauthMessage", "No users found linked to your " + userGoth.Provider + " account. You may need to create an account first.")
 			session.Save()
 			c.Redirect(http.StatusFound, "/login/")
 			return

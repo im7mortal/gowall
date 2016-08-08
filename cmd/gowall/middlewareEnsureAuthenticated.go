@@ -113,7 +113,7 @@ func IsAuthenticated(c *gin.Context) {
 			}
 		}
 		if len(us.Username) > 0 {
-			c.Set("Logined", true) // todo what is different between "Logined" and "isAuthenticated"
+			c.Set("Logined", true)
 			c.Set("isAuthenticated", true)
 			c.Set("UserName", us.Username)
 			c.Set("User", &us)

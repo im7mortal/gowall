@@ -28,7 +28,7 @@ func signupProvider(c *gin.Context, userGoth goth.User) {
 	// we expect err == mgo.ErrNotFound for success
 	if err == nil {
 		session := sessions.Default(c)
-		session.Set("oauthMessage", "We found a user linked to your "+userGoth.Provider+" account")
+		session.Set("oauthMessage", "We found a user linked to your " + userGoth.Provider + " account")
 		session.Save()
 		c.Redirect(http.StatusFound, "/signup/")
 		return
@@ -159,7 +159,7 @@ func socialSignup(c *gin.Context) {
 	go func() {
 		c.Set("Username", response.Username)
 		c.Set("Email", response.Email)
-		c.Set("LoginURL", "http://"+c.Request.Host+"/login/")
+		c.Set("LoginURL", "http://" + c.Request.Host + "/login/")
 
 		mailConf := MailConfig{}
 		mailConf.Data = c.Keys

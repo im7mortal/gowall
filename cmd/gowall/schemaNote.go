@@ -9,8 +9,8 @@ type Note struct {
 	ID          bson.ObjectId `json:"_id" bson:"_id,omitempty"`
 	Data        string        `json:"data" bson:"data"`
 	UserCreated struct {
-		ID   bson.ObjectId `json:"id" bson:"id"`
-		Name string        `json:"name" bson:"name"`
-		Time time.Time     `json:"time" bson:"time"`
-	} `json:"userCreated" bson:"userCreated"`
+					ID   bson.ObjectId `json:"id" bson:"id"`
+					Name string        `json:"name" bson:"name"`
+					Time time.Time     `json:"time" bson:"time"`
+				} `json:"userCreated" bson:"userCreated"`
 }

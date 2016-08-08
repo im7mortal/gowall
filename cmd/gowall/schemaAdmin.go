@@ -9,17 +9,17 @@ import (
 )
 
 type Admin struct {
-	ID   bson.ObjectId `bson:"_id,omitempty" json:"_id"`
-	User struct {
-		ID   bson.ObjectId `bson:"id,omitempty" json:"id"`
-		Name string        `bson:"name" json:"name"`
-	} `bson:"user" json:"user"`
-	Name struct {
-		First  string `bson:"first" json:"first"`
-		Middle string `bson:"middle" json:"middle"`
-		Last   string `bson:"last" json:"last"`
-		Full   string `bson:"full" json:"full"`
-	} `bson:"name" json:"name"`
+	ID          bson.ObjectId `bson:"_id,omitempty" json:"_id"`
+	User        struct {
+					ID   bson.ObjectId `bson:"id,omitempty" json:"id"`
+					Name string        `bson:"name" json:"name"`
+				} `bson:"user" json:"user"`
+	Name        struct {
+					First  string `bson:"first" json:"first"`
+					Middle string `bson:"middle" json:"middle"`
+					Last   string `bson:"last" json:"last"`
+					Full   string `bson:"full" json:"full"`
+				} `bson:"name" json:"name"`
 	Groups      []string     `bson:"groups" json:"-"` // drywall author used mutable objects
 	GroupsJS    []AdminGroup `json:"groups" bson:"-"` // I separate types for mongoDB and json
 	Permissions []Permission `bson:"permissions" json:"permissions"`

@@ -97,7 +97,6 @@ func createAdmin(c *gin.Context) {
 	if len(name) == 3 {
 		response.Name.Middle = name[2]
 	}
-	// todo maybe when we create first root user we lose it
 	response.Admin.Search = []string{response.Name.First, response.Name.Middle, response.Name.Last}
 	response.Admin.Permissions = []Permission{}
 	response.Admin.Groups = []string{}
@@ -110,7 +109,6 @@ func createAdmin(c *gin.Context) {
 	}
 	response.Data["record"] = response
 	response.Finish()
-	//c.JSON(http.StatusOK, gin.H{"record": response, "success": true}) // todo necessary check
 }
 
 func readAdmin(c *gin.Context) {
@@ -388,10 +386,9 @@ func linkUserToAdmin(c *gin.Context) {
 	err = admin.linkUser(db, user)
 
 	if err != nil {
-
+		panic(err)
 	}
 
-	// getAdminForResponse  drywall require it // todo maybe bulk?
 	err = collection.FindId(bson.ObjectIdHex(id)).One(&response.Admin)
 
 	if err != nil {
@@ -420,8 +417,8 @@ func unlinkUserFromAdmin(c *gin.Context) {
 		response.Errors = append(response.Errors, "You may not unlink yourself from admin.")
 		response.Fail()
 		return
-	} // todo  here is func for errors
-	response.ErrFor = map[string]string{} // in that handler it required (non standard behavior from node)
+	}
+	response.ErrFor = map[string]string{}
 
 	// patchUser
 	db := getMongoDBInstance()

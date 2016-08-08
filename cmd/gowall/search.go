@@ -91,9 +91,9 @@ func getData(c *gin.Context, query *mgo.Query, results interface{}) (data gin.H)
 	pages := gin.H{
 		"current": page,
 		"prev":    page - 1,
-		"hasPrev": page-1 != 0,
+		"hasPrev": page - 1 != 0,
 		"next":    page + 1,
-		"hasNext": float64(count)/float64(count_) > 1,
+		"hasNext": float64(count) / float64(count_) > 1,
 		"total":   count,
 	}
 

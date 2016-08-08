@@ -269,7 +269,7 @@ func settingsProvider(c *gin.Context, userGoth goth.User) {
 	// we expect err == mgo.ErrNotFound for success
 	if err == nil {
 		session := sessions.Default(c)
-		session.Set("oauthMessage", "Another user has already connected with that "+userGoth.Provider+" account")
+		session.Set("oauthMessage", "Another user has already connected with that " + userGoth.Provider + " account")
 		session.Save()
 		c.Redirect(http.StatusFound, "/account/settings/")
 		return

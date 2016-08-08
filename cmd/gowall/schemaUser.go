@@ -15,26 +15,26 @@ type vendorOauth struct {
 }
 
 type User struct {
-	ID       bson.ObjectId `json:"_id" bson:"_id"`
-	Username string        `json:"username" bson:"username"`
-	Password string        `json:"-" bson:"password"`
-	Email    string        `json:"email" bson:"email"`
-	Roles    struct {
-		Admin   bson.ObjectId `json:"admin" bson:"admin,omitempty"`
-		Account bson.ObjectId `json:"account" bson:"account,omitempty"`
-	} `json:"roles" bson:"roles"`
+	ID                   bson.ObjectId `json:"_id" bson:"_id"`
+	Username             string        `json:"username" bson:"username"`
+	Password             string        `json:"-" bson:"password"`
+	Email                string        `json:"email" bson:"email"`
+	Roles                struct {
+							 Admin   bson.ObjectId `json:"admin" bson:"admin,omitempty"`
+							 Account bson.ObjectId `json:"account" bson:"account,omitempty"`
+						 } `json:"roles" bson:"roles"`
 
 	IsActive             string    `json:"isActive" bson:"isActive,omitempty"`
 	TimeCreated          time.Time `json:"timeCreated" bson:"timeCreated"`
 	ResetPasswordToken   string    `json:"-" bson:"resetPasswordToken,omitempty"`
 	ResetPasswordExpires time.Time `json:"resetPasswordExpires" bson:"resetPasswordExpires,omitempty"`
 
-	Twitter  vendorOauth `json:"twitter" bson:"twitter"`
-	Github   vendorOauth `json:"github" bson:"github"`
-	Facebook vendorOauth `json:"facebook" bson:"facebook"`
-	Google   vendorOauth `json:"google" bson:"google"`
-	Tumblr   vendorOauth `json:"tumblr" bson:"tumblr"`
-	Search   []string    `json:"search" bson:"search"`
+	Twitter              vendorOauth `json:"twitter" bson:"twitter"`
+	Github               vendorOauth `json:"github" bson:"github"`
+	Facebook             vendorOauth `json:"facebook" bson:"facebook"`
+	Google               vendorOauth `json:"google" bson:"google"`
+	Tumblr               vendorOauth `json:"tumblr" bson:"tumblr"`
+	Search               []string    `json:"search" bson:"search"`
 }
 
 func (user *User) canPlayRoleOf(role string) bool {

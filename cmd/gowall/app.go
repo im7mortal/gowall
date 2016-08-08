@@ -27,7 +27,6 @@ func init() {
 	store.Options(sessions.Options{
 		Path:   "/",
 		MaxAge: 60 * 60 * 6,
-		//Secure: !CONF.DEVELOP,  // TODO https sudo run hack for test without https on local machine
 		HttpOnly: true,
 	})
 
@@ -40,7 +39,7 @@ func main() {
 
 	Router.StaticFile("/favicon.ico", "public/favicon.ico")
 	Router.Static("/public", "public")
-	Router.Static("/vendor", "vendor") // todo not good. conflict with go project structure
+	Router.Static("/vendor", "vendor")
 
 	// templates
 	Router.HTMLRender = initTemplates()

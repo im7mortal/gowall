@@ -34,7 +34,7 @@ func renderUsers(c *gin.Context) {
 	roles, ok := c.GetQuery("roles")
 	if ok && len(roles) != 0 {
 		// roles.admin or roles.account
-		query["roles."+roles] = bson.M{
+		query["roles." + roles] = bson.M{
 			"$exists": true,
 		}
 	}

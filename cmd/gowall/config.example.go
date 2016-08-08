@@ -27,13 +27,13 @@ type LoginAttempts struct {
 }
 
 type SMTP struct {
-	From struct {
-		Name, Address string
-	}
+	From        struct {
+					Name, Address string
+				}
 	Credentials struct {
-		User, Password, Host string
-		SSL                  bool
-	}
+					User, Password, Host string
+					SSL                  bool
+				}
 }
 
 type OAuth struct {
@@ -75,7 +75,7 @@ func InitConfig() {
 	config.LoginAttempts.ForIpAndUser = 7
 	config.LoginAttempts.LogExpiration = "20m"
 
-	config.SMTP.From.Name = getEnvOrSetDef("SMTP_FROM_NAME", config.ProjectName+" Website")
+	config.SMTP.From.Name = getEnvOrSetDef("SMTP_FROM_NAME", config.ProjectName + " Website")
 	config.SMTP.From.Address = getEnvOrSetDef("SMTP_FROM_ADDRESS", "your@email.addy")
 
 	//config.SMTP.Credentials.User = getEnvOrSetDef("SMTP_USERNAME", "your@email.addy")

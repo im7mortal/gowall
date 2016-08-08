@@ -48,7 +48,7 @@ func generateToken(n int) []byte {
 	if err != nil {
 		return b
 	}
-	token := make([]byte, n*2)
+	token := make([]byte, n * 2)
 	hex.Encode(token, b)
 	return token
 }

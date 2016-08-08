@@ -31,8 +31,6 @@ func completeOAuth(c *gin.Context) {
 	provider := c.Param("provider")
 	c.Request.URL.RawQuery += "&provider=" + provider
 
-	// TODO status check
-
 	userGoth, err := gothic.CompleteUserAuth(c.Writer, c.Request)
 
 	session := sessions.Default(c)

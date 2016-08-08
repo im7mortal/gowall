@@ -13,7 +13,8 @@ func renderSignup(c *gin.Context) {
 	if is, ok := isAuthenticated.(bool); ok && is {
 		defaultReturnUrl, exist := c.Get("DefaultReturnUrl")
 		var url string
-		if url, ok = defaultReturnUrl.(string); !exist || !ok { // if not exist or not string
+		if url, ok = defaultReturnUrl.(string); !exist || !ok {
+			// if not exist or not string
 			url = "/"
 		}
 		c.Redirect(http.StatusFound, url)
@@ -115,7 +116,7 @@ func signup(c *gin.Context) {
 	go func() {
 		c.Set("Username", response.Username)
 		c.Set("Email", response.Email)
-		c.Set("LoginURL", "http://"+c.Request.Host+"/login/")
+		c.Set("LoginURL", "http://" + c.Request.Host + "/login/")
 
 		mailConf := MailConfig{}
 		mailConf.Data = c.Keys
