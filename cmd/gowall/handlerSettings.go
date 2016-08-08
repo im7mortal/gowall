@@ -9,7 +9,6 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"html/template"
 	"net/http"
-	"sync"
 )
 
 func renderAccountSettings(c *gin.Context) {
@@ -207,49 +206,11 @@ func changeIdentity(c *gin.Context) {
 		return
 	}
 
-	var wg sync.WaitGroup
-	wg.Add(2)
-	go func() {
-		err = db.C(ADMINS).Update(
-			bson.M{
-				"roles.admin": user.ID,
-			},
-			bson.M{
-				"$set": bson.M{
-					"user": bson.M{
-						"id": user.ID,
-						"name": user.Username,
-					},
-				},
-			})
-		if err != nil {
-			if err != mgo.ErrNotFound {
-				panic(err)
-			}
-		}
-		wg.Done()
-	}()
-	go func() {
-		err = db.C(ACCOUNTS).Update(
-			bson.M{
-				"roles.account": user.ID,
-			},
-			bson.M{
-				"$set": bson.M{
-					"user": bson.M{
-						"id": user.ID,
-						"name": user.Username,
-					},
-				},
-			})
-		if err != nil {
-			if err != mgo.ErrNotFound {
-				panic(err)
-			}
-		}
-		wg.Done()
-	}()
-	wg.Wait()
+	err = updateRoles(db, user)
+
+	if err != nil {
+		panic(err)
+	}
 	response.Finish()
 }
 

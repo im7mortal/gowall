@@ -133,56 +133,7 @@ func readUser(c *gin.Context) {
 		"isActive": user.IsActive,
 	}
 
-	var wg sync.WaitGroup
-	var err error
-	roles := gin.H{}
-
-	if len(user.Roles.Admin.Hex()) != 0 {
-		wg.Add(1)
-		go func() {
-			admin := Admin{}
-			err = db.C(ADMINS).FindId(user.Roles.Admin).One(&admin)
-			if err != nil {
-				if err != mgo.ErrNotFound {
-					panic(err)
-				}
-			} else {
-				res["roles"] = gin.H{
-					"admin": gin.H{
-						"id_": admin.ID.Hex(),
-						"name": gin.H{
-							"full": admin.Name.Full,
-						},
-					},
-				}
-			}
-			wg.Done()
-		}()
-	}
-
-	if len(user.Roles.Account.Hex()) != 0 {
-		wg.Add(1)
-		go func() {
-			account := Account{}
-			err = db.C(ACCOUNTS).FindId(user.Roles.Account).One(&account)
-			if err != nil {
-				if err != mgo.ErrNotFound {
-					panic(err)
-				}
-			} else {
-				roles["account"] = gin.H{
-					"id_": account.ID.Hex(),
-					"name": gin.H{
-						"full": account.Name.Full,
-					},
-				}
-			}
-			wg.Done()
-		}()
-	}
-
-	wg.Wait()
-	res["roles"] = roles
+	res["roles"] = getRoles(db, &user)
 	json, err := json.Marshal(res)
 	if err != nil {
 		panic(err.Error())
@@ -283,7 +234,12 @@ func changeDataUser(c *gin.Context) {
 	err = collection.Update(bson.M{"user.id": user.ID},
 		bson.M{"$set": bson.M{"user.name": user.Username}})
 
-	// populateRoles // TODO
+	err = updateRoles(db, &user)
+
+	if err != nil {
+		panic(err)
+	}
+
 	response.Finish()
 }
 
@@ -697,4 +653,102 @@ func deleteUser(c *gin.Context) {
 	}
 
 	response.Finish()
+}
+
+func getRoles(db *mgo.Database, user *User) (roles gin.H) {
+	var wg sync.WaitGroup
+	var err error
+
+	if len(user.Roles.Admin.Hex()) != 0 {
+		wg.Add(1)
+		go func() {
+			admin := Admin{}
+			err = db.C(ADMINS).FindId(user.Roles.Admin).One(&admin)
+			if err != nil {
+				if err != mgo.ErrNotFound {
+					panic(err)
+				}
+			} else {
+				roles["admin"] = gin.H{
+					"id_": admin.ID.Hex(),
+					"name": gin.H{
+						"full": admin.Name.Full,
+					},
+				}
+			}
+			wg.Done()
+		}()
+	}
+
+	if len(user.Roles.Account.Hex()) != 0 {
+		wg.Add(1)
+		go func() {
+			account := Account{}
+			err = db.C(ACCOUNTS).FindId(user.Roles.Account).One(&account)
+			if err != nil {
+				if err != mgo.ErrNotFound {
+					panic(err)
+				}
+			} else {
+				roles["account"] = gin.H{
+					"id_": account.ID.Hex(),
+					"name": gin.H{
+						"full": account.Name.Full,
+					},
+				}
+			}
+			wg.Done()
+		}()
+	}
+
+	wg.Wait()
+	return
+}
+
+
+func updateRoles(db *mgo.Database, user *User) (err error) {
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go func() {
+		err = db.C(ADMINS).Update(
+			bson.M{
+				"roles.admin": user.ID,
+			},
+			bson.M{
+				"$set": bson.M{
+					"user": bson.M{
+						"id": user.ID,
+						"name": user.Username,
+					},
+				},
+			})
+		if err != nil {
+			if err != mgo.ErrNotFound {
+				panic(err)
+			}
+		}
+		wg.Done()
+	}()
+	go func() {
+		err = db.C(ACCOUNTS).Update(
+			bson.M{
+				"roles.account": user.ID,
+			},
+			bson.M{
+				"$set": bson.M{
+					"user": bson.M{
+						"id": user.ID,
+						"name": user.Username,
+					},
+				},
+			})
+		if err != nil {
+			if err != mgo.ErrNotFound {
+				panic(err)
+			}
+		}
+		wg.Done()
+	}()
+	wg.Wait()
+	return
 }
