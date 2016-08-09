@@ -6,6 +6,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"net/http"
 	"strings"
+	"gopkg.in/mgo.v2"
 )
 
 func renderSignup(c *gin.Context) {
@@ -25,11 +26,15 @@ func renderSignup(c *gin.Context) {
 }
 
 func signup(c *gin.Context) {
-	response := responseUser{}
-	response.Init(c)
+	response := newResponse(c)
 
-	decoder := json.NewDecoder(c.Request.Body)
-	err := decoder.Decode(&response)
+	var body struct {
+		Username string `json:"username"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	err := json.NewDecoder(c.Request.Body).Decode(&body)
 	if err != nil {
 		EXCEPTION(err)
 	}
@@ -37,9 +42,9 @@ func signup(c *gin.Context) {
 	response.CleanErrors()
 
 	// validate
-	validateUsername(&response.User.Username, &response.Response)
-	validateEmail(&response.User.Email, &response.Response)
-	validatePassword(&response.User.Password, &response.Response)
+	validateUsername(&body.Username, response)
+	validateEmail(&body.Email, response)
+	validatePassword(&body.Password, response)
 
 	if response.HasErrors() {
 		response.Fail()
@@ -50,19 +55,25 @@ func signup(c *gin.Context) {
 	defer db.Session.Close()
 	collection := db.C(USERS)
 	user := User{}
-	err = collection.Find(bson.M{"$or": []bson.M{bson.M{"username": response.Username}, bson.M{"email": response.Email}}}).One(&user)
-	if err != nil {
+	err = collection.Find(
+		bson.M{"$or": []bson.M{
+			bson.M{"username": body.Username},
+			bson.M{"email": body.Email},
+		},
+		}).One(&user)
+
+	if err != nil && err != mgo.ErrNotFound {
 		EXCEPTION(err)
 	}
 
 	// duplicateUsernameCheck
 	// duplicateEmailCheck
 	if len(user.Username) != 0 {
-		if user.Username == response.Username {
-			response.ErrFor["username"] = "username already taken"
+		if user.Username == body.Username {
+			response.ErrFor["username"] = "username already taken."
 		}
-		if user.Email == response.Email {
-			response.ErrFor["email"] = "email already registered"
+		if user.Email == body.Email {
+			response.ErrFor["email"] = "email already registered."
 		}
 	}
 	if response.HasErrors() {
@@ -71,40 +82,35 @@ func signup(c *gin.Context) {
 	}
 
 	// createUser
-	user.setPassword(response.Password)
+	user.setPassword(body.Password)
 
 	user.ID = bson.NewObjectId()
 	user.IsActive = "yes"
-	user.Username = response.Username
-	user.Email = strings.ToLower(response.Email)
-	user.Search = []string{response.Username, response.Email}
+	user.Username = body.Username
+	user.Email = strings.ToLower(body.Email)
+	user.Search = []string{body.Username, body.Email}
 
+	// createAccount
+	account := Account{}
+	account.ID = bson.NewObjectId()
+
+	// insertUser
+	user.Roles.Account = account.ID
 	err = collection.Insert(user)
 	if err != nil {
 		EXCEPTION(err)
 	}
 
-	// createAccount
-	account := Account{}
-
-	account.ID = bson.NewObjectId()
-
-	//update user with account
-	user.Roles.Account = account.ID
-	err = collection.UpdateId(user.ID, user)
-	if err != nil {
-		EXCEPTION(err)
-	}
-
+	// insertAccount
 	if config.RequireAccountVerification {
 		account.IsVerified = "no"
 	} else {
 		account.IsVerified = "yes"
 	}
-	account.Name.Full = response.Username
+	account.Name.Full = body.Username
 	account.User.ID = user.ID
 	account.User.Name = user.Username
-	account.Search = []string{response.Username}
+	account.Search = []string{body.Username}
 
 	collection = db.C(ACCOUNTS)
 	err = collection.Insert(account)
@@ -114,8 +120,8 @@ func signup(c *gin.Context) {
 
 	// sendWelcomeEmail
 	go func() {
-		c.Set("Username", response.Username)
-		c.Set("Email", response.Email)
+		c.Set("Username", body.Username)
+		c.Set("Email", body.Email)
 		c.Set("LoginURL", "http://" + c.Request.Host + "/login/")
 
 		mailConf := MailConfig{}
@@ -123,7 +129,7 @@ func signup(c *gin.Context) {
 		mailConf.From = config.SMTP.From.Name + " <" + config.SMTP.From.Address + ">"
 		mailConf.To = config.SystemEmail
 		mailConf.Subject = "Your " + config.ProjectName + " Account"
-		mailConf.ReplyTo = response.Email
+		mailConf.ReplyTo = body.Email
 		mailConf.HtmlPath = "views/signup/email-html.html"
 
 		if err := mailConf.SendMail(); err != nil {
