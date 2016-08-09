@@ -38,7 +38,7 @@ type User struct {
 }
 
 func (user *User) canPlayRoleOf(role string) bool {
-	if role == "admin" && len(user.Roles.Account.Hex()) > 0 {
+	if role == "admin" && len(user.Roles.Admin.Hex()) > 0 {
 		return true
 	}
 	if role == "account" && len(user.Roles.Account.Hex()) > 0 {
