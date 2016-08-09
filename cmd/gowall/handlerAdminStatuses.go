@@ -28,13 +28,13 @@ func renderStatuses(c *gin.Context) {
 		}
 	}
 
-	var results []Status
+	var statuses []Status
 
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(STATUSES)
 
-	Result := getData(c, collection.Find(query), &results)
+	Result := getData(c, collection.Find(query), &statuses)
 
 	filters := Result["filters"].(gin.H)
 	filters["name"] = name
@@ -57,8 +57,7 @@ func renderStatuses(c *gin.Context) {
 }
 
 func createStatus(c *gin.Context) {
-	response := Response{}
-	response.Init(c)
+	response := newResponse(c)
 	admin := getAdmin(c)
 
 	// validate
@@ -71,8 +70,7 @@ func createStatus(c *gin.Context) {
 
 	status := Status{}
 
-	decoder := json.NewDecoder(c.Request.Body)
-	err := decoder.Decode(&status)
+	err := json.NewDecoder(c.Request.Body).Decode(&status)
 	if err != nil {
 		panic(err)
 	}
@@ -111,18 +109,24 @@ func createStatus(c *gin.Context) {
 	err = collection.Insert(status)
 	if err != nil {
 		panic(err)
-		return
 	}
 	response.Finish()
 }
 
 func readStatus(c *gin.Context) {
-
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(STATUSES)
 	status := Status{}
-	collection.FindId(c.Param("id")).One(&status)
+	err := collection.FindId(c.Param("id")).One(&status)
+		if err != nil {
+		if err == mgo.ErrNotFound {
+			renderStatus404(c)
+			return
+		}
+		panic(err)
+	}
+
 	json, err := json.Marshal(status)
 	if err != nil {
 		panic(err.Error())
@@ -139,26 +143,22 @@ func readStatus(c *gin.Context) {
 }
 
 func updateStatus(c *gin.Context) {
-	response := Response{}
-	response.Init(c)
-
+	response := newResponse(c)
 	admin := getAdmin(c)
 
 	// validate
 	ok := admin.IsMemberOf(ROOTGROUP)
 	if !ok {
-		response.Errors = append(response.Errors, "You may not create statuses")
+		response.Errors = append(response.Errors, "You may not create statuses.")
 		response.Fail()
 		return
 	}
 
 	status := Status{}
 
-	decoder := json.NewDecoder(c.Request.Body)
-	err := decoder.Decode(&status)
+	err := json.NewDecoder(c.Request.Body).Decode(&status)
 	if err != nil {
 		panic(err)
-		return
 	}
 
 	if len(status.Name) == 0 {
@@ -191,22 +191,20 @@ func updateStatus(c *gin.Context) {
 
 	// patchStatus
 	status.ID = _id
-	err = collection.RemoveId(c.Param("id"))
-	//println(err.Error())
-	err = collection.Insert(status)
-	//println(err.Error())
+	err = collection.RemoveId(c.Param("id")) // c.Param("id") is string/ no bson.ObjectID
 	if err != nil {
 		panic(err)
-		return
+	}
+	err = collection.Insert(status)
+	if err != nil {
+		panic(err)
 	}
 
 	response.Finish()
 }
 
 func deleteStatus(c *gin.Context) {
-	response := Response{}
-	response.Init(c)
-
+	response := newResponse(c)
 	admin := getAdmin(c)
 
 	// validate
@@ -221,11 +219,9 @@ func deleteStatus(c *gin.Context) {
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(STATUSES)
-	err := collection.RemoveId(c.Param("id"))
+	err := collection.RemoveId(c.Param("id")) // c.Param("id") is string/ no bson.ObjectID
 	if err != nil {
-		response.Errors = append(response.Errors, err.Error())
-		response.Fail()
-		return
+		panic(err)
 	}
 
 	response.Finish()
