@@ -285,7 +285,7 @@ func linkUserToAccount(c *gin.Context) {
 		return
 	}
 	id := c.Param("id")
-	if user.Roles.Account.String() == id {
+	if user.Roles.Account.Hex() == id {
 		response.Errors = append(response.Errors, "User is already linked to a different account.")
 		response.Fail()
 		return

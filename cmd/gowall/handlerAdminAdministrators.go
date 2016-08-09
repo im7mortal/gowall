@@ -357,7 +357,7 @@ func linkUserToAdmin(c *gin.Context) {
 		return
 	}
 	id := c.Param("id")
-	if user.Roles.Admin.String() == id {
+	if user.Roles.Admin.Hex() == id {
 		response.Errors = append(response.Errors, "User is already linked to a different admin.")
 		response.Fail()
 		return
@@ -413,7 +413,7 @@ func unlinkUserFromAdmin(c *gin.Context) {
 		return
 	}
 	id := c.Param("id")
-	if admin.ID.String() == id {
+	if admin.ID.Hex() == id {
 		response.Errors = append(response.Errors, "You may not unlink yourself from admin.")
 		response.Fail()
 		return

@@ -113,6 +113,7 @@ func IsAuthenticated(c *gin.Context) {
 				EXCEPTION(err)
 			}
 		}
+		println(us.defaultReturnUrl())
 		if len(us.Username) > 0 {
 			c.Set("Logined", true)
 			c.Set("isAuthenticated", true)

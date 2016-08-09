@@ -31,16 +31,14 @@ func renderLogin(c *gin.Context) {
 }
 
 func login(c *gin.Context) {
-	response := responseUser{}
-	response.Init(c)
+	response := newResponse(c)
 
 	var body struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
 	}
 
-	decoder := json.NewDecoder(c.Request.Body)
-	err := decoder.Decode(&body)
+	err := json.NewDecoder(c.Request.Body).Decode(&body)
 	if err != nil {
 		response.Errors = append(response.Errors, err.Error())
 		response.Fail()
@@ -50,7 +48,6 @@ func login(c *gin.Context) {
 	response.CleanErrors()
 
 	// validate
-	response.Username = strings.ToLower(response.Username)
 	if len(body.Username) == 0 {
 		response.ErrFor["username"] = "required"
 	}
@@ -61,8 +58,7 @@ func login(c *gin.Context) {
 		response.Fail()
 		return
 	}
-	response.Username = body.Username
-	response.Password = body.Password
+	body.Username = strings.ToLower(body.Username)
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 
@@ -76,7 +72,7 @@ func login(c *gin.Context) {
 	})
 	go getCount(collection, IpUserCountChan, bson.M{
 		"ip":   clientIP,
-		"user": response.Username,
+		"user": body.Username,
 	})
 	IpCount := <-IpCountChan
 	IpUserCount := <-IpUserCountChan
@@ -90,29 +86,28 @@ func login(c *gin.Context) {
 	collection = db.C(USERS)
 	user := User{}
 	err = collection.Find(bson.M{"$or": []bson.M{
-		bson.M{"username": response.Username},
-		bson.M{"email": response.Email},
+		bson.M{"username": body.Username},
+		bson.M{"email": body.Username}, // instead username can be email
 	}}).One(&user)
 	if err != nil {
 		if err == mgo.ErrNotFound {
-			response.Errors = append(response.Errors, "check username and password")
+			response.Errors = append(response.Errors, "check username or email")
 			response.Fail()
 			return
 		}
 		EXCEPTION(err)
 	}
-	err = user.isPasswordOk(response.Password)
+	err = user.isPasswordOk(body.Password)
 	if err != nil {
 		attempt := LoginAttempt{}
-		attempt.ID = bson.NewObjectId()
 		attempt.IP = clientIP
-		attempt.User = response.Username
+		attempt.User = body.Username
 		collection = db.C(LOGINATTEMPTS)
 		err = collection.Insert(attempt)
 		if err != nil {
 			EXCEPTION(err)
 		}
-		response.Errors = append(response.Errors, "check username and password")
+		response.Errors = append(response.Errors, "check password")
 		response.Fail()
 		return
 	}
