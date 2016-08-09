@@ -19,7 +19,7 @@ var rSlugify2, _ = regexp.Compile(` +`)
 var rUsername, _ = regexp.Compile(`^[a-zA-Z0-9\-\_]+$`)
 var rEmail, _ = regexp.Compile(`^[a-zA-Z0-9\-\_\.\+]+@[a-zA-Z0-9\-\_\.]+\.[a-zA-Z0-9\-\_]+$`)
 
-var rVerificationURL, _ = regexp.Compile(`^[a-zA-Z0-9\-\_\.\+]+@[a-zA-Z0-9\-\_\.]+\.[a-zA-Z0-9\-\_]+$`)
+var rVerificationURL, _ = regexp.Compile(`^\/account\/verification\/`)
 var signupProviderReg, _ = regexp.Compile(`/[^a-zA-Z0-9\-\_]/g`)
 
 /**
