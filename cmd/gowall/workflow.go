@@ -23,6 +23,7 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"fmt"
 )
 
 func handleXHR(c *gin.Context, data []byte) {
@@ -89,4 +90,8 @@ func (r *Response) Response() {
 	r.Data["errfor"] = r.ErrFor
 	r.Data["errors"] = r.Errors
 	r.c.JSON(http.StatusOK, r.Data)
+}
+
+func DEBUG(i interface{}) {
+	fmt.Printf("%v\n%f\n", i, i)
 }
