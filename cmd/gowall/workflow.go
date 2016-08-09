@@ -24,6 +24,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"fmt"
+	"sync"
 )
 
 func handleXHR(c *gin.Context, data []byte) {
@@ -37,6 +38,23 @@ type Response struct {
 	ErrFor  map[string]string `json:"errfor" bson:"-"`
 	c       *gin.Context
 	Data    map[string]interface{} `json:"data" bson:"-"`
+}
+
+var responsePool = sync.Pool{
+	New: func() interface{} {
+		return &Response{}
+	},
+}
+
+func newResponse(c *gin.Context) (r *Response) {
+	r = responsePool.Get().(*Response)
+	// cleaning
+	r.Errors = []string{}
+	r.Data = map[string]interface{}{}
+	r.ErrFor = map[string]string{}
+	// bind context
+	r.c = c
+	return
 }
 
 func (r *Response) HasErrors() bool {
@@ -90,6 +108,7 @@ func (r *Response) Response() {
 	r.Data["errfor"] = r.ErrFor
 	r.Data["errors"] = r.Errors
 	r.c.JSON(http.StatusOK, r.Data)
+	responsePool.Put(r)
 }
 
 func DEBUG(i interface{}) {
