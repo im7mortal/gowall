@@ -28,13 +28,13 @@ func renderCategories(c *gin.Context) {
 		}
 	}
 
-	var results []Category
+	var categories []Category
 
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(CATEGORIES)
 
-	Result := getData(c, collection.Find(query), &results)
+	Result := getData(c, collection.Find(query), &categories)
 
 	filters := Result["filters"].(gin.H)
 	filters["name"] = name
@@ -57,23 +57,20 @@ func renderCategories(c *gin.Context) {
 }
 
 func createCategory(c *gin.Context) {
-	response := Response{}
-	response.Init(c)
-
+	response := newResponse(c)
 	admin := getAdmin(c)
 
 	// validate
 	ok := admin.IsMemberOf(ROOTGROUP)
 	if !ok {
-		response.Errors = append(response.Errors, "You may not create categories")
+		response.Errors = append(response.Errors, "You may not create categories.")
 		response.Fail()
 		return
 	}
 
 	category := Category{}
 
-	decoder := json.NewDecoder(c.Request.Body)
-	err := decoder.Decode(&category)
+	err := json.NewDecoder(c.Request.Body).Decode(&category)
 	if err != nil {
 		EXCEPTION(err)
 	}
@@ -117,9 +114,7 @@ func createCategory(c *gin.Context) {
 }
 
 func updateCategory(c *gin.Context) {
-	response := Response{}
-	response.Init(c)
-
+	response := newResponse(c)
 	admin := getAdmin(c)
 
 	// validate
@@ -168,7 +163,10 @@ func updateCategory(c *gin.Context) {
 
 	// patchCategory
 	category.ID = _id
-	err = collection.RemoveId(c.Param("id"))
+	err = collection.RemoveId(c.Param("id")) // c.Param("id") is string/ no bson.ObjectID
+	if err != nil {
+		EXCEPTION(err)
+	}
 	err = collection.Insert(category)
 	if err != nil {
 		EXCEPTION(err)
@@ -178,7 +176,6 @@ func updateCategory(c *gin.Context) {
 }
 
 func renderCategory(c *gin.Context) {
-
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(CATEGORIES)
@@ -192,7 +189,10 @@ func renderCategory(c *gin.Context) {
 		EXCEPTION(err)
 	}
 
-	json, _ := json.Marshal(category)
+	json, err := json.Marshal(category)
+	if err != nil {
+		EXCEPTION(err)
+	}
 
 	if XHR(c) {
 		c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
@@ -205,10 +205,8 @@ func renderCategory(c *gin.Context) {
 }
 
 func deleteCategory(c *gin.Context) {
+	response := newResponse(c)
 	admin := getAdmin(c)
-
-	response := Response{}
-	response.Init(c)
 
 	// validate
 	ok := admin.IsMemberOf(ROOTGROUP)
@@ -222,7 +220,7 @@ func deleteCategory(c *gin.Context) {
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(CATEGORIES)
-	err := collection.RemoveId(c.Param("id"))
+	err := collection.RemoveId(c.Param("id")) // c.Param("id") is string/ no bson.ObjectID
 	if err != nil {
 		response.Errors = append(response.Errors, err.Error())
 		response.Fail()
