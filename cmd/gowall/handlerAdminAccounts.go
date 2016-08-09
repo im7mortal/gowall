@@ -72,7 +72,7 @@ func renderAccounts(c *gin.Context) {
 }
 
 func createAccount(c *gin.Context) {
-	response := responseAccount{}
+	response := Response{}
 	response.Init(c)
 
 	var body struct {
@@ -82,27 +82,23 @@ func createAccount(c *gin.Context) {
 	if err != nil {
 		panic(err)
 	}
-	response.Account.Name.Full = body.Name
-	// clean errors from client
-
-	if len(response.Account.Name.Full) == 0 {
+	if len(body.Name) == 0 {
 		response.Errors = append(response.Errors, "A name is required")
-	}
-
-	if response.HasErrors() {
 		response.Fail()
 		return
 	}
 
-	// handleName
-	response.Name.Full = slugifyName(response.Name.Full)
+	account := Account{}
 
-	// duplicateAdministrator
+	// handleName
+	account.Name.Full = slugifyName(body.Name)
+
+	// duplicateAccount
 	db := getMongoDBInstance()
 	defer db.Session.Close()
-	collection := db.C(ADMINS)
+	collection := db.C(ACCOUNTS)
 	err = collection.Find(bson.M{
-		"name.full": response.Name.Full,
+		"name.full": account.Name.Full,
 	}).One(nil)
 	// we expect err == mgo.ErrNotFound for success
 	if err == nil {
@@ -112,29 +108,29 @@ func createAccount(c *gin.Context) {
 	} else if err != mgo.ErrNotFound {
 		panic(err)
 	}
+
 	// handleName
-	name := strings.Split(response.Name.Full, " ")
-	response.Name.First = name[0]
+	name := strings.Split(account.Name.Full, " ")
+	account.Name.First = name[0]
 	if len(name) > 1 {
 		if len(name) == 2 {
-			response.Name.Last = name[1]
-			response.Account.Name.Middle = ""
+			account.Name.Last = name[1]
+			account.Name.Middle = ""
 		}
 		if len(name) == 3 {
-			response.Name.Middle = name[2]
+			account.Name.Middle = name[2]
 		}
 	}
 
-	response.Account.Search = []string{response.Name.First, response.Name.Middle, response.Name.Last}
+	account.Search = []string{account.Name.First, account.Name.Middle, account.Name.Last}
 
-	// createAdministrator
-	response.Account.ID = bson.NewObjectId()
-	err = collection.Insert(response.Account)
-
+	// createAccount
+	account.ID = bson.NewObjectId()
+	err = collection.Insert(account)
 	if err != nil {
 		panic(err)
 	}
-	response.Data["record"] = response
+	response.Data["record"] = account
 	response.Finish()
 }
 
