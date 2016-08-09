@@ -99,7 +99,7 @@ func login(c *gin.Context) {
 			response.Fail()
 			return
 		}
-		panic(err)
+		EXCEPTION(err)
 	}
 	err = user.isPasswordOk(response.Password)
 	if err != nil {
@@ -110,7 +110,7 @@ func login(c *gin.Context) {
 		collection = db.C(LOGINATTEMPTS)
 		err = collection.Insert(attempt)
 		if err != nil {
-			panic(err)
+			EXCEPTION(err)
 		}
 		response.Errors = append(response.Errors, "check username and password")
 		response.Fail()

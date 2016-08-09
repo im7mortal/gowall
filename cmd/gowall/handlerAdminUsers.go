@@ -63,7 +63,7 @@ func renderUsers(c *gin.Context) {
 
 	Results, err := json.Marshal(Result)
 	if err != nil {
-		panic(err.Error())
+		EXCEPTION(err.Error())
 	}
 
 	if XHR(c) {
@@ -82,7 +82,7 @@ func createUser(c *gin.Context) {
 
 	err := json.NewDecoder(c.Request.Body).Decode(&response.User)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 		return
 	}
 
@@ -104,7 +104,7 @@ func createUser(c *gin.Context) {
 		response.Fail()
 		return
 	} else if err != mgo.ErrNotFound {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	// createUser
@@ -113,7 +113,7 @@ func createUser(c *gin.Context) {
 
 	err = collection.Insert(response.User)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	response.Data["record"] = response.User
 	response.Finish()
@@ -137,7 +137,7 @@ func readUser(c *gin.Context) {
 	res["roles"] = getRoles(db, &user)
 	json, err := json.Marshal(res)
 	if err != nil {
-		panic(err.Error())
+		EXCEPTION(err.Error())
 	}
 
 	if XHR(c) {
@@ -160,7 +160,7 @@ func changeDataUser(c *gin.Context) {
 	}
 	err := json.NewDecoder(c.Request.Body).Decode(&body)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	validateUsername(&body.Username, &response)
 	validateEmail(&body.Email, &response)
@@ -177,7 +177,7 @@ func changeDataUser(c *gin.Context) {
 	err = collection.FindId(bson.ObjectIdHex(_id)).One(&user)
 	if err != nil {
 		if err != mgo.ErrNotFound {
-			panic(err)
+			EXCEPTION(err)
 		}
 		response.Errors = append(response.Errors, "User wasn't found.")
 		response.Fail()
@@ -206,7 +206,7 @@ func changeDataUser(c *gin.Context) {
 		response.Fail()
 		return
 	} else if err != mgo.ErrNotFound {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	user.Username = body.Username
@@ -276,7 +276,7 @@ func changePasswordUser(c *gin.Context) {
 	err = collection.FindId(bson.ObjectIdHex(c.Param("id"))).One(&user)
 	if err != nil {
 		if err != mgo.ErrNotFound {
-			panic(err)
+			EXCEPTION(err)
 		}
 		response.Errors = append(response.Errors, "User wasn't found.")
 		response.Fail()
@@ -314,7 +314,7 @@ func linkAdminToUser(c *gin.Context) {
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&body)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	if len(body.NewAdminId) == 0 {
 		response.ErrFor["newAdminId"] = "required"
@@ -332,7 +332,7 @@ func linkAdminToUser(c *gin.Context) {
 
 	if err != nil {
 		if err != mgo.ErrNotFound {
-			panic(err)
+			EXCEPTION(err)
 		}
 		response.Errors = append(response.Errors, "Admin not found.")
 		response.Fail()
@@ -358,7 +358,7 @@ func linkAdminToUser(c *gin.Context) {
 		response.Fail()
 		return
 	} else if err != mgo.ErrNotFound {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	//patchUser
@@ -369,7 +369,7 @@ func linkAdminToUser(c *gin.Context) {
 
 	if err != nil {
 		if err != mgo.ErrNotFound {
-			panic(err)
+			EXCEPTION(err)
 		}
 		response.Errors = append(response.Errors, "User not found.")
 		response.Fail()
@@ -429,7 +429,7 @@ func unlinkAdminFromUser(c *gin.Context) {
 
 	if err != nil {
 		if err != mgo.ErrNotFound {
-			panic(err)
+			EXCEPTION(err)
 		}
 		response.Errors = append(response.Errors, "User not found.")
 		response.Fail()
@@ -477,7 +477,7 @@ func linkAccountToUser(c *gin.Context) {
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&body)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	if len(body.NewAccountId) == 0 {
 		response.ErrFor["newAccountId"] = "required"
@@ -495,7 +495,7 @@ func linkAccountToUser(c *gin.Context) {
 
 	if err != nil {
 		if err != mgo.ErrNotFound {
-			panic(err)
+			EXCEPTION(err)
 		}
 		response.Errors = append(response.Errors, "Account not found.")
 		response.Fail()
@@ -521,7 +521,7 @@ func linkAccountToUser(c *gin.Context) {
 		response.Fail()
 		return
 	} else if err != mgo.ErrNotFound {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	//patchUser
@@ -532,7 +532,7 @@ func linkAccountToUser(c *gin.Context) {
 
 	if err != nil {
 		if err != mgo.ErrNotFound {
-			panic(err)
+			EXCEPTION(err)
 		}
 		response.Errors = append(response.Errors, "User not found.")
 		response.Fail()
@@ -587,7 +587,7 @@ func unlinkAccountFromUser(c *gin.Context) {
 
 	if err != nil {
 		if err != mgo.ErrNotFound {
-			panic(err)
+			EXCEPTION(err)
 		}
 		response.Errors = append(response.Errors, "User not found.")
 		response.Fail()
@@ -664,7 +664,7 @@ func getRoles(db *mgo.Database, user *User) (roles gin.H) {
 			err = db.C(ADMINS).FindId(user.Roles.Admin).One(&admin)
 			if err != nil {
 				if err != mgo.ErrNotFound {
-					panic(err)
+					EXCEPTION(err)
 				}
 			} else {
 				roles["admin"] = gin.H{
@@ -685,7 +685,7 @@ func getRoles(db *mgo.Database, user *User) (roles gin.H) {
 			err = db.C(ACCOUNTS).FindId(user.Roles.Account).One(&account)
 			if err != nil {
 				if err != mgo.ErrNotFound {
-					panic(err)
+					EXCEPTION(err)
 				}
 			} else {
 				roles["account"] = gin.H{
@@ -722,7 +722,7 @@ func updateRoles(db *mgo.Database, user *User) {
 			})
 		if err != nil {
 			if err != mgo.ErrNotFound {
-				panic(err)
+				EXCEPTION(err)
 			}
 		}
 		wg.Done()
@@ -742,7 +742,7 @@ func updateRoles(db *mgo.Database, user *User) {
 			})
 		if err != nil {
 			if err != mgo.ErrNotFound {
-				panic(err)
+				EXCEPTION(err)
 			}
 		}
 		wg.Done()

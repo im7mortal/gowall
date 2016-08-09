@@ -31,7 +31,7 @@ func signup(c *gin.Context) {
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&response)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	// clean errors from client
 	response.CleanErrors()
@@ -52,7 +52,7 @@ func signup(c *gin.Context) {
 	user := User{}
 	err = collection.Find(bson.M{"$or": []bson.M{bson.M{"username": response.Username}, bson.M{"email": response.Email}}}).One(&user)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	// duplicateUsernameCheck
@@ -81,7 +81,7 @@ func signup(c *gin.Context) {
 
 	err = collection.Insert(user)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	// createAccount
@@ -93,7 +93,7 @@ func signup(c *gin.Context) {
 	user.Roles.Account = account.ID
 	err = collection.UpdateId(user.ID, user)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	if config.RequireAccountVerification {
@@ -109,7 +109,7 @@ func signup(c *gin.Context) {
 	collection = db.C(ACCOUNTS)
 	err = collection.Insert(account)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	// sendWelcomeEmail

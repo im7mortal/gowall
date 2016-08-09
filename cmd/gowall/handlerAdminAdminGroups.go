@@ -38,7 +38,7 @@ func renderAdminGroups(c *gin.Context) {
 
 	Results, err := json.Marshal(Result)
 	if err != nil {
-		panic(err.Error())
+		EXCEPTION(err.Error())
 	}
 
 	if XHR(c) {
@@ -87,13 +87,13 @@ func createAdminGroup(c *gin.Context) {
 		response.Fail()
 		return
 	} else if err != mgo.ErrNotFound {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	// createAdminGroup
 	err = collection.Insert(response.AdminGroup)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	response.Finish()
 }
@@ -109,11 +109,11 @@ func readAdminGroup(c *gin.Context) {
 			renderStatus404(c)
 			return
 		}
-		panic(err)
+		EXCEPTION(err)
 	}
 	json, err := json.Marshal(adminGroup)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	if XHR(c) {
 		c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
@@ -160,19 +160,19 @@ func updateAdminGroup(c *gin.Context) {
 		response.Fail()
 		return
 	} else if err != mgo.ErrNotFound {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	// patchAdminGroup
 	// _id is slugified name so first delete second insert // todo http://stackoverflow.com/questions/24166615/update-an-item-in-an-array-that-is-in-an-array
 	err = collection.RemoveId(c.Param("id"))
 	if err != nil {
-		panic(err) // todo: bug: it updateAdminGroup doesn't update id in url. and if user will update AdminGroup 2 time
+		EXCEPTION(err) // todo: bug: it updateAdminGroup doesn't update id in url. and if user will update AdminGroup 2 time
 		// todo: it will not find AdminGroup in second time
 	}
 	err = collection.Insert(response.AdminGroup)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	response.Finish()
@@ -207,7 +207,7 @@ func updatePermissionsAdminGroup(c *gin.Context) {
 
 	err := collection.UpdateId(c.Param("id"), response.AdminGroup)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	response.Finish()

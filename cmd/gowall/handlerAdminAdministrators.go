@@ -36,7 +36,7 @@ func renderAdmins(c *gin.Context) {
 
 	Results, err := json.Marshal(Result)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	if XHR(c) {
 		handleXHR(c, Results)
@@ -84,7 +84,7 @@ func createAdmin(c *gin.Context) {
 		response.Fail()
 		return
 	} else if err != mgo.ErrNotFound {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	// handleName
@@ -105,7 +105,7 @@ func createAdmin(c *gin.Context) {
 	response.Admin.ID = bson.NewObjectId()
 	err = collection.Insert(response.Admin)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	response.Data["record"] = response
 	response.Finish()
@@ -122,7 +122,7 @@ func readAdmin(c *gin.Context) {
 			renderStatus404(c)
 			return
 		}
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	// populateGroups
@@ -133,12 +133,12 @@ func readAdmin(c *gin.Context) {
 	}
 	if err != nil {
 		// mgo.ErrNotFound is not possible. "Root" group must be.
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	results, err := json.Marshal(admin)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	if XHR(c) {
 		c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
@@ -166,7 +166,7 @@ func updateAdmin(c *gin.Context) {
 
 	err := json.NewDecoder(c.Request.Body).Decode(&response.Admin.Name)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	if len(response.Name.First) == 0 {
@@ -242,13 +242,13 @@ func updatePermissionsAdmin(c *gin.Context) {
 		},
 	})
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	admin = &Admin{}
 	err = collection.FindId(id).One(admin)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	admin.populateGroups(db)
 	response.Data["admin"] = admin
@@ -274,7 +274,7 @@ func updateGroupsAdmin(c *gin.Context) {
 	}
 	err := json.NewDecoder(c.Request.Body).Decode(&req)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	if len(req.Groups) == 0 {
@@ -299,12 +299,12 @@ func updateGroupsAdmin(c *gin.Context) {
 		},
 	})
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	admin = &Admin{}
 	err = collection.FindId(id).One(admin)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	admin.populateGroups(db)
@@ -332,7 +332,7 @@ func linkUserToAdmin(c *gin.Context) {
 
 	err := json.NewDecoder(c.Request.Body).Decode(&req)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	if len(req.NewUsername) == 0 {
@@ -350,7 +350,7 @@ func linkUserToAdmin(c *gin.Context) {
 	err = collection.Find(bson.M{"username": req.NewUsername}).One(&user)
 	if err != nil {
 		if err != mgo.ErrNotFound {
-			panic(err)
+			EXCEPTION(err)
 		}
 		response.Errors = append(response.Errors, "User not found.")
 		response.Fail()
@@ -378,7 +378,7 @@ func linkUserToAdmin(c *gin.Context) {
 		response.Fail()
 		return
 	} else if err != mgo.ErrNotFound {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	admin.ID = bson.ObjectIdHex(id)
@@ -386,13 +386,13 @@ func linkUserToAdmin(c *gin.Context) {
 	err = admin.linkUser(db, user)
 
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	err = collection.FindId(bson.ObjectIdHex(id)).One(&response.Admin)
 
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	response.Data["admin"] = response.Admin
@@ -429,7 +429,7 @@ func unlinkUserFromAdmin(c *gin.Context) {
 	})
 	if err != nil {
 		if err != mgo.ErrNotFound {
-			panic(err)
+			EXCEPTION(err)
 		}
 		response.Errors = append(response.Errors, "User not found.")
 		response.Fail()
@@ -443,7 +443,7 @@ func unlinkUserFromAdmin(c *gin.Context) {
 	})
 
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	response.Data["admin"] = response.Admin

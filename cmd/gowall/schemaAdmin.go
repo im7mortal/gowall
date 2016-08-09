@@ -34,7 +34,7 @@ func (u *Admin) Flow() {
 func (a *Admin) DecodeRequest(c *gin.Context) {
 	err := json.NewDecoder(c.Request.Body).Decode(a)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	return
 }
@@ -91,7 +91,7 @@ func (admin *Admin) linkUser(db *mgo.Database, user *User) (err error) {
 
 	if err != nil {
 		if err != mgo.ErrNotFound {
-			panic(err)
+			EXCEPTION(err)
 		}
 		return
 	}
@@ -107,7 +107,7 @@ func (admin *Admin) linkUser(db *mgo.Database, user *User) (err error) {
 
 	if err != nil {
 		if err != mgo.ErrNotFound {
-			panic(err)
+			EXCEPTION(err)
 		}
 		return
 	}
@@ -124,7 +124,7 @@ func (admin *Admin) unlinkUser(db *mgo.Database, user *User) (err error) {
 
 	if err != nil {
 		if err != mgo.ErrNotFound {
-			panic(err)
+			EXCEPTION(err)
 		}
 		return
 	}
@@ -137,7 +137,7 @@ func (admin *Admin) unlinkUser(db *mgo.Database, user *User) (err error) {
 
 	if err != nil {
 		if err != mgo.ErrNotFound {
-			panic(err)
+			EXCEPTION(err)
 		}
 		return
 	}

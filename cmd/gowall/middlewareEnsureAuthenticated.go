@@ -13,6 +13,7 @@ func ensureAuthenticated(c *gin.Context) {
 	if is, ok := isAuthenticated.(bool); ok && is {
 		c.Next()
 	} else {
+		c.Abort()
 		session := sessions.Default(c)
 		session.Set("returnURL", c.Request.URL.Path)
 		session.Save()
@@ -24,10 +25,10 @@ func getUser(c *gin.Context) (user *User) {
 	if _user, ok := c.Get("User"); ok {
 		user, ok = _user.(*User)
 		if !ok {
-			panic("not authorised")
+			EXCEPTION("not authorised")
 		}
 	} else {
-		panic("not authorised")
+		EXCEPTION("not authorised")
 	}
 	return
 }
@@ -36,10 +37,10 @@ func getAccount(c *gin.Context) (account *Account) {
 	if _account, ok := c.Get("Account"); ok {
 		account, ok = _account.(*Account)
 		if !ok {
-			panic("account wasn't found")
+			EXCEPTION("account wasn't found")
 		}
 	} else {
-		panic("account wasn't found")
+		EXCEPTION("account wasn't found")
 	}
 	return
 }
@@ -71,10 +72,10 @@ func getAdmin(c *gin.Context) (admin *Admin) {
 	if _admin, ok := c.Get("Admin"); ok {
 		admin, ok = _admin.(*Admin)
 		if !ok {
-			panic("user isn't admin")
+			EXCEPTION("user isn't admin")
 		}
 	} else {
-		panic("user isn't admin")
+		EXCEPTION("user isn't admin")
 	}
 	return
 }
@@ -109,7 +110,7 @@ func IsAuthenticated(c *gin.Context) {
 		err := collection.Find(bson.M{"_id": bson.ObjectIdHex(public_)}).One(&us)
 		if err != nil {
 			if err != mgo.ErrNotFound {
-				panic(err)
+				EXCEPTION(err)
 			}
 		}
 		if len(us.Username) > 0 {

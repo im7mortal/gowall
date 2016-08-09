@@ -32,7 +32,7 @@ func sendReset(c *gin.Context) {
 	}
 	err := json.NewDecoder(c.Request.Body).Decode(&body)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	validateEmail(&body.Email, &response)
@@ -44,7 +44,7 @@ func sendReset(c *gin.Context) {
 	token := generateToken(21)
 	hash, err := bcrypt.GenerateFromPassword(token, bcrypt.DefaultCost)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	db := getMongoDBInstance()
@@ -54,7 +54,7 @@ func sendReset(c *gin.Context) {
 	err = collection.Find(bson.M{"email": body.Email}).One(&us)
 	if err != nil {
 		if err != mgo.ErrNotFound {
-			panic(err)
+			EXCEPTION(err)
 		}
 		response.ErrFor["email"] = "email doesn't exist."
 	}
@@ -80,7 +80,7 @@ func sendReset(c *gin.Context) {
 	mailConf.HtmlPath = "views/login/forgot/email-html.html"
 
 	if err := mailConf.SendMail(); err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	response.Finish()
 }

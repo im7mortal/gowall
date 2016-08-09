@@ -46,7 +46,7 @@ func renderAccounts(c *gin.Context) {
 
 	Results, err := json.Marshal(Result)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	if XHR(c) {
@@ -80,7 +80,7 @@ func createAccount(c *gin.Context) {
 	}
 	err := json.NewDecoder(c.Request.Body).Decode(&body)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	if len(body.Name) == 0 {
 		response.Errors = append(response.Errors, "A name is required")
@@ -106,7 +106,7 @@ func createAccount(c *gin.Context) {
 		response.Fail()
 		return
 	} else if err != mgo.ErrNotFound {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	// handleName
@@ -128,7 +128,7 @@ func createAccount(c *gin.Context) {
 	account.ID = bson.NewObjectId()
 	err = collection.Insert(account)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	response.Data["record"] = account
 	response.Finish()
@@ -145,11 +145,11 @@ func readAccount(c *gin.Context) {
 			renderStatus404(c)
 			return
 		}
-		panic(err)
+		EXCEPTION(err)
 	}
 	json, err := json.Marshal(account)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	if XHR(c) {
 		c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
@@ -228,13 +228,13 @@ func updateAccount(c *gin.Context) {
 		},
 	})
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	account := &Account{}
 	err = collection.FindId(id).One(account)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	response.Data["account"] = account
 	response.Finish()
@@ -260,7 +260,7 @@ func linkUserToAccount(c *gin.Context) {
 
 	err := json.NewDecoder(c.Request.Body).Decode(&req)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	if len(req.NewUsername) == 0 {
@@ -278,7 +278,7 @@ func linkUserToAccount(c *gin.Context) {
 	err = collection.Find(bson.M{"username": req.NewUsername}).One(&user)
 	if err != nil {
 		if err != mgo.ErrNotFound {
-			panic(err)
+			EXCEPTION(err)
 		}
 		response.Errors = append(response.Errors, "User not found.")
 		response.Fail()
@@ -307,7 +307,7 @@ func linkUserToAccount(c *gin.Context) {
 		response.Fail()
 		return
 	} else if err != mgo.ErrNotFound {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	account.ID = bson.ObjectIdHex(id)
@@ -321,7 +321,7 @@ func linkUserToAccount(c *gin.Context) {
 	err = collection.FindId(bson.ObjectIdHex(id)).One(&response.Account)
 
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	response.Data["account"] = response.Account
@@ -355,7 +355,7 @@ func unlinkUserFromAccount(c *gin.Context) {
 
 	if err != nil {
 		if err != mgo.ErrNotFound {
-			panic(err)
+			EXCEPTION(err)
 		}
 	}
 
@@ -366,7 +366,7 @@ func unlinkUserFromAccount(c *gin.Context) {
 
 	if err != nil {
 		if err != mgo.ErrNotFound {
-			panic(err)
+			EXCEPTION(err)
 		}
 		response.Errors = append(response.Errors, "User not found.")
 		response.Fail()
@@ -375,7 +375,7 @@ func unlinkUserFromAccount(c *gin.Context) {
 	err = account.linkUser(db, user)
 
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	response.Data["account"] = response.Account
@@ -394,7 +394,7 @@ func newNote(c *gin.Context) {
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&body)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	if len(body.Data) == 0 {
 		response.Errors = append(response.Errors, "Data is required.")
@@ -419,11 +419,11 @@ func newNote(c *gin.Context) {
 		}},
 		})
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	err = collection.FindId(bson.ObjectIdHex(c.Param("id"))).One(account)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	response.Data["account"] = account
 	response.Finish()
@@ -442,7 +442,7 @@ func newStatus(c *gin.Context) {
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&body)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	if len(body.StatusID) == 0 {
 		response.Errors = append(response.Errors, "Please choose a status.")
@@ -470,11 +470,11 @@ func newStatus(c *gin.Context) {
 			"$set":  bson.M{"status": statusToAdd},
 		})
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	err = collection.FindId(bson.ObjectIdHex(c.Param("id"))).One(account)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	response.Data["account"] = account
 	response.Finish()

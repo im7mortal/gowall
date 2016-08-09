@@ -22,7 +22,7 @@ type AdminGroup struct {
 func (a *AdminGroup) DecodeRequest(c *gin.Context) {
 	err := json.NewDecoder(c.Request.Body).Decode(a)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	return
 }

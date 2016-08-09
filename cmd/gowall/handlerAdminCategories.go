@@ -42,7 +42,7 @@ func renderCategories(c *gin.Context) {
 
 	Results, err := json.Marshal(Result)
 	if err != nil {
-		panic(err.Error())
+		EXCEPTION(err.Error())
 	}
 
 	if XHR(c) {
@@ -75,7 +75,7 @@ func createCategory(c *gin.Context) {
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&category)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	if len(category.Name) == 0 {
@@ -103,7 +103,7 @@ func createCategory(c *gin.Context) {
 		response.Fail()
 		return
 	} else if err != mgo.ErrNotFound {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	// createCategory
@@ -111,7 +111,7 @@ func createCategory(c *gin.Context) {
 
 	err = collection.Insert(category)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	response.Finish()
 }
@@ -135,7 +135,7 @@ func updateCategory(c *gin.Context) {
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&category)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	if len(category.Name) == 0 {
@@ -163,7 +163,7 @@ func updateCategory(c *gin.Context) {
 		response.Fail()
 		return
 	} else if err != mgo.ErrNotFound {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	// patchCategory
@@ -171,7 +171,7 @@ func updateCategory(c *gin.Context) {
 	err = collection.RemoveId(c.Param("id"))
 	err = collection.Insert(category)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	response.Finish()
@@ -189,7 +189,7 @@ func renderCategory(c *gin.Context) {
 			renderStatus404(c)
 			return
 		}
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	json, _ := json.Marshal(category)

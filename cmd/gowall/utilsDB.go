@@ -8,7 +8,7 @@ import (
 func getMongoDBInstance() *mgo.Database {
 	session, err := mgo.Dial(config.MongoDB)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	// if MongoDBName == "" it will check the connection url MongoDB for a dbname
 	// that logic inside mgo

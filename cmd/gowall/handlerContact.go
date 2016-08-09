@@ -19,7 +19,7 @@ func sendContact(c *gin.Context) {
 	}
 	err := json.NewDecoder(c.Request.Body).Decode(&body)
 	if err != nil {
-		panic(err.Error())
+		EXCEPTION(err.Error())
 	}
 
 	if len(body.Name) == 0 {

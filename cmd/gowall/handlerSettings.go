@@ -25,7 +25,7 @@ func renderAccountSettings(c *gin.Context) {
 	user = &User{}
 	err := collection.FindId(bson.ObjectIdHex(public.(string))).One(user)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	if len(user.Username) != 0 {
 		User, _ := json.Marshal(gin.H{
@@ -39,7 +39,7 @@ func renderAccountSettings(c *gin.Context) {
 	ac := Account{}
 	err = collection.FindId(user.Roles.Account).One(&ac)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	if len(ac.ID) != 0 {
 		Account, _ := json.Marshal(gin.H{
@@ -194,7 +194,7 @@ func changeIdentity(c *gin.Context) {
 		response.Fail()
 		return
 	} else if err != mgo.ErrNotFound {
-		panic(err)
+		EXCEPTION(err)
 	}
 	user.Username = body.Username
 	user.Email = body.Email
@@ -231,7 +231,7 @@ func settingsProvider(c *gin.Context, userGoth goth.User) {
 		c.Redirect(http.StatusFound, "/account/settings/")
 		return
 	} else if err != mgo.ErrNotFound {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	user = getUser(c)
@@ -239,7 +239,7 @@ func settingsProvider(c *gin.Context, userGoth goth.User) {
 	user.updateProvider(userGoth)
 	err = collection.UpdateId(user.ID, user)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	c.Redirect(http.StatusFound, "/account/settings/")
@@ -253,7 +253,7 @@ func disconnectProvider(c *gin.Context) {
 	collection := db.C(USERS)
 	err := collection.UpdateId(user.ID, user)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	c.Redirect(http.StatusFound, "/account/settings/")

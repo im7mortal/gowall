@@ -36,7 +36,7 @@ func completeOAuth(c *gin.Context) {
 	session := sessions.Default(c)
 	action, ok := session.Get("action").(string)
 	if !ok {
-		panic("OAuth action isn't defined")
+		EXCEPTION("OAuth action isn't defined")
 	}
 	session.Delete("action")
 	session.Save()
@@ -57,7 +57,7 @@ func completeOAuth(c *gin.Context) {
 		settingsProvider(c, userGoth)
 		return
 	default:
-		panic("OAuth action isn't defined")
+		EXCEPTION("OAuth action isn't defined")
 	}
 }
 
@@ -77,7 +77,7 @@ func checkProvider(provider, hostname string) {
 			)
 			return
 		default:
-			panic("provider doesn't exist")
+			EXCEPTION("provider doesn't exist")
 		}
 	}
 }
@@ -93,7 +93,7 @@ func (user *User) updateProvider(socialProfile goth.User) {
 		user.Github.ID = socialProfile.UserID
 		return
 	default:
-		panic("provider doesn't exist")
+		EXCEPTION("provider doesn't exist")
 	}
 }
 
@@ -106,7 +106,7 @@ func (user *User) disconnectProviderDB(provider string) {
 		user.Github.ID = ""
 		return
 	default:
-		panic("provider doesn't exist")
+		EXCEPTION("provider doesn't exist")
 	}
 }
 

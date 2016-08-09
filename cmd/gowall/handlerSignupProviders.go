@@ -33,11 +33,11 @@ func signupProvider(c *gin.Context, userGoth goth.User) {
 		c.Redirect(http.StatusFound, "/signup/")
 		return
 	} else if err != mgo.ErrNotFound {
-		panic(err)
+		EXCEPTION(err)
 	}
 	userGothString, err := json.Marshal(userGoth)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	session := sessions.Default(c)
@@ -56,7 +56,7 @@ func socialSignup(c *gin.Context) {
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&response)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	response.Errors = []string{}
 	response.ErrFor = make(map[string]string)
@@ -80,7 +80,7 @@ func socialSignup(c *gin.Context) {
 	socialProfile := goth.User{}
 	err = json.Unmarshal([]byte(socialProfile_), &socialProfile)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	// duplicateEmailCheck
@@ -95,7 +95,7 @@ func socialSignup(c *gin.Context) {
 		response.Fail()
 		return
 	} else if err != mgo.ErrNotFound {
-		panic(err)
+		EXCEPTION(err)
 	}
 	// duplicateUsernameCheck
 	var username string
@@ -112,7 +112,7 @@ func socialSignup(c *gin.Context) {
 	if err == nil {
 		username += "-gowallUser"
 	} else if err != mgo.ErrNotFound {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	// createUser
@@ -124,7 +124,7 @@ func socialSignup(c *gin.Context) {
 	user.updateProvider(socialProfile)
 	err = collection.Insert(user)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	// createAccount
@@ -136,7 +136,7 @@ func socialSignup(c *gin.Context) {
 
 	err = collection.UpdateId(user.ID, user)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	if config.RequireAccountVerification {
@@ -152,7 +152,7 @@ func socialSignup(c *gin.Context) {
 	collection = db.C(ACCOUNTS)
 	err = collection.Insert(account)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	// sendWelcomeEmail

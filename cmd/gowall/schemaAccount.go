@@ -39,7 +39,7 @@ type Account struct {
 func (a *Account) DecodeRequest(c *gin.Context) {
 	err := json.NewDecoder(c.Request.Body).Decode(a)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	return
 }
@@ -58,7 +58,7 @@ func (a *Account) linkUser(db *mgo.Database, user *User) (err error) {
 
 	if err != nil {
 		if err != mgo.ErrNotFound {
-			panic(err)
+			EXCEPTION(err)
 		}
 		return
 	}
@@ -74,7 +74,7 @@ func (a *Account) linkUser(db *mgo.Database, user *User) (err error) {
 
 	if err != nil {
 		if err != mgo.ErrNotFound {
-			panic(err)
+			EXCEPTION(err)
 		}
 		return
 	}
@@ -91,7 +91,7 @@ func (a *Account) unlinkUser(db *mgo.Database, user *User) (err error) {
 
 	if err != nil {
 		if err != mgo.ErrNotFound {
-			panic(err)
+			EXCEPTION(err)
 		}
 		return
 	}
@@ -104,7 +104,7 @@ func (a *Account) unlinkUser(db *mgo.Database, user *User) (err error) {
 
 	if err != nil {
 		if err != mgo.ErrNotFound {
-			panic(err)
+			EXCEPTION(err)
 		}
 		return
 	}

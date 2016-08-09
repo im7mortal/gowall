@@ -31,7 +31,7 @@ func loginProvider(c *gin.Context, userGoth goth.User) {
 			c.Redirect(http.StatusFound, "/login/")
 			return
 		}
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	session := sessions.Default(c)

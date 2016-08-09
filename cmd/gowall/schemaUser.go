@@ -61,7 +61,7 @@ func (user *User) defaultReturnUrl() (returnUrl string) {
 func (user *User) setPassword(password string) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	user.Password = string(hashedPassword)
 }

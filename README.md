@@ -185,3 +185,17 @@ MIT
 
 1. Can't do dynamic providers
 2. Can't init check hostName
+
+
+
+Error handling
+
+I use exception model for errors from std or third part libraries.
+If mgo.Query.Find return err != mgo.ErrNotFound  I do panic
+If mgo.ErrNotFound It's common behaviour except some cases when one object is nonsense if other object doesn't exist.
+(I mean that case when necessary manual update of db)
+In that case I am doing panic but with my own error description. That sysadmin could see it errors in log.
+I like go error flow idea but if error has to be written in log i do panic.
+I created func EXCEPTION(i interface{})  where you can specify your handler/ You can even remove panic from here.
+
+

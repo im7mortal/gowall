@@ -26,7 +26,7 @@ func renderAccountVerification(c *gin.Context) {
 		VerifyURL := generateToken(21)
 		hash, err := bcrypt.GenerateFromPassword(VerifyURL, bcrypt.DefaultCost)
 		if err != nil {
-			panic(err)
+			EXCEPTION(err)
 		}
 		db := getMongoDBInstance()
 		defer db.Session.Close()
@@ -37,7 +37,7 @@ func renderAccountVerification(c *gin.Context) {
 			},
 		})
 		if err != nil {
-			panic(err)
+			EXCEPTION(err)
 		}
 		verifyURL := "http" + "://" + c.Request.Host + "/account/verification/" + string(VerifyURL) + "/"
 		c.Set("VerifyURL", verifyURL)
@@ -51,7 +51,7 @@ func renderAccountVerification(c *gin.Context) {
 		mailConf.HtmlPath = "views/account/verification/email-html.html"
 
 		if err := mailConf.SendMail(); err != nil {
-			panic(err)
+			EXCEPTION(err)
 		}
 	}
 
@@ -112,7 +112,7 @@ func resendVerification(c *gin.Context) {
 		response.Fail()
 		return
 	} else if err != mgo.ErrNotFound {
-		panic(err)
+		EXCEPTION(err)
 	}
 	collection.UpdateId(user.ID, bson.M{
 		"$set": bson.M{
@@ -124,7 +124,7 @@ func resendVerification(c *gin.Context) {
 	VerifyURL := generateToken(21)
 	hash, err := bcrypt.GenerateFromPassword(VerifyURL, bcrypt.DefaultCost)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	collection.UpdateId(account.ID, bson.M{
 		"verificationToken": string(hash),
@@ -140,7 +140,7 @@ func resendVerification(c *gin.Context) {
 	mailConf.HtmlPath = "views/account/verification/email-html.html"
 
 	if err := mailConf.SendMail(); err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	response.Finish()
 }

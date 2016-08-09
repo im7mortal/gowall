@@ -42,7 +42,7 @@ func renderStatuses(c *gin.Context) {
 
 	Results, err := json.Marshal(Result)
 	if err != nil {
-		panic(err.Error())
+		EXCEPTION(err)
 	}
 
 	if XHR(c) {
@@ -72,7 +72,7 @@ func createStatus(c *gin.Context) {
 
 	err := json.NewDecoder(c.Request.Body).Decode(&status)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	if len(status.Name) == 0 {
@@ -100,15 +100,14 @@ func createStatus(c *gin.Context) {
 		response.Fail()
 		return
 	} else if err != mgo.ErrNotFound {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	// createStatus
 	status.ID = _id
-
 	err = collection.Insert(status)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	response.Finish()
 }
@@ -124,12 +123,12 @@ func readStatus(c *gin.Context) {
 			renderStatus404(c)
 			return
 		}
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	json, err := json.Marshal(status)
 	if err != nil {
-		panic(err.Error())
+		EXCEPTION(err.Error())
 	}
 
 	if XHR(c) {
@@ -158,7 +157,7 @@ func updateStatus(c *gin.Context) {
 
 	err := json.NewDecoder(c.Request.Body).Decode(&status)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	if len(status.Name) == 0 {
@@ -186,18 +185,18 @@ func updateStatus(c *gin.Context) {
 		response.Fail()
 		return
 	} else if err != mgo.ErrNotFound {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	// patchStatus
 	status.ID = _id
 	err = collection.RemoveId(c.Param("id")) // c.Param("id") is string/ no bson.ObjectID
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	err = collection.Insert(status)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	response.Finish()
@@ -221,7 +220,7 @@ func deleteStatus(c *gin.Context) {
 	collection := db.C(STATUSES)
 	err := collection.RemoveId(c.Param("id")) // c.Param("id") is string/ no bson.ObjectID
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 
 	response.Finish()

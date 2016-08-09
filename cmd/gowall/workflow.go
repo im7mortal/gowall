@@ -25,6 +25,7 @@ import (
 	"net/http"
 	"fmt"
 	"sync"
+	"log"
 )
 
 func handleXHR(c *gin.Context, data []byte) {
@@ -90,7 +91,7 @@ func (r *Response) CleanErrors() {
 func (r *Response) DecodeRequest() {
 	err := json.NewDecoder(r.c.Request.Body).Decode(r)
 	if err != nil {
-		panic(err)
+		EXCEPTION(err)
 	}
 	// clean errors from client
 	r.Errors = []string{}
@@ -113,4 +114,8 @@ func (r *Response) Response() {
 
 func DEBUG(i interface{}) {
 	fmt.Printf("%v\n%f\n", i, i)
+}
+
+func EXCEPTION(i interface{}) {
+	log.Panicln(i)
 }
