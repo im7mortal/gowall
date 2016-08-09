@@ -11,7 +11,7 @@ import (
 type Account struct {
 	ID                bson.ObjectId `bson:"_id,omitempty" json:"_id"`
 	User              struct {
-						  ID   bson.ObjectId `bson:"id" json:"id"`
+						  ID   bson.ObjectId `bson:"id,omitempty" json:"id"`
 						  Name string        `bson:"name" json:"name"`
 					  } `bson:"user" json:"user"`
 	IsVerified        string `bson:"isVerified" json:"isVerified"`
@@ -29,7 +29,7 @@ type Account struct {
 	StatusLog         []accountStatus `bson:"statusLog" json:"statusLog"`
 	Notes             []Note          `bson:"notes" json:"notes"`
 	UserCreated       struct {
-						  ID   bson.ObjectId `bson:"id" json:"id"`
+						  ID   bson.ObjectId `bson:"id,omitempty" json:"id"`
 						  Name string        `bson:"name" json:"name"`
 						  Time time.Time     `bson:"time" json:"time"`
 					  } `bson:"userCreated" json:"userCreated"`

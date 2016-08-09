@@ -15,7 +15,7 @@ type vendorOauth struct {
 }
 
 type User struct {
-	ID                   bson.ObjectId `json:"_id" bson:"_id"`
+	ID                   bson.ObjectId `json:"_id" bson:"_id,omitempty"`
 	Username             string        `json:"username" bson:"username"`
 	Password             string        `json:"-" bson:"password"`
 	Email                string        `json:"email" bson:"email"`
