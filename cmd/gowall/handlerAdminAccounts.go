@@ -176,65 +176,19 @@ func readAccount(c *gin.Context) {
 }
 
 func updateAccount(c *gin.Context) {
-	response := Response{}
-	response.Init(c)
-	var body struct {
-		First   string `json:"first"`
-		Last    string `json:"last"`
-		Middle  string `json:"middle"`
-		Company string `json:"company"`
-		Phone   string `json:"phone"`
-		Zip     string `json:"zip"`
-	}
-	decoder := json.NewDecoder(c.Request.Body)
-	err := decoder.Decode(&body)
-
-	if len(body.First) == 0 {
-		response.ErrFor["first"] = "required"
-	}
-
-	if len(body.Last) == 0 {
-		response.ErrFor["last"] = "required"
-	}
-
-	if response.HasErrors() {
-		response.Fail()
-		return
-	}
-
+	response := newResponse(c)
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(ACCOUNTS)
-
-	id := bson.ObjectIdHex(c.Param("id"))
-	// patchAccount
-	err = collection.UpdateId(id, bson.M{
-		"$set": bson.M{
-			"name.first":  body.First,
-			"name.last":   body.Last,
-			"name.middle": body.Middle,
-			"name.full":   body.First + " " + body.Last,
-			"company":     body.Company,
-			"phone":       body.Phone,
-			"zip":         body.Zip,
-			"search": []string{
-				body.First,
-				body.Last,
-				body.Middle,
-				body.Company,
-				body.Phone,
-				body.Zip,
-			},
-		},
-	})
+	account := &Account{}
+	err := collection.FindId(bson.ObjectIdHex(c.Param("id"))).One(account)
 	if err != nil {
 		EXCEPTION(err)
 	}
-
-	account := &Account{}
-	err = collection.FindId(id).One(account)
+	err = account.changeData(response)
 	if err != nil {
-		EXCEPTION(err)
+		response.Fail()
+		return
 	}
 	response.Data["account"] = account
 	response.Finish()

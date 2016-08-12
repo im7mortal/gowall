@@ -151,30 +151,13 @@ func readUser(c *gin.Context) {
 }
 
 func changeDataUser(c *gin.Context) {
-	response := Response{}
-	response.Init(c)
-	var body struct {
-		Username string `json:"username"`
-		Email    string `json:"email"`
-		IsActive string `json:"isActive"`
-	}
-	err := json.NewDecoder(c.Request.Body).Decode(&body)
-	if err != nil {
-		EXCEPTION(err)
-	}
-	validateUsername(&body.Username, &response)
-	validateEmail(&body.Email, &response)
-	if response.HasErrors() {
-		response.Fail()
-		return
-	}
+	response := newResponse(c)
 
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(USERS)
 	user := User{}
-	_id := c.Param("id")
-	err = collection.FindId(bson.ObjectIdHex(_id)).One(&user)
+	err := collection.FindId(bson.ObjectIdHex(c.Param("id"))).One(&user)
 	if err != nil {
 		if err != mgo.ErrNotFound {
 			EXCEPTION(err)
@@ -183,97 +166,22 @@ func changeDataUser(c *gin.Context) {
 		response.Fail()
 		return
 	}
-
-	if len(user.IsActive) == 0 {
-		user.IsActive = "no"
-	}
-
-	// duplicateUsernameCheck
-	// duplicateEmailCheck
-	err = collection.Find(bson.M{
-		"$or": []bson.M{
-			bson.M{
-				"username": body.Username,
-			},
-			bson.M{
-				"email": body.Email,
-			},
-		},
-		"_id": bson.M{"$ne": bson.ObjectIdHex(_id)},
-	}).One(nil)
-	if err == nil {
-		response.Errors = append(response.Errors, "username or email already exist")
-		response.Fail()
-		return
-	} else if err != mgo.ErrNotFound {
-		EXCEPTION(err)
-	}
-
-	user.Username = body.Username
-	user.Email = body.Email
-
-	// patchUser
-	err = collection.UpdateId(user.ID, bson.M{
-		"$set": bson.M{
-			"username": user.Username,
-			"email":    user.Email,
-			"isActive": user.IsActive,
-			"search":   []string{user.Username, user.Email},
-		},
-	})
+	err = user.changeIdentity(response)
 	if err != nil {
-		response.Errors = append(response.Errors, err.Error())
 		response.Fail()
 		return
 	}
-	// patchAdmin
-	collection = db.C(ADMINS)
-	err = collection.Update(bson.M{"user.id": user.ID},
-		bson.M{"$set": bson.M{"user.name": user.Username}})
-
-	// patchAccount
-	collection = db.C(ACCOUNTS)
-	err = collection.Update(bson.M{"user.id": user.ID},
-		bson.M{"$set": bson.M{"user.name": user.Username}})
-
-	updateRoles(db, &user)
-
 	response.Finish()
 }
 
 func changePasswordUser(c *gin.Context) {
-	response := Response{}
-	response.Init(c)
+	response := newResponse(c)
 
-	var body struct {
-		Confirm  string `json:"confirm"`
-		Password string `json:"newPassword"`
-	}
-
-	decoder := json.NewDecoder(c.Request.Body)
-	err := decoder.Decode(&body)
-
-	// validate
-	if len(body.Password) == 0 {
-		response.ErrFor["newPassword"] = "required"
-	}
-	if len(body.Confirm) == 0 {
-		response.ErrFor["confirm"] = "required"
-	} else if body.Password != body.Confirm {
-		response.Errors = append(response.Errors, "Passwords do not match.")
-	}
-
-	if response.HasErrors() {
-		response.Fail()
-		return
-	}
-
-	// patchUser
 	db := getMongoDBInstance()
 	defer db.Session.Close()
 	collection := db.C(USERS)
 	user := User{}
-	err = collection.FindId(bson.ObjectIdHex(c.Param("id"))).One(&user)
+	err := collection.FindId(bson.ObjectIdHex(c.Param("id"))).One(&user)
 	if err != nil {
 		if err != mgo.ErrNotFound {
 			EXCEPTION(err)
@@ -283,10 +191,9 @@ func changePasswordUser(c *gin.Context) {
 		return
 	}
 
-	user.setPassword(body.Password)
-	err = collection.UpdateId(user.ID, user)
+	// patchUser
+	err = user.changePassword(response)
 	if err != nil {
-		response.Errors = append(response.Errors, err.Error())
 		response.Fail()
 		return
 	}
@@ -700,54 +607,5 @@ func getRoles(db *mgo.Database, user *User) (roles gin.H) {
 	}
 
 	wg.Wait()
-	return
-}
-
-
-func updateRoles(db *mgo.Database, user *User) {
-	var wg sync.WaitGroup
-	wg.Add(2)
-	go func() {
-		err := db.C(ADMINS).Update(
-			bson.M{
-				"roles.admin": user.ID,
-			},
-			bson.M{
-				"$set": bson.M{
-					"user": bson.M{
-						"id": user.ID,
-						"name": user.Username,
-					},
-				},
-			})
-		if err != nil {
-			if err != mgo.ErrNotFound {
-				EXCEPTION(err)
-			}
-		}
-		wg.Done()
-	}()
-	go func() {
-		err := db.C(ACCOUNTS).Update(
-			bson.M{
-				"roles.account": user.ID,
-			},
-			bson.M{
-				"$set": bson.M{
-					"user": bson.M{
-						"id": user.ID,
-						"name": user.Username,
-					},
-				},
-			})
-		if err != nil {
-			if err != mgo.ErrNotFound {
-				EXCEPTION(err)
-			}
-		}
-		wg.Done()
-	}()
-	wg.Wait()
-
 	return
 }

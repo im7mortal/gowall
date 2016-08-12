@@ -11,7 +11,7 @@ func renderContact(c *gin.Context) {
 }
 
 func sendContact(c *gin.Context) {
-	response := getResponseObj(c)
+	response := newResponse(c)
 	var body struct {
 		Name    string `json:"name"`
 		Email   string `json:"email"`

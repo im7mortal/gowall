@@ -110,3 +110,56 @@ func (a *Account) unlinkUser(db *mgo.Database, user *User) (err error) {
 	}
 	return
 }
+
+
+func (a *Account) changeData(r *Response) (err error) {
+
+	var body struct {
+		First   string `json:"first"`
+		Middle  string `json:"middle"`
+		Last    string `json:"last"`
+		Company string `json:"company"`
+		Phone   string `json:"phone"`
+		Zip     string `json:"zip"`
+	}
+	err = json.NewDecoder(r.c.Request.Body).Decode(&body)
+
+	if len(body.First) == 0 {
+		r.ErrFor["first"] = "required"
+	}
+	if len(body.Last) == 0 {
+		r.ErrFor["last"] = "required"
+	}
+
+	if r.HasErrors() {
+		err = Err
+		return
+	}
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+
+	a.Name.Full = body.First + " " + body.Last
+	a.Name.First = body.First
+	a.Name.Middle = body.Middle
+	a.Name.Last = body.Last
+	a.Company = body.Company
+	a.Phone = body.Phone
+	a.Zip = body.Zip
+	a.Search = a.Search[:0]
+	a.Search = append(a.Search,
+		body.First,
+		body.Middle,
+		body.Last,
+		body.Company,
+		body.Phone,
+		body.Zip,
+	)
+
+	collection := db.C(ACCOUNTS)
+	err = collection.UpdateId(a.ID, a)
+	if err != nil {
+		EXCEPTION(err)
+	}
+
+	return
+}

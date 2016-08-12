@@ -8,6 +8,8 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"strings"
 	"time"
+	"encoding/json"
+	"sync"
 )
 
 type vendorOauth struct {
@@ -115,4 +117,160 @@ func (user *User) login(c *gin.Context) {
 
 func (user *User) isPasswordOk(password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+}
+
+func (user *User) changePassword(r *Response) (err error) {
+
+	var body struct {
+		Confirm  string `json:"confirm"`
+		Password string `json:"newPassword"`
+	}
+	err = json.NewDecoder(r.c.Request.Body).Decode(&body)
+	if err != nil {
+		EXCEPTION(err)
+	}
+
+	// validate
+	if len(body.Password) == 0 {
+		r.ErrFor["newPassword"] = "required"
+	}
+	if len(body.Confirm) == 0 {
+		r.ErrFor["confirm"] = "required"
+	} else if body.Password != body.Confirm {
+		r.Errors = append(r.Errors, "Passwords do not match.")
+	}
+
+	if r.HasErrors() {
+		err = Err
+		return
+	}
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+
+	user.setPassword(body.Password)
+
+	collection := db.C(USERS)
+	err = collection.UpdateId(user.ID, user)
+	if err != nil {
+		r.Errors = append(r.Errors, err.Error())
+		err = Err
+		return
+	}
+
+	return
+}
+
+func (user *User) changeIdentity(r *Response) (err error) {
+
+	var body struct {
+		Username string `json:"username"`
+		Email    string `json:"email"`
+		IsActive string `json:"isActive"`
+	}
+	err = json.NewDecoder(r.c.Request.Body).Decode(&body)
+	if err != nil {
+		EXCEPTION(err)
+	}
+
+	validateUsername(&body.Username, r)
+	validateEmail(&body.Email, r)
+
+	if r.HasErrors() {
+		err = Err
+		return
+	}
+	db := getMongoDBInstance()
+	defer db.Session.Close()
+	collection := db.C(USERS)
+
+	err = collection.Find(bson.M{
+		"$or": []bson.M{
+			bson.M{
+				"username": body.Username,
+			},
+			bson.M{
+				"email": body.Email,
+			},
+		},
+		"_id": bson.M{"$ne": user.ID},
+	}).One(nil)
+	if err == nil {
+		r.Errors = append(r.Errors, "That username or email already exist.")
+		err = Err
+		return
+	} else if err != mgo.ErrNotFound {
+		EXCEPTION(err)
+	}
+	user.Username = body.Username
+	user.Email = body.Email
+	if len(body.IsActive) != 0 {
+		user.IsActive = body.IsActive
+	}
+	err = collection.UpdateId(user.ID, bson.M{
+		"$set": bson.M{
+			"username": user.Username,
+			"email":    user.Email,
+			"isActive": user.IsActive,
+			"search":   []string{user.Username, user.Email},
+		},
+	})
+	if err != nil {
+		r.Errors = append(r.Errors, err.Error())
+		err = Err
+		return
+	}
+
+	// patchAdmin
+	// patchAccount
+	updateRoles(db, user)
+
+	return
+}
+
+func updateRoles(db *mgo.Database, user *User) {
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go func() {
+		err := db.C(ADMINS).Update(
+			bson.M{
+				"roles.admin": user.ID,
+			},
+			bson.M{
+				"$set": bson.M{
+					"user": bson.M{
+						"id": user.ID,
+						"name": user.Username,
+					},
+				},
+			})
+		if err != nil {
+			if err != mgo.ErrNotFound {
+				EXCEPTION(err)
+			}
+		}
+		wg.Done()
+	}()
+	go func() {
+		err := db.C(ACCOUNTS).Update(
+			bson.M{
+				"roles.account": user.ID,
+			},
+			bson.M{
+				"$set": bson.M{
+					"user": bson.M{
+						"id": user.ID,
+						"name": user.Username,
+					},
+				},
+			})
+		if err != nil {
+			if err != mgo.ErrNotFound {
+				EXCEPTION(err)
+			}
+		}
+		wg.Done()
+	}()
+	wg.Wait()
+
+	return
 }

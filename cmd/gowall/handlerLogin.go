@@ -44,8 +44,6 @@ func login(c *gin.Context) {
 		response.Fail()
 		return
 	}
-	// clean errors from client
-	response.CleanErrors()
 
 	// validate
 	if len(body.Username) == 0 {

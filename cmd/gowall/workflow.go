@@ -26,7 +26,13 @@ import (
 	"fmt"
 	"sync"
 	"log"
+	"errors"
 )
+
+var (
+	Err = errors.New("not found")
+)
+
 
 func handleXHR(c *gin.Context, data []byte) {
 	c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
@@ -71,21 +77,6 @@ func (r *Response) Init(c *gin.Context) {
 	r.c = c
 	r.Data = map[string]interface{}{}
 	r.ErrFor = map[string]string{}
-}
-
-func getResponseObj(c *gin.Context) (r *Response) {
-	r = &Response{}
-	r.c = c
-	r.Data = map[string]interface{}{}
-	r.ErrFor = map[string]string{}
-	return
-}
-
-func (r *Response) Recover() {}
-
-func (r *Response) CleanErrors() {
-	r.Errors = []string{}
-	r.ErrFor = make(map[string]string)
 }
 
 func (r *Response) DecodeRequest() {

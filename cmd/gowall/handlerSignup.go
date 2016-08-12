@@ -38,8 +38,6 @@ func signup(c *gin.Context) {
 	if err != nil {
 		EXCEPTION(err)
 	}
-	// clean errors from client
-	response.CleanErrors()
 
 	// validate
 	validateUsername(&body.Username, response)
