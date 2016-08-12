@@ -60,153 +60,34 @@ func renderAccountSettings(c *gin.Context) {
 
 func setSettings(c *gin.Context) {
 	account := getAccount(c)
-	response := Response{}
-	response.Errors = []string{}
-	response.ErrFor = make(map[string]string)
-	response.Init(c)
-	var body struct {
-		First   string `json:"first"`
-		Middle  string `json:"middle"`
-		Last    string `json:"last"`
-		Company string `json:"company"`
-		Phone   string `json:"phone"`
-		Zip     string `json:"zip"`
-	}
-	decoder := json.NewDecoder(c.Request.Body)
-	err := decoder.Decode(&body)
-
-	if len(body.First) == 0 {
-		response.ErrFor["first"] = "required"
-	}
-	if len(body.Last) == 0 {
-		response.ErrFor["last"] = "required"
-	}
-
-	if response.HasErrors() {
-		response.Fail()
-		return
-	}
-	db := getMongoDBInstance()
-	defer db.Session.Close()
-
-	account.Name.Full = body.First + " " + body.Last
-	account.Name.First = body.First
-	account.Name.Middle = body.Middle
-	account.Name.Last = body.Last
-	account.Company = body.Company
-	account.Phone = body.Phone
-	account.Zip = body.Zip
-	account.Search = account.Search[:0]
-	account.Search = append(account.Search,
-		body.First,
-		body.Middle,
-		body.Last,
-		body.Company,
-		body.Phone,
-		body.Zip,
-	)
-
-	collection := db.C(ACCOUNTS)
-	err = collection.UpdateId(account.ID, account)
+	response := newResponse(c)
+	err := account.changeData(response)
 	if err != nil {
 		response.Fail()
 		return
 	}
-
 	response.Finish()
 }
 
 func changePassword(c *gin.Context) {
 	user := getUser(c)
-	response := Response{}
-	response.Errors = []string{}
-	response.ErrFor = make(map[string]string)
-	response.Init(c)
-	var body struct {
-		Confirm  string `json:"confirm"`
-		Password string `json:"newPassword"`
-	}
-	decoder := json.NewDecoder(c.Request.Body)
-	err := decoder.Decode(&body)
-
-	// validate
-	if len(body.Password) == 0 {
-		response.ErrFor["newPassword"] = "required"
-	}
-	if len(body.Confirm) == 0 {
-		response.ErrFor["confirm"] = "required"
-	} else if body.Password != body.Confirm {
-		response.Errors = append(response.Errors, "Passwords do not match.")
-	}
-
-	if response.HasErrors() {
-		response.Fail()
-		return
-	}
-	db := getMongoDBInstance()
-	defer db.Session.Close()
-
-	user.setPassword(body.Password)
-
-	collection := db.C(USERS)
-	err = collection.UpdateId(user.ID, user)
+	response := newResponse(c)
+	err := user.changePassword(response)
 	if err != nil {
-		response.Errors = append(response.Errors, err.Error())
 		response.Fail()
 		return
 	}
-
 	response.Finish()
 }
 
 func changeIdentity(c *gin.Context) {
 	user := getUser(c)
-	response := Response{}
-	response.Errors = []string{}
-	response.ErrFor = make(map[string]string)
-	response.Init(c)
-	var body struct {
-		Username string `json:"username"`
-		Email    string `json:"email"`
-	}
-	decoder := json.NewDecoder(c.Request.Body)
-	err := decoder.Decode(&body)
-
-	validateUsername(&body.Username, &response)
-	validateEmail(&body.Email, &response)
-
-	if response.HasErrors() {
-		response.Fail()
-		return
-	}
-	db := getMongoDBInstance()
-	defer db.Session.Close()
-	collection := db.C(USERS)
-
-	err = collection.Find(bson.M{
-		"$or": []bson.M{
-			bson.M{"username": body.Username},
-			bson.M{"email": body.Email},
-		},
-	}).One(nil)
-	if err == nil {
-		response.Errors = append(response.Errors, "That username or email already exist.")
-		response.Fail()
-		return
-	} else if err != mgo.ErrNotFound {
-		EXCEPTION(err)
-	}
-	user.Username = body.Username
-	user.Email = body.Email
-
-	err = collection.UpdateId(user.ID, user)
+	response := newResponse(c)
+	err := user.changeIdentity(response)
 	if err != nil {
-		response.Errors = append(response.Errors, err.Error())
 		response.Fail()
 		return
 	}
-
-	updateRoles(db, user)
 	response.Finish()
 }
 
