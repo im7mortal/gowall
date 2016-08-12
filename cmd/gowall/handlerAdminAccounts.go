@@ -443,7 +443,7 @@ func deleteAccount(c *gin.Context) {
 	response.Init(c)
 
 	// validate
-	if ok := getAdmin(c).IsMemberOf("root"); !ok {
+	if ok := getAdmin(c).IsMemberOf(ROOTGROUP); !ok {
 		response.Errors = append(response.Errors, "You may not delete accounts.")
 		response.Fail()
 		return

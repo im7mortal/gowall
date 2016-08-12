@@ -54,7 +54,7 @@ func createAdmin(c *gin.Context) {
 	admin := getAdmin(c)
 
 	// validate
-	ok := admin.IsMemberOf("root")
+	ok := admin.IsMemberOf(ROOTGROUP)
 	if !ok {
 		response.Errors = append(response.Errors, "You may not create administrators")
 		response.Fail()
@@ -212,7 +212,7 @@ func updatePermissionsAdmin(c *gin.Context) {
 	admin := getAdmin(c)
 
 	// validate
-	ok := admin.IsMemberOf("root")
+	ok := admin.IsMemberOf(ROOTGROUP)
 	if !ok {
 		response.Errors = append(response.Errors, "You may not change the permissions of admins.")
 		response.Fail()
@@ -264,7 +264,7 @@ func updateGroupsAdmin(c *gin.Context) {
 	admin := getAdmin(c)
 
 	// validate
-	ok := admin.IsMemberOf("root")
+	ok := admin.IsMemberOf(ROOTGROUP)
 	if !ok {
 		response.Errors = append(response.Errors, "You may not change the group memberships of admins.")
 		response.Fail()
@@ -457,7 +457,7 @@ func deleteAdmin(c *gin.Context) {
 	response.Init(c)
 
 	// validate
-	if ok := getAdmin(c).IsMemberOf("root"); !ok {
+	if ok := getAdmin(c).IsMemberOf(ROOTGROUP); !ok {
 		response.Errors = append(response.Errors, "You may not delete administrators.")
 		response.Fail()
 		return
