@@ -164,11 +164,10 @@ func updateAdminGroup(c *gin.Context) {
 	}
 
 	// patchAdminGroup
-	// _id is slugified name so first delete second insert // todo http://stackoverflow.com/questions/24166615/update-an-item-in-an-array-that-is-in-an-array
+	// _id is slugified name so first delete second insert
 	err = collection.RemoveId(c.Param("id"))
 	if err != nil {
-		EXCEPTION(err) // todo: bug: it updateAdminGroup doesn't update id in url. and if user will update AdminGroup 2 time
-		// todo: it will not find AdminGroup in second time
+		EXCEPTION(err)
 	}
 	err = collection.Insert(response.AdminGroup)
 	if err != nil {
