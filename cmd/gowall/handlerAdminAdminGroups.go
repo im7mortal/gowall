@@ -205,7 +205,7 @@ func updatePermissionsAdminGroup(c *gin.Context) {
 	defer db.Session.Close()
 	collection := db.C(ADMINGROUPS)
 
-	err := collection.UpdateId(c.Param("id"), response.AdminGroup)
+	err := collection.UpdateId(c.Param("id"), response.AdminGroup) // id is string
 	if err != nil {
 		EXCEPTION(err)
 	}

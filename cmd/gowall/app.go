@@ -3,11 +3,7 @@ package main
 import (
 	"github.com/gin-gonic/contrib/gzip"
 	"github.com/gin-gonic/contrib/sessions"
-	//"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
-	//"github.com/itsjamie/gin-cors"
-	//"time"
-	//"log"
 	"net/http"
 	"time"
 )
