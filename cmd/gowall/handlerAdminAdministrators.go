@@ -8,6 +8,7 @@ import (
 	"html/template"
 	"net/http"
 	"strings"
+	"time"
 )
 
 type responseAdmin struct {
@@ -103,6 +104,7 @@ func createAdmin(c *gin.Context) {
 
 	// createAdministrator
 	response.Admin.ID = bson.NewObjectId()
+	response.Admin.TimeCreated = time.Now()
 	err = collection.Insert(response.Admin)
 	if err != nil {
 		EXCEPTION(err)

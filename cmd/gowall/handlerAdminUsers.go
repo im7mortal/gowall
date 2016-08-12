@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"sync"
 	"strings"
+	"time"
 )
 
 type responseUser struct {
@@ -109,6 +110,7 @@ func createUser(c *gin.Context) {
 
 	// createUser
 	response.User.ID = bson.NewObjectId()
+	response.User.TimeCreated = time.Now()
 	response.User.Search = []string{response.Username}
 
 	err = collection.Insert(response.User)

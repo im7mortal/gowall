@@ -126,6 +126,10 @@ func createAccount(c *gin.Context) {
 
 	// createAccount
 	account.ID = bson.NewObjectId()
+	admin := getAdmin(c)
+	account.UserCreated.ID = admin.ID
+	account.UserCreated.Name = admin.Name.Full
+	account.UserCreated.Time = time.Now()
 	err = collection.Insert(account)
 	if err != nil {
 		EXCEPTION(err)
@@ -368,7 +372,7 @@ func newNote(c *gin.Context) {
 			"userCreated": bson.M{
 				"id":   user.ID,
 				"name": user.Username,
-				"time": time.Now().Format(ISOSTRING),
+				"time": time.Now(),
 			},
 		}},
 		})
@@ -415,7 +419,7 @@ func newStatus(c *gin.Context) {
 		"userCreated": bson.M{
 			"id":   user.ID,
 			"name": user.Username,
-			"time": time.Now().Format(ISOSTRING),
+			"time": time.Now(),
 		},
 	}
 	err = collection.UpdateId(bson.ObjectIdHex(c.Param("id")),
