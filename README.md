@@ -141,6 +141,9 @@ and relevant version details such as:
 If you're changing something non-trivial, you may want to submit an issue
 first.
 
+## Thanks
+
+Big thanks to [@jedireza](https://twitter.com/jedireza) for Drywall!!
 
 ## License
 
