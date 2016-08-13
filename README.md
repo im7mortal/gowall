@@ -1,80 +1,67 @@
-1. for admins 'VM1764:12 Uncaught TypeError: Cannot read property 'newUsername' of null'. If set errFor it's ok
+A website and user system starter. Implemented with gin and Backbone.
+Gowall is port of [Drywall](https://github.com/jedireza/drywall)
 
-2. i change response to map because of people have to have ability
+|            | Go                                            | Node.js                                         |
+| ---------- | --------------------------------------------- | ----------------------------------------------- |
+| Repository | here                                          | [Drywall](https://github.com/jedireza/drywall/) |
+| Site       | [Gowall](http://im7mortal.github.io/gowall/)  | [Drywall](http://jedireza.github.io/drywall/)   |
+| Demo       | [Gowall demo](https://go-wall.herokuapp.com/) | [Drywall demo](https://drywall.herokuapp.com/)  |
 
-3) adminGroups has minor errors in update
-
-
-мокрое место, то что чувак вместо строки в одном месте вставляет обьект
-я зафигачил интерфейс
-
-# Drywall  ( ca35c06  I forked)
-
-A website and user system starter. Implemented with Express and Backbone.
-
-[![Dependency Status](https://david-dm.org/jedireza/drywall.svg?theme=shields.io)](https://david-dm.org/jedireza/drywall)
-[![devDependency Status](https://david-dm.org/jedireza/drywall/dev-status.svg?theme=shields.io)](https://david-dm.org/jedireza/drywall#info=devDependencies)
-
+I cloned Drywall from [commit](https://github.com/jedireza/drywall/tree/ca35c06bf5100d2835da929bd1bd3c39ae441138)
 
 ## Technology
 
-Server side, Drywall is built with the [Express](http://expressjs.com/)
+Server side, Gowall is built with the [gin](https://github.com/gin-gonic/gin)
 framework. We're using [MongoDB](http://www.mongodb.org/) as a data store.
 
 The front-end is built with [Backbone](http://backbonejs.org/).
-We're using [Grunt](http://gruntjs.com/) for the asset pipeline.
+You can use [Grunt](http://gruntjs.com/) for the asset pipeline.
+Grunt's settings are located in Drywall's repository.
 
-| On The Server | On The Client  | Development |
-| ------------- | -------------- | ----------- |
-| Express       | Bootstrap      | Grunt       |
-| Jade          | Backbone.js    |             |
-| Mongoose      | jQuery         |             |
-| Passport      | Underscore.js  |             |
-| Async         | Font-Awesome   |             |
-| EmailJS       | Moment.js      |             |
+| On The Server      | On The Client  | Development |
+| ------------------ | -------------- | ----------- |
+| Gin                | Bootstrap      | Grunt       |
+| html.template      | Backbone.js    |             |
+| mgo                | jQuery         |             |
+| markbates/goth     | Underscore.js  |             |
+| gopkg.in/gomail.v2 | Font-Awesome   |             |
+|                    | Moment.js      |             |
 
 
 ## Live demo
 
 | Platform                       | Username | Password |
 | ------------------------------ | -------- | -------- |
-| https://drywall.herokuapp.com/ | root     | h3r00t   |
+| https://go-wall.herokuapp.com/ | root     | h3r00t   |
 
 __Note:__ The live demo has been modified so you cannot change the root user,
 the root user's linked admin role or the root admin group. This was done in
 order to keep the app ready to use at all times.
 
+## Diference
+
+I keer session in cookies.
 
 ## Requirements
 
-You need [Node.js](http://nodejs.org/download/) and
-[MongoDB](http://www.mongodb.org/downloads) installed and running.
+You need [MongoDB](http://www.mongodb.org/downloads) installed and running.
 
-We use [`bcrypt`](https://github.com/ncb000gt/node.bcrypt.js) for hashing
-secrets. If you have issues during installation related to `bcrypt` then [refer
-to this wiki
-page](https://github.com/jedireza/drywall/wiki/bcrypt-Installation-Trouble).
+We use [`mgo`](https://labix.org/mgo) as mongodb driver. If
+you have issues with sasl [refer to this issue](https://github.com/go-mgo/mgo/issues/220#issuecomment-212605949).
 
-We use [`emailjs`](https://github.com/eleith/emailjs) for email transport. If
-you have issues sending email [refer to this wiki
-page](https://github.com/jedireza/drywall/wiki/Trouble-sending-email).
-
+We use `golang.org/x/crypto/bcrypt` for hashing
+secrets.
 
 ## Installation
 
-```bash
-$ git clone git@github.com:jedireza/drywall.git && cd ./drywall
-$ npm install
-```
+Exetuble file has to be located in the same directory where ~public~ is located
 
 
 ## Setup
 
-First you need to setup your config file.
-
-```bash
-$ mv ./config.example.js ./config.js #set mongodb and email credentials
-```
+First you need to setup your config file. It's located just inside. cmd/gowall/config.example.go
+I decided that you know better how you want keep your config.
+It support system environments.
 
 Next, you need a few records in the database to start using the user system.
 
@@ -82,7 +69,7 @@ Run these commands on mongo via the terminal. __Obviously you should use your
 email address.__
 
 ```js
-use drywall; // or your mongo db name if different
+use Gowall; // or your mongo db name if different
 ```
 
 ```js
@@ -99,23 +86,7 @@ db.admins.save(rootAdmin);
 ## Running the app
 
 ```bash
-$ npm start
-
-# > Drywall@0.0.0 start /Users/jedireza/projects/jedireza/drywall
-# > grunt
-
-# Running "copy:vendor" (copy) task
-# ...
-
-# Running "concurrent:dev" (concurrent) task
-# Running "watch" task
-# Running "nodemon:dev" (nodemon) task
-# Waiting...
-# [nodemon] v1.3.7
-# [nodemon] to restart at any time, enter `rs`
-# [nodemon] watching: *.*
-# [nodemon] starting `node app.js`
-# Server is running on port 3000
+$ ./gowall
 ```
 
 Now just use the reset password feature to set a password.
@@ -127,6 +98,16 @@ Now just use the reset password feature to set a password.
  - Set a new password.
 
 Login. Customize. Enjoy.
+
+## Error handling
+
+I use exception model for errors from std or third part libraries.
+If mgo.Query.Find return err != mgo.ErrNotFound  I do panic
+If mgo.ErrNotFound It's common behaviour except some cases when one object is nonsense if other object doesn't exist.
+(I mean that case when necessary manual update of db)
+In that case I am doing panic but with my own error description. That sysadmin could see it errors in log.
+I like go error flow idea but if error has to be written in log i do panic.
+I created func EXCEPTION(i interface{})  where you can specify your handler/ You can even remove panic from here.
 
 
 ## Philosophy
@@ -157,24 +138,6 @@ Any issues or questions (no matter how basic), open an issue. Please take the
 initiative to include basic debugging information like operating system
 and relevant version details such as:
 
-```bash
-$ npm version
-
-# { drywall: '0.0.0',
-#   npm: '2.5.1',
-#   http_parser: '2.3',
-#   modules: '14',
-#   node: '0.12.0',
-#   openssl: '1.0.1l',
-#   uv: '1.0.2',
-#   v8: '3.28.73',
-#   zlib: '1.2.8' }
-```
-
-Contributions are welcome. Your code should:
-
- - pass `$ grunt lint` without error
-
 If you're changing something non-trivial, you may want to submit an issue
 first.
 
@@ -185,17 +148,3 @@ MIT
 
 1. Can't do dynamic providers
 2. Can't init check hostName
-
-
-
-Error handling
-
-I use exception model for errors from std or third part libraries.
-If mgo.Query.Find return err != mgo.ErrNotFound  I do panic
-If mgo.ErrNotFound It's common behaviour except some cases when one object is nonsense if other object doesn't exist.
-(I mean that case when necessary manual update of db)
-In that case I am doing panic but with my own error description. That sysadmin could see it errors in log.
-I like go error flow idea but if error has to be written in log i do panic.
-I created func EXCEPTION(i interface{})  where you can specify your handler/ You can even remove panic from here.
-
-
